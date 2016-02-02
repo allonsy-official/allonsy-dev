@@ -1,0 +1,52 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Allonsy | Welcome</title>
+    <link rel="stylesheet" href="/static/css/foundation.css" />
+    <link rel="stylesheet" href="/static/css/app.css" />
+  </head>
+  <body id="pages-app-background">
+
+    <div class="expanded row">
+        <div class="columns small-1 small-offset-11">
+            <button class="button" type="button" data-toggle="example-dropdown">Toggle Dropdown</button>
+              <div class="dropdown-pane" id="example-dropdown" data-dropdown data-auto-focus="true">
+
+                <form id="login_form" method="post" action="/login/">
+                    {% csrf_token %}
+
+                    <div class="row">
+                        <div class="large-12 columns">
+                            <label>Username
+                                <input type="text" name="username" placeholder="Please enter your username" />
+                            </label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="large-12 columns">
+                            <label>Password
+                                <input type="password" name="password" placeholder="Please enter your password" />
+                            </label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="large-4 columns">
+                            <input type="submit" class="button" value="Submit" />
+                        </div>
+                    </div>
+
+                </form>
+
+              </div>
+        </div>
+    </div>
+
+    <script src="/static/js/vendor/jquery.min.js"></script>
+    <script src="/static/js/vendor/what-input.min.js"></script>
+    <script src="/static/js/foundation.min.js"></script>
+    <script src="/static/js/app.js"></script>
+  </body>
+</html>

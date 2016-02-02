@@ -1,0 +1,182 @@
+{% extends "allonsy/allonsy_base.html" %}
+
+{% block content %}
+
+        <!--Create meeple info-->
+
+    <div class="row">
+      <div class="columns small-12" style="background-color:#999999;">
+        <!--Infobox content-->
+        <div class="row">
+
+          <!--Image-->
+          <div class="columns small-12 medium-3 large-3">
+            <div class="row">
+            <div class="columns small-6 small-centered medium-6 medium-centered large-12">
+            <div style="background-color:#333; width:200px; height:200px;">
+            </div>
+            </div>
+            </div>
+          </div>
+
+          <!--Information-->
+          <div class="columns small-12 medium-9 large-9">
+            <div class="row">
+            <div class="columns small-6 small-centered large-12">
+              <div class="row">
+                <div class="columns small-12">
+                  <h3>{{user.first_name}} {{user.last_name}}</h3>
+                </div>
+              </div>
+              <div class="row">
+                <div class="columns small-12">
+                  <h5>Job title or major</h5>
+                </div>
+              </div>
+              <div class="row">
+                <div class="columns small-12">
+                  <h5>Office or School</h5>
+                </div>
+              </div>
+              <div class="row">
+                <div class="columns small-12">
+                  <h5>Building and office/room</h5>
+                </div>
+              </div>
+              <div class="row">
+                <div class="columns small-3">
+                  <a href="" class="button">Add as connection</a>
+                </div>
+                <div class="columns small-9">
+                  <button class="dropdown button" data-toggle="contact-data">Contact information</button>
+                  <div class="dropdown-pane" id="contact-data" data-dropdown data-auto-focus="true">
+                    <table class="hover">
+                      <tbody>
+                      <tr>
+                        <td><b>Email:</b></td>
+                        <td>{{user.email}}</td>
+                      </tr>
+                      <tr>
+                        <td><b>Phone:</b></td>
+                        <td>{{user_extension}}</td>
+                      </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!--Instantiate column structure -->
+        <!--TODO: Add 20px margin-bottom to section above-->
+    <div class="row">
+
+    <!--Left column-->
+        <div class="columns small-3">
+          <div class="row">
+            <div class="columns small-12">
+              <div class="row">
+                <div class="columns small-12">
+                  <h5>Affiliations</h5>
+                </div>
+              </div>
+              <div class="row">
+                <div class="columns small-12">
+                  <span class="label">Tufts University</span>
+                  <span class="label">Fletcher School</span>
+                  <span class="label">Tufts RAs</span>
+                  <span class="label">CS Club</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="columns small-12">
+              <div class="row">
+                <div class="columns small-12">
+                  <h5>Interests</h5>
+                </div>
+              </div>
+              <div class="row">
+                <div class="columns small-12">
+                  <span class="label">Computer Science</span>
+                  <span class="label">Economics</span>
+                  <span class="label">Strategy consulting</span>
+                  <span class="label">Theoretical physics</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="columns small-12">
+              <div class="row">
+                <div class="columns small-12">
+                  <h5>Achievements</h5>
+                </div>
+              </div>
+              <div class="row">
+                <div class="columns small-12">
+                  <span class="label">Dean's List - 2016 Spring</span>
+                  <span class="label">E-Board CS Club</span>
+                  <span class="label">RA - Richardson Hall</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+    <!--Right column-->
+        <div class="columns small-9">
+          <div class="row">
+            <div class="columns small-12">
+              <div class="row">
+                <div class="columns small-12">
+                  <h5>About Me</h5>
+                </div>
+              </div>
+              <div class="row">
+                <div class="columns 12-small">
+                  Text goes here
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="columns small-12">
+              <div class="row">
+                <div class="columns small-12">
+                  <h5>RoomTraits</h5>
+                </div>
+              </div>
+              <div class="row">
+                <div class="columns 12-small">
+                  Text goes here
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="columns small-12">
+              <div class="row">
+                <div class="columns small-12">
+                  <h5>Roommate Recommendations</h5>
+                </div>
+              </div>
+              <div class="row">
+                <div class="columns 12-small">
+                  Text goes here
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+   <!--end columns-->
+    </div>
+
+{% endblock content %}

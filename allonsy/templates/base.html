@@ -1,0 +1,98 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Allonsy | Welcome</title>
+    <link rel="stylesheet" href="../static/css/foundation.css" />
+    <link rel="stylesheet" href="../static/css/app.css" />
+  </head>
+  <body>
+
+        <!-- Nav top-bar --><!--TODO: Ensure top-nav is sticky -->
+
+    <div data-sticky-container>
+      <div class="title-bar" data-sticky data-options="marginTop:0;" style="width:100%">
+        <div class="title-bar-left">
+          <ul class="dropdown menu" data-dropdown-menu>
+            <li class="menu-text">Allonsy</li>
+          </ul>
+        </div>
+        <div class="title-bar-right">
+          <ul class="menu">
+            <li><input type="search" placeholder="Search!"></li>
+            <li><button type="button" class="button">Search</button></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+        <!-- End Nav top-bar -->
+
+        <!-- Start subnav. This hides on mobile -->
+
+    <div class ="row expanded columns">
+
+        <ul class="dropdown menu" data-dropdown-menu>
+          <li>
+            <a href="#">My Profile</a>
+            <ul class="menu">
+              <li><a href="#">Alerts</a></li>
+              <li><a href="#">Interactions</a></li>
+              <li><a href="#">Preferences</a></li>
+              <li><a href="#">Privacy</a></li>
+              <li><a href="#">Report Abuse</a></li>
+            </ul>
+          </li>
+          <li>
+            <a href="#">My Role</a>
+            <ul class="menu">
+              <li><a href="#">Admin</a></li>
+              <li><a href="#">Nightly Rounds</a></li>
+              <li><a href="#">Incident Report</a></li>
+              <li><a href="#">Damage Report</a></li>
+              <li><a href="#">Ticketing System</a></li>
+            </ul>
+          </li>
+          <li>
+            <a href="#">My Groups</a>
+            <ul class="menu">
+              <li><a href="#">Classes</a></li>
+              <li><a href="#">Clubs</a></li>
+              <li><a href="#">Working Groups</a></li>
+              <li><a href="#">Create New Group</a></li>
+            </ul>
+          </li>
+          <li>
+            <a href="#">My Services</a>
+            <ul class="menu">
+              <li><a href="#">Residence Life</a></li>
+              <li><a href="#">Facilities</a></li>
+              <li><a href="#">IT Services</a></li>
+            </ul>
+          </li>
+          <li>
+            <a href="#">My Housing</a>
+            <ul class="menu">
+              <li><a href="#">Housing Survey</a></li>
+              <li><a href="#">Room Selection</a></li>
+            </ul>
+          </li>
+        </ul>
+
+    </div>
+
+        <!--End subnav-->
+
+    {% block content %}{% endblock content %}
+
+
+  <!-- End canvas -->
+
+    <script src="../static/js/vendor/jquery.min.js"></script>
+    <script src="../static/js/vendor/what-input.min.js"></script>
+    <script src="../static/js/foundation.min.js"></script>
+    <script src="../static/js/app.js"></script>
+  </body>
+</html>

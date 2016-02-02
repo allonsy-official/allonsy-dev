@@ -65,12 +65,9 @@ class Organization (models.Model):
 
 class UserExtension (models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    # user_name_first = models.OneToOneField(User.first_name, on_delete=models.CASCADE)
-    # user_name_last = models.OneToOneField(User.last_name, on_delete=models.CASCADE)
     uuid_account = models.ForeignKey(Account, on_delete=models.CASCADE)
     uuid_user = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user_name_alias = models.CharField(max_length=100, default='TESTING')
-    # user_email = models.OneToOneField(User.email, on_delete=models.CASCADE)
     user_country_id = models.CharField(max_length=2, default='US')
     user_city_name = models.CharField(max_length=100, default='TESTING')
     user_province_name = models.CharField(max_length=100, default='TESTING')
@@ -88,7 +85,7 @@ class UserExtension (models.Model):
     # TODO: Should these fields be required in DB or better to handle with app logic?
 
     def __str__(self):
-        return '%s %s' % (self.user_name_first, self.user_name_last)
+        return '%s' % self.user
 
 
 class Location (models.Model):

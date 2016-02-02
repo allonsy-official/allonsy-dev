@@ -2,7 +2,9 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
 
-from allonsy_main.models import UserExtension, Account, Organization, Location, Epoch
+from allonsy_main.models import UserExtension, Account, Organization, Location, Epoch, RelationOrganizationTree, \
+    RelationOrganizationUser, RelationLocationTree, RelationLocationOrganization, RelationLocationUserTransact, \
+    RelationUserLocationStatic
 
 
 # Register your models here.
