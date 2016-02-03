@@ -4,6 +4,8 @@ from django.db import models
 
 from django.contrib.auth.models import Group, User
 
+from mptt.models import MPTTModel, TreeForeignKey
+
 
 # Create your models here.
 class Account (models.Model):
@@ -153,6 +155,40 @@ class Epoch (models.Model):
     # TODO: add PeriodDetail and LocationDetail tables
     # TODO: Form will have to control that id_period and id_residence are a set from relevant tables (distinct())
     # See http://stackoverflow.com/questions/6707991/django-modelchoicefield-using-distinct-values-from-one-model-attribute
+
+
+class TreeOrganization(MPTTModel):
+    uuid_account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    uuid_org = models.ForeignKey(Organization, on_delete=models.CASCADE)
+    parent = TreeForeignKey('self', null=True, blank=True, related_name='children', db_index=True)
+    date_added = models.DateTimeField(auto_now_add=True)
+    date_edited = models.DateTimeField(auto_now=True)
+
+    class MPTTMeta:
+        order_insertion_by = ['uuid_account']
+
+
+class TreeOrganizationUser(MPTTModel):
+    uuid_account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    uuid_org = models.ForeignKey(Organization, on_delete=models.CASCADE)
+    user = models.ForeignKey(UserExtension, on_delete=models.CASCADE)
+    parent = TreeForeignKey('self', null=True, blank=True, related_name='children', db_index=True)
+    date_added = models.DateTimeField(auto_now_add=True)
+    date_edited = models.DateTimeField(auto_now=True)
+
+    class MPTTMeta:
+        order_insertion_by = ['uuid_account']
+        
+
+class TreeLocation(MPTTModel):
+    uuid_account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    uuid_location = models.ForeignKey(Location, on_delete=models.CASCADE)
+    parent = TreeForeignKey('self', null=True, blank=True, related_name='children', db_index=True)
+    date_added = models.DateTimeField(auto_now_add=True)
+    date_edited = models.DateTimeField(auto_now=True)
+
+    class MPTTMeta:
+        order_insertion_by = ['uuid_account']
 
 
 # TODO: Remove blank=True before production
