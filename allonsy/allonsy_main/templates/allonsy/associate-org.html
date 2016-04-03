@@ -1,0 +1,114 @@
+{% extends "allonsy/allonsy_base.html" %}
+
+{% block content %}
+<div class="row expanded">
+    <div class="callout primary">Use this form to associate organizations</div>
+</div>
+
+<div class="row">
+
+    <form id="assoc_organization_form" method="post" action="/assoc/org/do">
+
+        {% csrf_token %}
+
+        <div class="row">
+            <div class="columns small-6">
+                <label>Parent
+                  <select name="parent">
+                      {% for org in orgs %}
+                            <option value="{{ org.uuid_org }}">{{ org }}</option>
+                      {% endfor %}
+                  </select>
+                </label>
+            </div>
+            <div class="columns small-6">
+                <label>Child
+                  <select name="child">
+                      {% for org in orgs %}
+                            <option value="{{ org.uuid_org }}">{{ org }}</option>
+                      {% endfor %}
+                  </select>
+                </label>
+            </div>
+
+        </div>
+
+        <div class="row">
+                <div class="large-4 columns">
+                    <input type="submit" class="button" value="Submit" />
+                </div>
+        </div>
+
+    </form>
+
+</div>
+
+<!--
+<div class="row">
+    <form id="add_organization_form" method="post" action="/create/organization/do">
+
+        {% csrf_token %}
+
+         <div class="row">
+            <div class="columns small-12">
+                <label>Name for this organization
+                    <input type="text" name="org_FullName" placeholder="Example" />
+                </label>
+            </div>
+        </div>
+        <div class="row">
+            <div class="columns small-8">
+                <label>A shorter name for this organization
+                    <input type="text" name="org_ShortName" placeholder="Example" />
+                </label>
+            </div>
+            <div class="columns small-4">
+                <label>An abbreviation for this organization
+                    <input type="text" name="org_abbreviation" placeholder="Example" />
+                </label>
+            </div>
+        </div>
+        <div class="row">
+            <div class="row">
+                <div class="columns small-12">
+                    <label>Select the organization level
+                          <select name="org_type">
+                            <option value="U">University</option>
+                            <option value="S">School or college</option>
+                            <option value="D">Department</option>
+                            <option value="O">Office</option>
+                            <option value="L">Class or lecture</option>
+                            <option value="E">Class or lecture section</option>
+                            <option value="G">Group</option>
+                          </select>
+                    </label>
+                </div>
+            </div>
+            <div class="row">
+                <fieldset class="columns small-12">
+                    <legend>Does this organization have a parent?</legend>
+                    <input type="radio" name="org_HasParent" value="True" id="DoesHaveParent" required><label for="DoesHaveParent">True</label>
+                </fieldset>
+            </div>
+        </div>
+        <div class="row">
+                <div class="large-4 columns">
+                    <input type="submit" class="button" value="Submit" />
+                </div>
+                <p>{{ request.user.userextension.uuid_account_id }}</p>
+        </div>
+
+        {% if form.errors %}
+            <div id="form-error">
+                <p>The operation could not be performed because one or more error(s) occurred.<br />Please resubmit the form after making the following changes:</p>
+                <ul>
+                {% for field in form %}
+                <li>{{field.html_name}} {{ field.errors|striptags }}</li>
+                {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+    </form>
+</div> -->
+{% endblock content %}

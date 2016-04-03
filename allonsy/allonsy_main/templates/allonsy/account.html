@@ -1,0 +1,121 @@
+{% extends "allonsy/allonsy_base.html" %}
+
+{% block content %}
+<div class="row expanded">
+    <div class="callout primary">Use this form to create a new account</div>
+</div>
+
+<div class="row">
+    <form id="add_account_form" method="post" action="/create/account/do">
+
+        {% csrf_token %}
+
+         <div class="row">
+            <div class="columns small-12">
+                <label>Institution name
+                    <input type="text" name="account_institution_name" placeholder="Example" />
+                </label>
+            </div>
+        </div>
+        <div class="row">
+            <div class="columns small-6">
+                <div class="row">
+                    <div class="columns small-12">
+                        <label>Account name
+                            <input type="text" name="account_name" placeholder="Example" />
+                        </label>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="columns small-2">
+                        <label>Title
+                            <input type="text" name="account_billing_title" placeholder="Example" />
+                        </label>
+                    </div>
+                    <div class="columns small-10">
+                        <label>Name
+                            <input type="text" name="account_billing_attn" placeholder="Example" />
+                        </label>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="columns small-3">
+                        <label>Country code
+                            <input type="text" name="account_billing_CountryCode" placeholder="Example" />
+                        </label>
+                    </div>
+                    <div class="columns small-9">
+                        <label>Phone
+                            <input type="text" name="account_billing_phone_value" placeholder="Example" />
+                        </label>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="columns small-12">
+                        <label>Country
+                            <input type="text" name="account_billing_country_id" placeholder="Example" />
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="columns small-6">
+                <div class="row">
+                    <div class="columns small-3">
+                        <label>Street number
+                            <input type="text" name="account_billing_street_number" placeholder="Example" />
+                        </label>
+                    </div>
+                    <div class="columns small-9">
+                        <label>Street name
+                            <input type="text" name="account_billing_street_name" placeholder="Example" />
+                        </label>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="columns small-9">
+                        <label>Apartment/suite
+                            <input type="text" name="account_billing_ApartmentNumber" placeholder="Example" />
+                        </label>
+                    </div>
+                    <div class="columns small-3">
+                        <label>Postal code
+                            <input type="text" name="account_billing_PostalCode" placeholder="Example" />
+                        </label>
+                    </div>
+                </div>
+                 <div class="row">
+                    <div class="columns small-12">
+                        <label>City name
+                            <input type="text" name="account_billing_city_name" placeholder="Example" />
+                        </label>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="columns small-12">
+                        <label>Province name
+                            <input type="text" name="account_billing_province_name" placeholder="Example" />
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="large-4 columns">
+                    <input type="submit" class="button" value="Submit" />
+                </div>
+            </div>
+        </div>
+
+        {% if form.errors %}
+            <div id="form-error">
+                <p>The operation could not be performed because one or more error(s) occurred.<br />Please resubmit the form after making the following changes:</p>
+                <ul>
+                {% for field in form %}
+                <li>{{field.html_name}} {{ field.errors|striptags }}</li>
+                {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+    </form>
+</div>
+{% endblock content %}

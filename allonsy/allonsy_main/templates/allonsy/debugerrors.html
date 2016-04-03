@@ -1,0 +1,13 @@
+{% extends "allonsy/allonsy_base.html" %}
+
+{% block content %}
+
+<ul class="errorlist">
+    {% for field, errors in form.errors.items %}
+        {% for error in errors %}
+            <li>{{ error }}</li>
+        {% endfor %}
+    {% endfor %}
+</ul>
+
+{% endblock content %}

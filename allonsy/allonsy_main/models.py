@@ -158,8 +158,9 @@ class Epoch (models.Model):
 
 
 class TreeOrganization(MPTTModel):
+    relation_name = models.CharField(max_length=100, default='Test')
     uuid_account = models.ForeignKey(Account, on_delete=models.CASCADE)
-    uuid_org = models.ForeignKey(Organization, on_delete=models.CASCADE)
+    uuid_org = models.OneToOneField(Organization, on_delete=models.CASCADE)
     parent = TreeForeignKey('self', null=True, blank=True, related_name='children', db_index=True)
     date_added = models.DateTimeField(auto_now_add=True)
     date_edited = models.DateTimeField(auto_now=True)
@@ -167,18 +168,9 @@ class TreeOrganization(MPTTModel):
     class MPTTMeta:
         order_insertion_by = ['uuid_account']
 
+    def __str__(self):
+        return self.relation_name
 
-class TreeOrganizationUser(MPTTModel):
-    uuid_account = models.ForeignKey(Account, on_delete=models.CASCADE)
-    uuid_org = models.ForeignKey(Organization, on_delete=models.CASCADE)
-    user = models.ForeignKey(UserExtension, on_delete=models.CASCADE)
-    parent = TreeForeignKey('self', null=True, blank=True, related_name='children', db_index=True)
-    date_added = models.DateTimeField(auto_now_add=True)
-    date_edited = models.DateTimeField(auto_now=True)
-
-    class MPTTMeta:
-        order_insertion_by = ['uuid_account']
-        
 
 class TreeLocation(MPTTModel):
     uuid_account = models.ForeignKey(Account, on_delete=models.CASCADE)
@@ -190,26 +182,22 @@ class TreeLocation(MPTTModel):
     class MPTTMeta:
         order_insertion_by = ['uuid_account']
 
+    def __str__(self):
+        thisname = Location.objects.get(location_FullName=self.uuid_location)
+        return thisname.location_ShortName
+
 
 # TODO: Remove blank=True before production
-class RelationOrganizationTree (models.Model):
-    uuid_org_child = models.CharField(max_length=100, blank=True)
-    uuid_org_parent = models.CharField(max_length=100, blank=True)
-    date_added = models.DateTimeField(auto_now_add=True)
-    date_edited = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return 'Parent: %s Child: %s' % (self.uuid_org_parent, self.uuid_org_child)
-
-
 class RelationOrganizationUser (models.Model):
-    uuid_user_child = models.CharField(max_length=100, blank=True)
-    uuid_org_parent = models.CharField(max_length=100, blank=True)
+    relation_name = models.CharField(max_length=100)
+    uuid_account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    uuid_user = models.OneToOneField(UserExtension, default='1e3b0412-9edd-45fb-887f-642bd49572e0', on_delete=models.CASCADE)
+    uuid_org = models.ManyToManyField(Organization)
     date_added = models.DateTimeField(auto_now_add=True)
     date_edited = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return 'Parent: %s Child: %s' % (self.uuid_org_parent, self.uuid_user_child)
+        return self.relation_name
 
 
 class RelationLocationTree (models.Model):

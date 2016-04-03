@@ -5,6 +5,7 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Allonsy | Welcome</title>
+    {% load static %}
     <link rel="stylesheet" href="/static/css/foundation.css" />
     <link rel="stylesheet" href="/static/css/app.css" />
   </head>
@@ -15,9 +16,11 @@
     <div data-sticky-container>
       <div class="title-bar" data-sticky data-options="marginTop:0;" style="width:100%">
         <div class="title-bar-left">
-          <ul class="dropdown menu" data-dropdown-menu>
-            <li class="menu-text">Allonsy</li>
-          </ul>
+          <a href="/user/">
+            <ul class="dropdown menu" data-dropdown-menu>
+              <li class="menu-text">Allonsy</li>
+            </ul>
+          </a>
         </div>
         <div class="title-bar-right">
           <ul class="menu">
@@ -48,7 +51,7 @@
           <li>
             <a href="#">My Role</a>
             <ul class="menu">
-              <li><a href="#">Admin</a></li>
+              <li><a href="/user-admin/">Admin</a></li>
               <li><a href="#">Nightly Rounds</a></li>
               <li><a href="#">Incident Report</a></li>
               <li><a href="#">Damage Report</a></li>
@@ -88,11 +91,18 @@
 
         <!--End subnav-->
 
+        <!--Start alert-space -->
+    <div class="row expanded columns">
+      <div class="columns small-12">
+      </div>
+    </div>
+
+        <!--end alertspace-->
+
     {% block content %}{% endblock content %}
 
 
   <!-- End canvas -->
-
     <script src="/static/js/vendor/jquery.min.js"></script>
     <script src="/static/js/vendor/what-input.min.js"></script>
     <script src="/static/js/foundation.min.js"></script>

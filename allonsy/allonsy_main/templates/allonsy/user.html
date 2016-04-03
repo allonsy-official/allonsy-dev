@@ -25,7 +25,7 @@
             <div class="columns small-6 small-centered large-12">
               <div class="row">
                 <div class="columns small-12">
-                  <h3>{{user.first_name}} {{user.last_name}}</h3>
+                  <h3>{{req_user.first_name}} {{req_user.last_name}}</h3>
                 </div>
               </div>
               <div class="row">
@@ -54,11 +54,11 @@
                       <tbody>
                       <tr>
                         <td><b>Email:</b></td>
-                        <td>{{user.email}}</td>
+                        <td>{{req_user.email}}</td>
                       </tr>
                       <tr>
                         <td><b>Phone:</b></td>
-                        <td>{{user_extension}}</td>
+                        <td>{{req_userextension.user_phone_value}}</td>
                       </tr>
                       </tbody>
                     </table>
@@ -88,6 +88,9 @@
               </div>
               <div class="row">
                 <div class="columns small-12">
+                  {% for org in orgs %}
+                    <a href="/organization/{{ org }}"><span class="label">{{ org }}</span></a>
+                  {% endfor %}
                   <span class="label">Tufts University</span>
                   <span class="label">Fletcher School</span>
                   <span class="label">Tufts RAs</span>
