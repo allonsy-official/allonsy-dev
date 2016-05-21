@@ -3,6 +3,9 @@
 {% block content %}
 
         <!--Create meeple info-->
+<form id="edit_user_form" method="post" action="profile/">
+
+  {% csrf_token %}
 
     <div class="row">
       <div class="columns small-12" style="background-color:#999999;">
@@ -46,59 +49,11 @@
                 </div>
               </div>
               <div class="row">
-                {% if cur_user == req_user %}
-                <div class="columns small-3">
-                  <a href="/user/{{ req_user.username }}/edit/profile" class="button">Edit your profile</a>
+                <div class="columns small-6">
+                  <input type="submit" class="success expanded button" value="Save changes" />
                 </div>
-                {% else %}
-                <div class="columns small-3">
-                  <a href="" class="button">Add as connection</a>
-                </div>
-                {% endif %}
-                <div class="columns small-9">
-                  {% if cur_user == req_user %}
-                  <div class="columns small-6">
-                    <a href="/user/{{ req_user.username }}/edit/contact" class="extended button">Edit your on-campus info</a>
-                  </div>
-                  <div class="columns small-6">
-                    <a href="/user/{{ req_user.username }}/edit/emergencycontacts" class="extended button">Edit your emergency info</a>
-                  </div>
-                  {% else %}
-                  <div class="columns small-6">
-                    <button class="dropdown button" data-toggle="on-campus-contact-data">On-campus contact information</button>
-                    <div class="dropdown-pane" id="on-campus-contact-data" data-dropdown data-auto-focus="true">
-                      <table class="hover">
-                        <tbody>
-                        <tr>
-                          <td><b>Email:</b></td>
-                          <td>{{req_user.email}}</td>
-                        </tr>
-                        <tr>
-                          <td><b>Phone:</b></td>
-                          <td>{{req_userextension.user_phone_value}}</td>
-                        </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                  <div class="columns small-6">
-                    <button class="dropdown button" data-toggle="home-contact-data">Personal contact information</button>
-                    <div class="dropdown-pane" id="home-contact-data" data-dropdown data-auto-focus="true">
-                      <table class="hover">
-                        <tbody>
-                        <tr>
-                          <td><b>Email:</b></td>
-                          <td>{{req_userextension.user_personal_email_value}}</td>
-                        </tr>
-                        <tr>
-                          <td><b>Phone:</b></td>
-                          <td>{{req_userextension.user_home_phone_value}}</td>
-                        </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                  {% endif %}
+                <div class="columns small-6">
+                  <a href="/user/{{ req_user.username }}" class="alert expanded button">Cancel changes</a>
                 </div>
               </div>
             </div>
@@ -169,9 +124,11 @@
           <div class="row">
             <div class="columns small-12">
               <div class="row">
-                <div class="columns small-12">
+               <div class="columns small-12">
                   <h5>About Me</h5>
-                  {{ profile_aboutme.profile_aboutme| linebreaks }}
+                  <label>
+                    <textarea name="profile_aboutme" placeholder="{{ profile_aboutme.profile_aboutme|linebreaks|striptags}}"></textarea>
+                  </label>
                 </div>
               </div>
               <div class="row">
@@ -211,7 +168,9 @@
           </div>
         </div>
 
+
    <!--end columns-->
     </div>
+</form>
 
 {% endblock content %}

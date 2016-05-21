@@ -1,0 +1,11 @@
+{% extends "allonsy/allonsy_base.html" %}
+
+{% block content %}
+
+{% for field in do_edit_user_emergency_contact_form %}
+        <div class="fieldWrapper">
+        {{field.name }} {{ field.errors }}
+        </div>
+{% endfor %}
+
+{% endblock content %}

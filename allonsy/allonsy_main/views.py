@@ -1,11 +1,16 @@
 from django.shortcuts import render, render_to_response, RequestContext, redirect
 from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.core.urlresolvers import reverse
+from django.db.models import Q
 from django_ajax.decorators import ajax
 
-from allonsy_main.forms import DoAddAccount, DoAddOrganization, DoAddLocation, DoAssocOrganization, DoAssocOrganizationUser
-from allonsy_main.models import UserExtension, User, Organization, TreeOrganization, RelationOrganizationUser
+from allonsy_main.forms import DoAddAccount, DoAddOrganization, DoAddLocation, DoAssocOrganization, DoAssocOrganizationUser, DoEditUserProfile, DoEditUserInfoContact, DoEditUserEmergencyContact
+from allonsy_main.models import UserExtension, User, UserProfile, Organization, TreeOrganization, RelationOrganizationUser, UserInteraction
+
+
+#create user_passes_check decorators here
 
 
 # Create your views here.
@@ -21,7 +26,7 @@ def do_login(request):
         if user is not None:
             if user.is_active:
                 login(request, user)
-                return HttpResponseRedirect('/user/')
+                return HttpResponseRedirect('/user/'+str(user))
             else:
                 # Return a 'disabled account' error message
                 return HttpResponse("Disabled")
@@ -56,17 +61,66 @@ def usr(request):
 
 @login_required
 def resolve_user_url(request, username):
-    current_user = request.user
+    current_user_obj = request.user
+    current_user = User.objects.get(username=request.user)
+    current_userextension = UserExtension.objects.get(user=current_user_obj)
+    current_user_acct = current_userextension.uuid_account
     req_user = User.objects.get(username=username)
     req_userextension = UserExtension.objects.get(user=req_user)
     req_user_uuid = req_userextension.uuid_user
-    req_user_orgs = RelationOrganizationUser.objects.all().filter(uuid_user=req_user_uuid)
-
-    context_dict = {'req_user': req_user, 'req_userextension': req_userextension, 'orgs': req_user_orgs}
+    req_user_acct = req_userextension.uuid_account
+    req_orgs_affil = Organization.objects.filter(org_type_special='X')
+    req_user_orgs_affil = RelationOrganizationUser.objects.values('relation_name', 'relation_url').all().filter(uuid_user=req_user_uuid, uuid_org__in=req_orgs_affil)
+    req_user_orgs_primary = RelationOrganizationUser.objects.values('relation_name').all().filter(uuid_user=req_user_uuid, uuid_org__in=req_orgs_affil, relation_is_primary=True)
+    req_profile_aboutme = UserProfile.objects.get(uuid_user=req_user_uuid)
+    context_dict = {'cur_user': current_user, 'req_user': req_user, 'req_userextension': req_userextension, 'orgs_affil': req_user_orgs_affil, 'orgs_primary': req_user_orgs_primary, 'profile_aboutme': req_profile_aboutme}
     # return render(request, 'allonsy/user.html', context_dict)
-    return render(request, 'allonsy/user.html', context_dict, context_instance=RequestContext(request))
+
+    if current_user_acct == req_user_acct:
+
+        return render(request, 'allonsy/user.html', context_dict, context_instance=RequestContext(request))
+
+    else:
+        # Return a 'disabled account' error message
+        return HttpResponse("Disabled")
 
 
+@login_required
+def edit_user_url(request, username):
+    current_user_obj = request.user
+    current_user = User.objects.get(username=request.user)
+    current_userextension = UserExtension.objects.get(user=current_user_obj)
+    current_user_acct = current_userextension.uuid_account
+    req_user = User.objects.get(username=username)
+    req_userextension = UserExtension.objects.get(user=req_user)
+    req_user_uuid = req_userextension.uuid_user
+    req_user_acct = req_userextension.uuid_account
+    req_orgs_affil = Organization.objects.filter(org_type_special='X')
+    req_user_orgs_affil = RelationOrganizationUser.objects.values('relation_name', 'relation_url').all().filter(uuid_user=req_user_uuid, uuid_org__in=req_orgs_affil)
+    req_user_orgs_primary = RelationOrganizationUser.objects.values('relation_name').all().filter(uuid_user=req_user_uuid, uuid_org__in=req_orgs_affil, relation_is_primary=True)
+    req_profile_aboutme = UserProfile.objects.get(uuid_user=req_user_uuid)
+    context_dict = {'cur_user': current_user, 'req_user': req_user, 'req_userextension': req_userextension, 'orgs_affil': req_user_orgs_affil, 'orgs_primary': req_user_orgs_primary, 'profile_aboutme': req_profile_aboutme}
+    # return render(request, 'allonsy/user.html', context_dict)
+
+    if current_user_acct == req_user_acct:
+
+        return render(request, 'allonsy/forms/edituser.html', context_dict, context_instance=RequestContext(request))
+
+    else:
+        # Return a 'disabled account' error message
+        return HttpResponse("Disabled")
+
+@login_required
+def resolve_org_url(request, orgname):
+    current_user = request.user
+    current_user_id = current_user.id
+    current_user_userextension = UserExtension.objects.get(user=current_user_id)
+    current_user_uuid = current_user_userextension.uuid_user
+    current_user_auth = 'True'
+    #TODO: Add auth that user is allowed to see this group and/or interact
+    org_short_name = orgname.replace('-', ' ')
+    context_dict = {'current_user': current_user, 'current_user_auth': current_user_auth, 'org_short_name': org_short_name}
+    return render(request, 'allonsy/org.html', context_dict, context_instance=RequestContext(request))
 
 @login_required
 def create(request):
@@ -222,9 +276,11 @@ def do_assoc_organization_user(request):
 
             else:
                 #TODO: Create elif to check if user already is associated with org, rather than simply if user exists as in above
-                do_create_object = RelationOrganizationUser.objects.create(uuid_account=fk_val, relation_name=assoc_relation_name, uuid_user=assoc_usr)
+                do_create_object = RelationOrganizationUser.objects.create(uuid_account=fk_val, relation_name=assoc_relation_name)
+                #many-to-many only after object created
                 do_create_object.save()
                 do_create_object.uuid_org.add(assoc_org)
+                do_create_object.uuid_user.add(usr)
 
             return render('allonsy/user.html')
 
@@ -237,6 +293,206 @@ def do_assoc_organization_user(request):
             # Return a 'disabled account' error message
        #return render_to_response('allonsy/associate-user.html', {'form': do_assoc_organization_user_form})
         return HttpResponse('Fail 2')
+
+@login_required
+def do_get_user_interactions(request, username):
+    current_user = User.objects.get(username=request.user)
+    new_user_interactions = UserInteraction.objects.all().filter(interaction_target=current_user, interaction_status='O')
+    count_new_user_interactions = new_user_interactions.count
+    current_user_interactions = UserInteraction.objects.all()
+    #current_user_interactions = UserInteraction.objects.all().filter(Q(interaction_target=current_user), Q(interaction_status='O') | Q(interaction_status='I'))
+
+    context_dict = {'cur_user': current_user, 'cur_user_interacts': current_user_interactions, 'count_new_user_interactions': count_new_user_interactions}
+
+    return render(request, 'allonsy/interactions.html', context_dict, context_instance=RequestContext(request))
+
+
+@login_required
+def do_edit_user_profile(request, username):
+    do_edit_user_profile_form = DoEditUserProfile(request.POST)
+
+    current_user_obj = request.user
+    current_user = User.objects.get(username=request.user)
+    current_userextension = UserExtension.objects.get(user=current_user_obj)
+    current_user_acct = current_userextension.uuid_account
+    req_user = User.objects.get(username=username)
+    req_userextension = UserExtension.objects.get(user=req_user)
+    req_user_uuid = req_userextension.uuid_user
+    req_user_acct = req_userextension.uuid_account
+    req_orgs_affil = Organization.objects.filter(org_type_special='X')
+    req_user_orgs_affil = RelationOrganizationUser.objects.values('relation_name', 'relation_url').all().filter(uuid_user=req_user_uuid, uuid_org__in=req_orgs_affil)
+    req_user_orgs_primary = RelationOrganizationUser.objects.values('relation_name').all().filter(uuid_user=req_user_uuid, uuid_org__in=req_orgs_affil, relation_is_primary=True)
+    req_profile_aboutme = UserProfile.objects.get(uuid_user=req_user_uuid)
+
+    context_dict = {'cur_user': current_user, 'req_user': req_user, 'req_userextension': req_userextension, 'orgs_affil': req_user_orgs_affil, 'orgs_primary': req_user_orgs_primary, 'profile_aboutme': req_profile_aboutme}
+
+    if request.method == 'POST':
+        if do_edit_user_profile_form.is_valid():
+            profile_aboutme = do_edit_user_profile_form.cleaned_data['profile_aboutme']
+
+            do_edit_profile_object = UserProfile.objects.get(uuid_user=req_userextension)
+            do_edit_profile_object.profile_aboutme = profile_aboutme
+            do_edit_profile_object.save()
+
+            return HttpResponseRedirect(reverse('resolve_user_url', kwargs={'username': username}))
+
+        else:
+            return HttpResponseRedirect(reverse('resolve_user_url', kwargs={'username': username}))
+
+    else:
+            # Return a 'disabled account' error message
+        return render(request, 'allonsy/forms/edituser.html', context_dict, context_instance=RequestContext(request))
+
+@login_required
+def do_edit_user_info_contact(request, username):
+    do_edit_user_info_contact_form = DoEditUserInfoContact(request.POST)
+
+    current_user_obj = request.user
+    current_user = User.objects.get(username=request.user)
+    current_userextension = UserExtension.objects.get(user=current_user_obj)
+    current_user_acct = current_userextension.uuid_account
+    req_user = User.objects.get(username=username)
+    req_userextension = UserExtension.objects.get(user=req_user)
+    req_user_uuid = req_userextension.uuid_user
+    req_user_acct = req_userextension.uuid_account
+    req_orgs_affil = Organization.objects.filter(org_type_special='X')
+    req_user_orgs_affil = RelationOrganizationUser.objects.values('relation_name', 'relation_url').all().filter(uuid_user=req_user_uuid, uuid_org__in=req_orgs_affil)
+    req_user_orgs_primary = RelationOrganizationUser.objects.values('relation_name').all().filter(uuid_user=req_user_uuid, uuid_org__in=req_orgs_affil, relation_is_primary=True)
+    req_profile_aboutme = UserProfile.objects.get(uuid_user=req_user_uuid)
+
+    context_dict = {'cur_user': current_user, 'req_user': req_user, 'req_userextension': req_userextension, 'orgs_affil': req_user_orgs_affil, 'orgs_primary': req_user_orgs_primary, 'profile_aboutme': req_profile_aboutme}
+
+    if request.method == 'POST':
+        if do_edit_user_info_contact_form.is_valid():
+            user_name_alias = do_edit_user_info_contact_form.cleaned_data['user_name_alias']
+            user_phone_CountryCode = do_edit_user_info_contact_form.cleaned_data['user_phone_CountryCode']
+            user_phone_value = do_edit_user_info_contact_form.cleaned_data['user_phone_value']
+            user_personal_email_value = do_edit_user_info_contact_form.cleaned_data['user_personal_email_value']
+            user_phone_home_CountryCode = do_edit_user_info_contact_form.cleaned_data['user_phone_home_CountryCode']
+            user_phone_home_value = do_edit_user_info_contact_form.cleaned_data['user_phone_home_value']
+            user_home_street_number = do_edit_user_info_contact_form.cleaned_data['user_home_street_number']
+            user_home_street_name = do_edit_user_info_contact_form.cleaned_data['user_home_street_name']
+            user_home_ApartmentNumber = do_edit_user_info_contact_form.cleaned_data['user_home_ApartmentNumber']
+            user_country_id = do_edit_user_info_contact_form.cleaned_data['user_country_id']
+            user_PostalCode = do_edit_user_info_contact_form.cleaned_data['user_PostalCode']
+            user_city_name = do_edit_user_info_contact_form.cleaned_data['user_city_name']
+            user_province_name = do_edit_user_info_contact_form.cleaned_data['user_province_name']
+
+            do_edit_userextension_object = UserExtension.objects.get(uuid_user=req_userextension.uuid_user)
+
+            do_edit_userextension_object.user_name_alias = user_name_alias
+            do_edit_userextension_object.user_phone_CountryCode = user_phone_CountryCode
+            do_edit_userextension_object.user_phone_value = user_phone_value
+            do_edit_userextension_object.user_personal_email_value = user_personal_email_value
+            do_edit_userextension_object.user_phone_home_CountryCode = user_phone_home_CountryCode
+            do_edit_userextension_object.user_phone_home_value = user_phone_home_value
+            do_edit_userextension_object.user_home_street_number = user_home_street_number
+            do_edit_userextension_object.user_home_street_name = user_home_street_name
+            do_edit_userextension_object.user_home_ApartmentNumber = user_home_ApartmentNumber
+            do_edit_userextension_object.user_country_id = user_country_id
+            do_edit_userextension_object.user_PostalCode = user_PostalCode
+            do_edit_userextension_object.user_city_name = user_city_name
+            do_edit_userextension_object.user_province_name = user_province_name
+
+            do_edit_userextension_object.save()
+
+            return HttpResponseRedirect(reverse('resolve_user_url', kwargs={'username': username}))
+
+        else:
+            #return HttpResponseRedirect(reverse('resolve_user_url', kwargs={'username': username}))
+            return HttpResponse('Fail 2')
+
+    else:
+            # Return a 'disabled account' error message
+        return render(request, 'allonsy/forms/editusercontacts.html', context_dict, context_instance=RequestContext(request))
+
+
+@login_required
+def do_edit_user_emergency_contact(request, username):
+    do_edit_user_emergency_contact_form = DoEditUserEmergencyContact(request.POST)
+
+    current_user_obj = request.user
+    current_user = User.objects.get(username=request.user)
+    current_userextension = UserExtension.objects.get(user=current_user_obj)
+    current_user_acct = current_userextension.uuid_account
+    req_user = User.objects.get(username=username)
+    req_userextension = UserExtension.objects.get(user=req_user)
+    req_user_uuid = req_userextension.uuid_user
+    req_user_acct = req_userextension.uuid_account
+    req_orgs_affil = Organization.objects.filter(org_type_special='X')
+    req_user_orgs_affil = RelationOrganizationUser.objects.values('relation_name', 'relation_url').all().filter(uuid_user=req_user_uuid, uuid_org__in=req_orgs_affil)
+    req_user_orgs_primary = RelationOrganizationUser.objects.values('relation_name').all().filter(uuid_user=req_user_uuid, uuid_org__in=req_orgs_affil, relation_is_primary=True)
+    req_profile_aboutme = UserProfile.objects.get(uuid_user=req_user_uuid)
+    error_dict = {}
+    context_dict = {'cur_user': current_user, 'req_user': req_user, 'req_userextension': req_userextension, 'orgs_affil': req_user_orgs_affil, 'orgs_primary': req_user_orgs_primary, 'profile_aboutme': req_profile_aboutme,
+                    'do_edit_user_emergency_contact_form': do_edit_user_emergency_contact_form}
+
+    if request.method == 'POST':
+        if do_edit_user_emergency_contact_form.is_valid():
+            emergency_contact_1_name = do_edit_user_emergency_contact_form.cleaned_data['emergency_contact_1_name']
+            emergency_contact_1_personal_email_value = do_edit_user_emergency_contact_form.cleaned_data['emergency_contact_1_personal_email_value']
+            emergency_contact_1_phone_home_CountryCode = do_edit_user_emergency_contact_form.cleaned_data['emergency_contact_1_phone_home_CountryCode']
+            emergency_contact_1_phone_home_value = do_edit_user_emergency_contact_form.cleaned_data['emergency_contact_1_phone_home_value']
+            emergency_contact_1_home_street_number = do_edit_user_emergency_contact_form.cleaned_data['emergency_contact_1_home_street_number']
+            emergency_contact_1_home_street_name = do_edit_user_emergency_contact_form.cleaned_data['emergency_contact_1_home_street_name']
+            emergency_contact_1_home_ApartmentNumber = do_edit_user_emergency_contact_form.cleaned_data['emergency_contact_1_home_ApartmentNumber']
+            emergency_contact_1_country_id = do_edit_user_emergency_contact_form.cleaned_data['emergency_contact_1_country_id']
+            emergency_contact_1_PostalCode = do_edit_user_emergency_contact_form.cleaned_data['emergency_contact_1_PostalCode']
+            emergency_contact_1_city_name = do_edit_user_emergency_contact_form.cleaned_data['emergency_contact_1_city_name']
+            emergency_contact_1_province_name = do_edit_user_emergency_contact_form.cleaned_data['emergency_contact_1_province_name']
+            emergency_contact_2_name = do_edit_user_emergency_contact_form.cleaned_data['emergency_contact_2_name']
+            emergency_contact_2_personal_email_value = do_edit_user_emergency_contact_form.cleaned_data['emergency_contact_2_personal_email_value']
+            emergency_contact_2_phone_home_CountryCode = do_edit_user_emergency_contact_form.cleaned_data['emergency_contact_2_phone_home_CountryCode']
+            emergency_contact_2_phone_home_value = do_edit_user_emergency_contact_form.cleaned_data['emergency_contact_2_phone_home_value']
+            emergency_contact_2_home_street_number = do_edit_user_emergency_contact_form.cleaned_data['emergency_contact_2_home_street_number']
+            emergency_contact_2_home_street_name = do_edit_user_emergency_contact_form.cleaned_data['emergency_contact_2_home_street_name']
+            emergency_contact_2_home_ApartmentNumber = do_edit_user_emergency_contact_form.cleaned_data['emergency_contact_2_home_ApartmentNumber']
+            emergency_contact_2_country_id = do_edit_user_emergency_contact_form.cleaned_data['emergency_contact_2_country_id']
+            emergency_contact_2_PostalCode = do_edit_user_emergency_contact_form.cleaned_data['emergency_contact_2_PostalCode']
+            emergency_contact_2_city_name = do_edit_user_emergency_contact_form.cleaned_data['emergency_contact_2_city_name']
+            emergency_contact_2_province_name = do_edit_user_emergency_contact_form.cleaned_data['emergency_contact_2_province_name']
+
+            do_edit_user_profile_object = UserProfile.objects.get(uuid_user=req_userextension.uuid_user)
+
+            do_edit_user_profile_object.emergency_contact_2_name = emergency_contact_2_name
+            do_edit_user_profile_object.emergency_contact_2_phone_home_CountryCode = emergency_contact_2_phone_home_CountryCode
+            do_edit_user_profile_object.emergency_contact_2_phone_home_value = emergency_contact_2_phone_home_value
+            do_edit_user_profile_object.emergency_contact_2_home_street_number = emergency_contact_2_home_street_number
+            do_edit_user_profile_object.emergency_contact_2_home_street_name = emergency_contact_2_home_street_name
+            do_edit_user_profile_object.emergency_contact_2_home_ApartmentNumber = emergency_contact_2_home_ApartmentNumber
+            do_edit_user_profile_object.emergency_contact_2_country_id = emergency_contact_2_country_id
+            do_edit_user_profile_object.emergency_contact_2_PostalCode = emergency_contact_2_PostalCode
+            do_edit_user_profile_object.emergency_contact_2_city_name = emergency_contact_2_city_name
+            do_edit_user_profile_object.emergency_contact_2_province_name = emergency_contact_2_province_name
+            do_edit_user_profile_object.emergency_contact_2_personal_email_value = emergency_contact_2_personal_email_value
+
+            do_edit_user_profile_object.emergency_contact_1_name = emergency_contact_1_name
+            do_edit_user_profile_object.emergency_contact_1_phone_home_CountryCode = emergency_contact_1_phone_home_CountryCode
+            do_edit_user_profile_object.emergency_contact_1_phone_home_value = emergency_contact_1_phone_home_value
+            do_edit_user_profile_object.emergency_contact_1_home_street_number = emergency_contact_1_home_street_number
+            do_edit_user_profile_object.emergency_contact_1_home_street_name = emergency_contact_1_home_street_name
+            do_edit_user_profile_object.emergency_contact_1_home_ApartmentNumber = emergency_contact_1_home_ApartmentNumber
+            do_edit_user_profile_object.emergency_contact_1_country_id = emergency_contact_1_country_id
+            do_edit_user_profile_object.emergency_contact_1_PostalCode = emergency_contact_1_PostalCode
+            do_edit_user_profile_object.emergency_contact_1_city_name = emergency_contact_1_city_name
+            do_edit_user_profile_object.emergency_contact_1_province_name = emergency_contact_1_province_name
+            do_edit_user_profile_object.emergency_contact_1_personal_email_value = emergency_contact_1_personal_email_value
+
+            do_edit_user_profile_object.save()
+
+            return HttpResponseRedirect(reverse('resolve_user_url', kwargs={'username': username}))
+
+        else:
+            do_edit_user_emergency_contact_form = DoEditUserProfile()
+            error_dict['form'] = do_edit_user_emergency_contact_form
+
+            return render(request, 'allonsy/forms/edituseremergencycontacts.html', context_dict, context_instance=RequestContext(request))
+
+    else:
+            # Return a 'disabled account' error message
+
+        return render(request, 'allonsy/forms/edituseremergencycontacts.html', context_dict, context_instance=RequestContext(request))
+
 
 def app(request):
     return render(request, 'allonsy/app.html')

@@ -41,6 +41,11 @@ class Organization (models.Model):
     SECTION = 'E'
     GROUP = 'G'
 
+    ORG_AFFILIATION = 'A'
+    ORG_INTEREST = 'I'
+    ORG_ACHIEVEMENT = 'V'
+    ORG_NOSPECIAL = 'X'
+
     org_type_choices = (
         (UNIVERSITY, 'University'),
         (SCHOOL, 'School or College'),
@@ -51,12 +56,20 @@ class Organization (models.Model):
         (GROUP, 'Group'),
     )
 
+    org_type_special_choices = (
+        (ORG_AFFILIATION, 'Affiliation'),
+        (ORG_INTEREST, 'Interest'),
+        (ORG_ACHIEVEMENT, 'Achievement'),
+        (ORG_NOSPECIAL, 'No special class'),
+    )
+
     uuid_account = models.ForeignKey(Account, on_delete=models.CASCADE)
     uuid_org = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     org_FullName = models.CharField(max_length=100, default='TESTING')
     org_ShortName = models.CharField(max_length=32, default='TESTING')
     org_abbreviation = models.CharField(max_length=8, default='TESTING')
     org_type = models.CharField(max_length=1, choices=org_type_choices, default=GROUP)
+    org_type_special = models.CharField(max_length=1, choices=org_type_special_choices, default=ORG_NOSPECIAL)
     org_HasParent = models.BooleanField(default=True)
     date_added = models.DateTimeField(auto_now_add=True)
     date_edited = models.DateTimeField(auto_now=True)
@@ -66,10 +79,26 @@ class Organization (models.Model):
 
 
 class UserExtension (models.Model):
+
+    ALLONSY_DEV = 'X'
+    ALLONSY_STAFF = 'Z'
+    ACCT_DEV = 'D'
+    STAFF = 'S'
+    STUDENT = 'T'
+
+    user_type_choices = (
+        (ALLONSY_DEV, 'Allonsy Developer'),
+        (ALLONSY_STAFF, 'Allonsy Staff'),
+        (ACCT_DEV, 'Account Developer'),
+        (STAFF, 'Account Staff'),
+        (STUDENT, 'Student')
+    )
+
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     uuid_account = models.ForeignKey(Account, on_delete=models.CASCADE)
     uuid_user = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user_name_alias = models.CharField(max_length=100, default='TESTING')
+    user_role_name = models.CharField(max_length=100, default='TESTING')
     user_country_id = models.CharField(max_length=2, default='US')
     user_city_name = models.CharField(max_length=100, default='TESTING')
     user_province_name = models.CharField(max_length=100, default='TESTING')
@@ -81,6 +110,8 @@ class UserExtension (models.Model):
     user_phone_value = models.CharField(max_length=10, default='TESTING')
     user_phone_home_CountryCode = models.CharField(max_length=3, default='555')
     user_phone_home_value = models.CharField(max_length=10, default='TESTING')
+    user_personal_email_value = models.CharField(max_length=100, default='test@test.org')
+    user_type = models.CharField(max_length=1, choices=user_type_choices, default='T')
     date_added = models.DateTimeField(auto_now_add=True)
     date_edited = models.DateTimeField(auto_now=True)
     # TODO: Add logic to format US phone numbers
@@ -88,6 +119,76 @@ class UserExtension (models.Model):
 
     def __str__(self):
         return '%s' % self.user
+
+
+class UserProfile (models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    uuid_user = models.ForeignKey(UserExtension, on_delete=models.CASCADE)
+    profile_aboutme = models.TextField(default='This user has not added any text!')
+    emergency_contact_1_name = models.CharField(max_length=100, default='TESTING')
+    emergency_contact_1_country_id = models.CharField(max_length=2, default='US')
+    emergency_contact_1_city_name = models.CharField(max_length=100, default='TESTING')
+    emergency_contact_1_province_name = models.CharField(max_length=100, default='TESTING')
+    emergency_contact_1_PostalCode = models.CharField(max_length=10, default='TESTING')
+    emergency_contact_1_home_street_number = models.CharField(max_length=100, default='TESTING')
+    emergency_contact_1_home_street_name = models.CharField(max_length=100, default='TESTING')
+    emergency_contact_1_home_ApartmentNumber = models.CharField(max_length=16, default='TESTING')
+    emergency_contact_1_phone_home_CountryCode = models.CharField(max_length=3, default='555')
+    emergency_contact_1_phone_home_value = models.CharField(max_length=10, default='TESTING')
+    emergency_contact_1_personal_email_value = models.CharField(max_length=100, default='test@test.org')
+    emergency_contact_2_name = models.CharField(max_length=100, default='TESTING')
+    emergency_contact_2_country_id = models.CharField(max_length=2, default='US')
+    emergency_contact_2_city_name = models.CharField(max_length=100, default='TESTING')
+    emergency_contact_2_province_name = models.CharField(max_length=100, default='TESTING')
+    emergency_contact_2_PostalCode = models.CharField(max_length=10, default='TESTING')
+    emergency_contact_2_home_street_number = models.CharField(max_length=100, default='TESTING')
+    emergency_contact_2_home_street_name = models.CharField(max_length=100, default='TESTING')
+    emergency_contact_2_home_ApartmentNumber = models.CharField(max_length=16, default='TESTING')
+    emergency_contact_2_phone_home_CountryCode = models.CharField(max_length=3, default='555')
+    emergency_contact_2_phone_home_value = models.CharField(max_length=10, default='TESTING')
+    emergency_contact_2_personal_email_value = models.CharField(max_length=100, default='test@test.org')
+    date_added = models.DateTimeField(auto_now_add=True)
+    date_edited = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return '%s' % self.user
+
+
+class UserInteraction (models.Model):
+
+    CONNECT = 'C'
+    ROOMMATE = 'R'
+    MESSAGE = 'M'
+
+    interaction_type_choices = (
+        (CONNECT, 'Send request to connect'),
+        (ROOMMATE, 'Send request to be roommate'),
+        (MESSAGE, 'Send a message')
+    )
+
+    NEW = 'O'
+    READ = 'I'
+    DELETED = 'X'
+    BLOCKED = 'B'
+    FLAGGED = 'F'
+
+    interaction_status_choices = (
+        (NEW, 'New interaction'),
+        (READ, 'Reviewed interaction'),
+        (DELETED, 'Deleted interaction'),
+        (BLOCKED, 'Blocked interaction'),
+        (FLAGGED, 'Flagged as inappropriate')
+    )
+
+    uuid_interaction = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    interaction_sender = models.ManyToManyField(User, related_name='interaction_sender')
+    interaction_target = models.ManyToManyField(User, related_name='interaction_target')
+    interaction_type = models.CharField(max_length=1, choices=interaction_type_choices, default='M')
+    interaction_status = models.CharField(max_length=1, choices=interaction_status_choices, default='O')
+    interaction_subject = models.CharField(max_length=100, default='New message')
+    interaction_text = models.CharField(max_length=1000, default='Hello!')
+    date_added = models.DateTimeField(auto_now_add=True)
+    date_edited = models.DateTimeField(auto_now=True)
 
 
 class Location (models.Model):
@@ -190,15 +291,16 @@ class TreeLocation(MPTTModel):
 # TODO: Remove blank=True before production
 class RelationOrganizationUser (models.Model):
     relation_name = models.CharField(max_length=100)
+    relation_url = models.CharField(max_length=100)
+    relation_is_primary = models.BooleanField(default=False)
     uuid_account = models.ForeignKey(Account, on_delete=models.CASCADE)
-    uuid_user = models.OneToOneField(UserExtension, default='1e3b0412-9edd-45fb-887f-642bd49572e0', on_delete=models.CASCADE)
+    uuid_user = models.ManyToManyField(UserExtension)
     uuid_org = models.ManyToManyField(Organization)
     date_added = models.DateTimeField(auto_now_add=True)
     date_edited = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.relation_name
-
 
 class RelationLocationTree (models.Model):
     uuid_location_child = models.CharField(max_length=100, blank=True)
@@ -243,7 +345,6 @@ class RelationUserLocationStatic (models.Model):
 
     def __str__(self):
         return 'Parent: %s Child: %s' % (self.uuid_user_parent, self.uuid_location_child)
-
 
 
 

@@ -1,6 +1,7 @@
 from django import forms
+from django.core.exceptions import ValidationError
 from django.forms import ModelForm
-from allonsy_main.models import Account, Organization, Location, User, UserExtension, RelationOrganizationUser
+from allonsy_main.models import Account, Organization, Location, User, UserExtension, RelationOrganizationUser, UserExtension, UserProfile
 
 
 class DoAddAccount(ModelForm):
@@ -26,6 +27,51 @@ class DoAddLocation(ModelForm):
                   'location_FullName', 'location_ShortName', 'location_abbreviation', 'location_country_id',
                   'location_province_name', 'location_city_name', 'location_PostalCode', 'location_street_number',
                   'location_street_name', 'location_ApartmentNumber', 'location_CountryCode', 'location_phone_value']
+
+
+class DoEditUserProfile(forms.Form):
+    profile_aboutme = forms.CharField(max_length=5000)
+
+
+class DoEditUserInfoContact(forms.Form):
+    user_name_alias = forms.CharField(max_length=100)
+    user_personal_email_value = forms.EmailField(max_length=100)
+    user_country_id = forms.CharField(max_length=2)
+    user_city_name = forms.CharField(max_length=100)
+    user_province_name = forms.CharField(max_length=100)
+    user_PostalCode = forms.CharField(max_length=10)
+    user_home_street_number = forms.CharField(max_length=100)
+    user_home_street_name = forms.CharField(max_length=100)
+    user_home_ApartmentNumber = forms.CharField(max_length=16)
+    user_phone_CountryCode = forms.CharField(max_length=3)
+    user_phone_value = forms.CharField(max_length=100)
+    user_phone_home_CountryCode = forms.CharField(max_length=3)
+    user_phone_home_value = forms.CharField(max_length=100)
+
+
+class DoEditUserEmergencyContact(forms.Form):
+    emergency_contact_1_name = forms.CharField(max_length=100)
+    emergency_contact_1_personal_email_value = forms.EmailField(max_length=100)
+    emergency_contact_1_country_id = forms.CharField(max_length=2)
+    emergency_contact_1_city_name = forms.CharField(max_length=100)
+    emergency_contact_1_province_name = forms.CharField(max_length=100)
+    emergency_contact_1_PostalCode = forms.CharField(max_length=10)
+    emergency_contact_1_home_street_number = forms.CharField(max_length=100)
+    emergency_contact_1_home_street_name = forms.CharField(max_length=100)
+    emergency_contact_1_home_ApartmentNumber = forms.CharField(max_length=16)
+    emergency_contact_1_phone_home_CountryCode = forms.CharField(max_length=3)
+    emergency_contact_1_phone_home_value = forms.CharField(max_length=100)
+    emergency_contact_2_name = forms.CharField(max_length=100)
+    emergency_contact_2_personal_email_value = forms.EmailField(max_length=100)
+    emergency_contact_2_country_id = forms.CharField(max_length=2)
+    emergency_contact_2_city_name = forms.CharField(max_length=100)
+    emergency_contact_2_province_name = forms.CharField(max_length=100)
+    emergency_contact_2_PostalCode = forms.CharField(max_length=10)
+    emergency_contact_2_home_street_number = forms.CharField(max_length=100)
+    emergency_contact_2_home_street_name = forms.CharField(max_length=100)
+    emergency_contact_2_home_ApartmentNumber = forms.CharField(max_length=16)
+    emergency_contact_2_phone_home_CountryCode = forms.CharField(max_length=3)
+    emergency_contact_2_phone_home_value = forms.CharField(max_length=100)
 
 
 class DoAssocOrganization(forms.Form):

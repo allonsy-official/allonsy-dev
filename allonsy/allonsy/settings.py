@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'mptt',
     'django_ajax',
+    'django_extensions',
 ]
 
 MIDDLEWARE_CLASSES = [

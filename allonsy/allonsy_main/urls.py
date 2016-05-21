@@ -5,7 +5,12 @@ from . import views
 urlpatterns = [
     url(r'^user/$', views.usr, name='user'),
     url(r'^user/(?P<username>\w+)/$', views.resolve_user_url, name='resolve_user_url'),
+    url(r'^user/(?P<username>\w+)/edit/profile', views.do_edit_user_profile, name='do_edit_user_profile'),
+    url(r'^user/(?P<username>\w+)/edit/contact', views.do_edit_user_info_contact, name='do_edit_user_info_contact'),
+    url(r'^user/(?P<username>\w+)/edit/emergencycontacts', views.do_edit_user_emergency_contact, name='do_edit_user_emergency_contacts'),
+    url(r'^user/(?P<username>\w+)/interactions', views.do_get_user_interactions, name='do_get_user_interactions'),
     url(r'^user-admin/$', views.user_admin, name='user_admin'),
+    url(r'^org/(?P<orgname>[-\w]+)/$', views.resolve_org_url, name='resolve_org_url'),
     url(r'^create/$', views.create, name='create'),
     url(r'^create/account/$', views.create_account, name='create_account'),
     url(r'^create/account/do', views.do_add_account, name='do_add_account'),
