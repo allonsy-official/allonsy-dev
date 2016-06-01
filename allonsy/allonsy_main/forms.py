@@ -1,7 +1,7 @@
 from django import forms
 from django.core.exceptions import ValidationError
 from django.forms import ModelForm
-from allonsy_main.models import Account, Organization, Location, User, UserExtension, RelationOrganizationUser, UserExtension, UserProfile
+from allonsy_main.models import Account, Organization, Location, User, UserExtension, RelationOrganizationUser, UserExtension, UserProfile, UserInteraction
 
 
 class DoAddAccount(ModelForm):
@@ -27,6 +27,12 @@ class DoAddLocation(ModelForm):
                   'location_FullName', 'location_ShortName', 'location_abbreviation', 'location_country_id',
                   'location_province_name', 'location_city_name', 'location_PostalCode', 'location_street_number',
                   'location_street_name', 'location_ApartmentNumber', 'location_CountryCode', 'location_phone_value']
+
+
+class DoSendReplyMessage(ModelForm):
+    class Meta:
+        model = UserInteraction
+        fields = ['interaction_subject', 'interaction_text']
 
 
 class DoEditUserProfile(forms.Form):

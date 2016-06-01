@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'mptt',
     'django_ajax',
     'django_extensions',
+    'storages',
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -67,6 +68,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'allonsy_main.context_processors.base_interactions'
             ],
         },
     },
@@ -132,6 +134,10 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
     '/static/',
 ]
+
+MEDIA_URL = '/media/'
+
+MEDIA_ROOT = '/media/'
 
 
 # LOGIN and LOGOUT URLs

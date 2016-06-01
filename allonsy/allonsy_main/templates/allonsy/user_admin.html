@@ -1,0 +1,88 @@
+{% extends "allonsy/user_base.html" %}
+
+{% block usermain %}
+
+ <!--Instantiate column structure -->
+        <!--TODO: Add 20px margin-bottom to section above-->
+    <div class="row">
+
+    <!--Left column-->
+        <div class="columns small-3">
+          <div class="row">
+            <ul class="menu vertical" data-drilldown>
+              <li>
+                <a href="#">Elements</a>
+                <ul class="vertical menu">
+                  <li>
+                    <a href="#">Accounts</a>
+                    <ul class="vertical menu">
+                      <li><a href="#">Add new</a></li>
+                      <li><a href="#">Edit existing</a></li>
+                    </ul>
+                  </li>
+                  <li>
+                    <a href="#">Epochs</a>
+                    <ul class="vertical menu">
+                      <li><a href="#">Add new</a></li>
+                      <li><a href="#">Edit existing</a></li>
+                    </ul>
+                  </li>
+                  <li>
+                    <a href="#">Locations</a>
+                    <ul class="vertical menu">
+                      <li><a href="#">Add new</a></li>
+                      <li><a href="#">Edit existing</a></li>
+                    </ul>
+                  </li>
+                  <li>
+                    <a href="#">Organizaions</a>
+                    <ul class="vertical menu">
+                      <li><a href="/user/{{ request.user }}/user-admin/create/org/do/">Add new</a></li>
+                      <li><a href="#">Edit existing</a></li>
+                    </ul>
+                  </li>
+                  <li>
+                    <a href="#">Users</a>
+                    <ul class="vertical menu">
+                      <li><a href="#">Add new</a></li>
+                      <li><a href="#">Edit existing</a></li>
+                    </ul>
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <a href="#">Connections</a>
+                <ul class="vertical menu">
+                  <li><a href="#">Epochs</a></li>
+                  <li>
+                    <a href="#">Locations</a>
+                    <ul class="vertical menu">
+                      <li><a href="#">Connect Location to Parent/Child</a></li>
+                    </ul>
+                  </li>
+                  <li>
+                    <a href="#">Organizations</a>
+                    <ul class="vertical menu">
+                      <li><a href="/user/{{ request.user }}/user-admin/assoc/org/do">Connect Organization to Parent/Child</a></li>
+                    </ul>
+                  </li>
+                  <li>
+                    <a href="#">Users</a>
+                    <ul class="vertical menu">
+                      <li><a href="#">Connect User to Location</a></li>
+                      <li><a href="#">Connect User to Organization</a></li>
+                    </ul>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+    <!--Right column-->
+        {% block adminmain %}{% endblock adminmain %}
+
+   <!--end columns-->
+    </div>
+
+{% endblock usermain %}

@@ -2178,7 +2178,7 @@ Foundation.Motion = Motion;
    * Adds event handlers for items within the accordion.
    * @private
    */
-  Accordion.prototype._events = function() {
+  /Accordion.prototype._events = function() {
     var _this = this;
 
     this.$tabs.each(function(){

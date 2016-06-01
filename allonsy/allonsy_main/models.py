@@ -154,6 +154,53 @@ class UserProfile (models.Model):
         return '%s' % self.user
 
 
+class UserAlert (models.Model):
+
+    REMINDER = 'R'
+    OVERDUE = 'O'
+    ALERT = 'A'
+
+    interaction_type_choices = (
+        (REMINDER, 'Reminder'),
+        (OVERDUE, 'Overdue'),
+        (ALERT, 'Alert')
+    )
+
+    RECEIVED = 'R'
+    DROPPED = 'D'
+
+    interaction_direction_choices = (
+        (RECEIVED, 'Target of this interaction'),
+        (DROPPED, 'Dropped message')
+    )
+
+    NEW = 'O'
+    READ = 'I'
+    DELETED = 'X'
+
+    interaction_status_choices = (
+        (NEW, 'New interaction'),
+        (READ, 'Reviewed interaction'),
+        (DELETED, 'Deleted interaction'),
+    )
+
+    uuid_alert = models.UUIDField(default=uuid.uuid4)
+    interaction_direction = models.CharField(max_length=1, choices=interaction_direction_choices, default=DROPPED)
+    interaction_status = models.CharField(max_length=1, choices=interaction_status_choices, default=NEW)
+    interaction_sender = models.ManyToManyField(User, related_name='alert_sender')
+    interaction_target = models.ManyToManyField(User, related_name='alert_target')
+    interaction_type = models.CharField(max_length=1, choices=interaction_type_choices, default=ALERT)
+    interaction_subject = models.CharField(max_length=100, default='New message')
+    interaction_text = models.CharField(max_length=1000, default='Hello!')
+    date_active_start = models.DateTimeField()
+    date_active_end = models.DateTimeField()
+    date_added = models.DateTimeField(auto_now_add=True)
+    date_edited = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.interaction_text
+
+
 class UserInteraction (models.Model):
 
     CONNECT = 'C'
@@ -161,9 +208,19 @@ class UserInteraction (models.Model):
     MESSAGE = 'M'
 
     interaction_type_choices = (
-        (CONNECT, 'Send request to connect'),
-        (ROOMMATE, 'Send request to be roommate'),
-        (MESSAGE, 'Send a message')
+        (CONNECT, 'Connection request'),
+        (ROOMMATE, 'Roommate request'),
+        (MESSAGE, 'Message')
+    )
+
+    RECEIVED = 'R'
+    SENT = 'S'
+    DROPPED = 'D'
+
+    interaction_direction_choices = (
+        (RECEIVED, 'Target of this interaction'),
+        (SENT, 'Sender of this interaction'),
+        (DROPPED, 'Dropped message')
     )
 
     NEW = 'O'
@@ -181,14 +238,67 @@ class UserInteraction (models.Model):
     )
 
     uuid_interaction = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    interaction_direction = models.CharField(max_length=1, choices=interaction_direction_choices, default=DROPPED)
+    interaction_status = models.CharField(max_length=1, choices=interaction_status_choices, default=NEW)
     interaction_sender = models.ManyToManyField(User, related_name='interaction_sender')
     interaction_target = models.ManyToManyField(User, related_name='interaction_target')
-    interaction_type = models.CharField(max_length=1, choices=interaction_type_choices, default='M')
-    interaction_status = models.CharField(max_length=1, choices=interaction_status_choices, default='O')
+    interaction_type = models.CharField(max_length=1, choices=interaction_type_choices, default=MESSAGE)
     interaction_subject = models.CharField(max_length=100, default='New message')
     interaction_text = models.CharField(max_length=1000, default='Hello!')
     date_added = models.DateTimeField(auto_now_add=True)
     date_edited = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.uuid_interaction
+
+'''class UserInteractionLedger (models.Model):
+
+    RECEIVED = 'R'
+    SENT = 'S'
+    DROPPED = 'D'
+
+    interaction_direction_choices = (
+        (RECEIVED, 'Target of this interaction'),
+        (SENT, 'Sender of this interaction'),
+        (DROPPED, 'Dropped message')
+    )
+
+    NEW = 'O'
+    READ = 'I'
+    DELETED = 'X'
+    BLOCKED = 'B'
+    FLAGGED = 'F'
+
+    interaction_status_choices = (
+        (NEW, 'New interaction'),
+        (READ, 'Reviewed interaction'),
+        (DELETED, 'Deleted interaction'),
+        (BLOCKED, 'Blocked interaction'),
+        (FLAGGED, 'Flagged as inappropriate')
+    )
+
+    uuid_interaction = models.ManyToManyField(UserInteraction)
+    interaction_record_owner = models.ManyToManyField(UserExtension)
+    interaction_direction = models.CharField(max_length=1, choices=interaction_direction_choices, default=DROPPED)
+    interaction_status = models.CharField(max_length=1, choices=interaction_status_choices, default=NEW)'''
+
+
+class UserOrgPermission (models.Model):
+    uuid_account = models.ManyToManyField(Account)
+    permission_name = models.CharField(max_length=100)
+    permission_is_staff = models.BooleanField(default=False)
+    permission_is_faculty = models.BooleanField(default=False)
+    permission_is_student = models.BooleanField(default=True)
+    permission_is_expired = models.BooleanField(default=False)
+    #TODO: Allow users to upload permission templates via XML, for example
+    permission_template = models.CharField(max_length=100)
+    date_active = models.DateTimeField()
+    date_expires = models.DateTimeField()
+    date_added = models.DateTimeField(auto_now_add=True)
+    date_edited = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.permission_name
 
 
 class Location (models.Model):
@@ -296,11 +406,15 @@ class RelationOrganizationUser (models.Model):
     uuid_account = models.ForeignKey(Account, on_delete=models.CASCADE)
     uuid_user = models.ManyToManyField(UserExtension)
     uuid_org = models.ManyToManyField(Organization)
+    uuid_permission = models.ManyToManyField(UserOrgPermission)
+    date_active = models.DateTimeField()
+    date_expires = models.DateTimeField()
     date_added = models.DateTimeField(auto_now_add=True)
     date_edited = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.relation_name
+
 
 class RelationLocationTree (models.Model):
     uuid_location_child = models.CharField(max_length=100, blank=True)
@@ -346,6 +460,40 @@ class RelationUserLocationStatic (models.Model):
     def __str__(self):
         return 'Parent: %s Child: %s' % (self.uuid_user_parent, self.uuid_location_child)
 
+
+class RelationUserConnection (models.Model):
+    ACTIVE = 'A'
+    PENDING = 'P'
+    REJECTED = 'R'
+    DROPPED = 'D'
+
+    connection_status_choices = (
+        (ACTIVE, 'Active connection'),
+        (PENDING, 'Pending connection'),
+        (REJECTED, 'Rejected connection'),
+        (DROPPED, 'Dropped connection'),
+    )
+
+    PERSONAL = 'L'
+    ROOMMATE = 'M'
+    GROUP = 'G'
+
+    connection_type_choices = (
+        (PERSONAL, 'Personal connection'),
+        (ROOMMATE, 'Roommate connection'),
+        (GROUP, 'Group connection'),
+    )
+
+    uuid_user_1 = models.OneToOneField(UserExtension, related_name='uuid_user_1')
+    uuid_user_2 = models.OneToOneField(UserExtension, related_name='uuid_user_2')
+    relation_type = models.CharField(max_length=1, choices=connection_type_choices)
+    relation_status = models.CharField(max_length=1, choices=connection_status_choices)
+    relation_expires = models.DateTimeField()
+    date_added = models.DateTimeField(auto_now_add=True)
+    date_edited = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.id
 
 
 

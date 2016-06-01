@@ -14,7 +14,7 @@
         <!-- Nav top-bar --><!--TODO: Ensure top-nav is sticky -->
 
     <div data-sticky-container>
-      <div class="title-bar" data-sticky data-options="marginTop:0;" style="width:100%">
+      <div class="title-bar" data-sticky data-options="marginTop:0.1;" style="width:100%">
         <div class="title-bar-left">
           <a href="/user/">
             <ul class="dropdown menu" data-dropdown-menu>
@@ -25,7 +25,7 @@
         <div class="title-bar-right">
           <ul class="menu">
             <li><input type="search" placeholder="Search!"></li>
-            <li><button type="button" class="button">Search</button></li>
+            <li><button type="button" class="button yellow-accent">Search</button></li>
           </ul>
         </div>
       </div>
@@ -34,15 +34,15 @@
         <!-- End Nav top-bar -->
 
         <!-- Start subnav. This hides on mobile -->
-
-    <div class ="row expanded columns">
+<!-- TODO: base-submenu-row is a testing solution for styling. Change in prod-->
+    <div class ="row expanded columns base-submenu-row">
 
         <ul class="dropdown menu" data-dropdown-menu>
           <li>
-            <a href="#">My Profile</a>
+            <a href="/user/{{request.user}}">My Profile {% if total_interactions > 0 %} <span class="badge default-accent-badge">{{ total_interactions }}</span> {% else %}{% endif %}</a>
             <ul class="menu">
-              <li><a href="#">Alerts</a></li>
-              <li><a href="interactions/">Interactions</a></li>
+              <li><a href="/user/{{request.user}}/interactions">Interactions {% if count_current_user_interactions > 0 %} <span class="badge default-accent-badge">{{ count_current_user_interactions }}</span> {% else %}{% endif %} </a></li>
+              <li><a href="/user/{{ request.user }}/alerts">Alerts {% if count_current_user_alerts > 0 %} <span class="badge default-accent-badge">{{ count_current_user_alerts }}</span> {% else %}{% endif %} </a></li>
               <li><a href="#">Preferences</a></li>
               <li><a href="#">Privacy</a></li>
               <li><a href="#">Report Abuse</a></li>
@@ -51,7 +51,7 @@
           <li>
             <a href="#">My Role</a>
             <ul class="menu">
-              <li><a href="/user-admin/">Admin</a></li>
+              <li><a href="/user/{{ request.user }}/user-admin/">Admin</a></li>
               <li><a href="#">Nightly Rounds</a></li>
               <li><a href="#">Incident Report</a></li>
               <li><a href="#">Damage Report</a></li>
@@ -89,6 +89,14 @@
 
     </div>
 
+        <!--Alert space-->
+    <div class="row expanded">
+      {% for alert in current_user_alerts %}
+      <a href="/user/{{ request.user }}/alerts"><div class="small alert callout" style="text-align:center">{{ alert.interaction_text }}</div></a>
+      {% endfor %}
+
+    </div>
+
         <!--End subnav-->
 
         <!--Start alert-space -->
@@ -98,7 +106,6 @@
     </div>
 
         <!--end alertspace-->
-
     {% block content %}{% endblock content %}
 
 

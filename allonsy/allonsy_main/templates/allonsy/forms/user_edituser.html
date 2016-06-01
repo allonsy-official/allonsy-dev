@@ -1,0 +1,123 @@
+{% extends "allonsy/user_base.html" %}
+
+{% block usermain %}
+
+ <!--Instantiate column structure -->
+        <!--TODO: Add 20px margin-bottom to section above-->
+    <div class="row">
+    <form id="edit_user_form" method="post" action="profile/">
+
+    {% csrf_token %}
+
+    <!--Left column-->
+        <div class="columns small-3">
+          <div class="row">
+            <div class="columns small-12">
+              <div class="row">
+                <div class="columns small-12">
+                  <h5>Affiliations</h5>
+                </div>
+              </div>
+              <div class="row">
+                <div class="columns small-12">
+                  {% for org in orgs_affil %}
+                    <a href="/organization/{{ org.relation_url }}"><span class="label default">{{ org.relation_name }}</span></a>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="columns small-12">
+              <div class="row">
+                <div class="columns small-12">
+                  <h5>Interests</h5>
+                </div>
+              </div>
+              <div class="row">
+                <div class="columns small-12">
+                  {% for org in orgs_affil %}
+                    <a href="/organization/{{ org.relation_url }}"><span class="label default">{{ org.relation_name }}</span></a>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="columns small-12">
+              <div class="row">
+                <div class="columns small-12">
+                  <h5>Achievements</h5>
+                </div>
+              </div>
+              <div class="row">
+                <div class="columns small-12">
+                  {% for org in orgs_affil %}
+                    <a href="/organization/{{ org.relation_url }}"><span class="label default">{{ org.relation_name }}</span></a>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+    <!--Right column-->
+        <div class="columns small-9">
+          <div class="row">
+            <div class="columns small-12">
+              <div class="row">
+               <div class="columns small-12">
+                  <h5>About Me</h5>
+                  <label>
+                    <textarea name="profile_aboutme" placeholder="{{ profile_aboutme.profile_aboutme|linebreaks|striptags}}"></textarea>
+                  </label>
+                </div>
+              </div>
+              <div class="row">
+                <div class="columns 12-small">
+                  <h5>Our common connections</h5>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="columns small-12">
+              <div class="row">
+                <div class="columns small-12">
+                  <h5>RoomTraits</h5>
+                </div>
+              </div>
+              <div class="row">
+                <div class="columns 12-small">
+                  Text goes here
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="columns small-12">
+              <div class="row">
+                <div class="columns small-12">
+                  <h5>Roommate Recommendations</h5>
+                </div>
+              </div>
+              <div class="row">
+                <div class="columns 12-small">
+                  Text goes here
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="columns small-6">
+              <input type="submit" class="success expanded button" value="Save changes" />
+            </div>
+            <div class="columns small-6">
+              <a href="/user/{{ req_user.username }}" class="alert expanded button">Cancel changes</a>
+            </div>
+          </div>
+        </div>
+
+    </form>
+    </div>
+
+{% endblock usermain %}

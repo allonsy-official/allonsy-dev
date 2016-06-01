@@ -3,3 +3,73 @@
 background: url(/static/img/app/app-background.jpg) no-repeat;
 background-size: 100%;
 }
+
+/*Custom settings for testing TODO: Remove before production, productize this for accounts */
+
+a {
+  color: #727272;
+  text-decoration: none;
+  line-height: inherit;
+  cursor: pointer; }
+  a:hover, a:focus {
+    color: #512DA8; }
+
+.yellow-accent {
+  background-color: #FFC107;
+}
+
+.default-accent {
+  background-color: #673AB7;
+}
+
+.default-accent-badge {
+  background-color: #673AB7;
+}
+
+.default-accent:hover {
+    background-color: #FFC107; }
+
+.label.default {
+  display: inline-block;
+  padding: 0.33333rem 0.5rem;
+  font-size: 0.8rem;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  border-radius: 0;
+  background: #673AB7;
+  color: #fefefe; }
+
+.label.default:hover {
+    background-color: #FFC107; }
+
+.menu-text {
+  font-weight: bold;
+  color: #fefefe;
+  line-height: 1;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding: 0.7rem 1rem; }
+
+.title-bar {
+  background: #673AB7;
+  color: #ffffff;
+  box-shadow: 0 6px 4px -4px rgba(0,0,0,.3);
+}
+
+ .dropdown.menu .is-dropdown-submenu-parent.is-down-arrow > a::after {
+    content: '';
+    display: block;
+    width: 0;
+    height: 0;
+    border: inset 5px;
+    border-color: #673AB7 transparent transparent;
+    border-top-style: solid;
+    position: absolute;
+    top: 0.825rem;
+    right: 5px; }
+
+.base-submenu-row{
+  background: #FFC107;
+  box-shadow: 0 6px 4px -4px rgba(0,0,0,.3);
+}

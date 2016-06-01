@@ -1,0 +1,230 @@
+{% extends "allonsy/user_base.html" %}
+
+{% block usermain %}
+
+ <!--Instantiate column structure -->
+        <!--TODO: Add 20px margin-bottom to section above-->
+    <div class="row">
+    <form id="do_edit_user_emergency_contact_form" method="post" action="emergencycontacts/"">
+
+    {% csrf_token %}
+
+    <!--Left column-->
+        <div class="columns small-3">
+          <div class="row">
+            <div class="columns small-12">
+              <div class="row">
+                <div class="columns small-12">
+                  <h5>Affiliations</h5>
+                </div>
+              </div>
+              <div class="row">
+                <div class="columns small-12">
+                  {% for org in orgs_affil %}
+                    <a href="/organization/{{ org.relation_url }}"><span class="label default">{{ org.relation_name }}</span></a>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="columns small-12">
+              <div class="row">
+                <div class="columns small-12">
+                  <h5>Interests</h5>
+                </div>
+              </div>
+              <div class="row">
+                <div class="columns small-12">
+                  {% for org in orgs_affil %}
+                    <a href="/organization/{{ org.relation_url }}"><span class="label default">{{ org.relation_name }}</span></a>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="columns small-12">
+              <div class="row">
+                <div class="columns small-12">
+                  <h5>Achievements</h5>
+                </div>
+              </div>
+              <div class="row">
+                <div class="columns small-12">
+                  {% for org in orgs_affil %}
+                    <a href="/organization/{{ org.relation_url }}"><span class="label default">{{ org.relation_name }}</span></a>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+    <!--Right column-->
+<div class="columns small-9">
+          <div class="row">
+            <div class="columns small-12">
+              <div class="row">
+                <div class="columns small-12">
+                  <h5>Student contact information</h5>
+                </div>
+              </div>
+              <div class="row">
+                <div class="columns small-6">
+                  <div class="columns small-12">
+                      <label><b>Emergency contact #1</b></label>
+                  </div>
+                  <div class="columns small-12">
+                    <label>
+                      Preferred name:
+                      <input name="emergency_contact_1_name" type="text" value=" {{ profile_aboutme.emergency_contact_1_name }}">
+                    </label>
+                  </div>
+                  <div class="columns small-12">
+                    <label>
+                      Personal email:
+                      <input name="emergency_contact_1_personal_email_value" type="email" value=" {{ profile_aboutme.emergency_contact_2_personal_email_value }}">
+                    </label>
+                  </div>
+                  <div class="columns small-4">
+                    <label>
+                      Country code:
+                      <input name="emergency_contact_1_phone_home_CountryCode" type="number" value="{{ profile_aboutme.emergency_contact_1_phone_home_CountryCode }}">
+                    </label>
+                  </div>
+                  <div class="columns small-8">
+                    <label>
+                      Phone number:
+                      <input name="emergency_contact_1_phone_home_value" type="text" value="{{ profile_aboutme.emergency_contact_1_phone_home_value }}">
+                    </label>
+                  </div>
+                  <div class="columns small-4">
+                    <label>
+                      Address:
+                      <input name="emergency_contact_1_home_street_number" type="text" value=" {{ profile_aboutme.emergency_contact_1_home_street_number }}">
+                    </label>
+                  </div>
+                  <div class="columns small-8">
+                    <label>
+                      Street:
+                      <input name="emergency_contact_1_home_street_name" type="text" value=" {{ profile_aboutme.emergency_contact_1_home_street_name }}">
+                    </label>
+                  </div>
+                  <div class="columns small-12">
+                    <label>
+                      Apartment number:
+                      <input name="emergency_contact_1_home_ApartmentNumber" type="text" value=" {{ profile_aboutme.emergency_contact_1_home_ApartmentNumber }}">
+                    </label>
+                  </div>
+                  <div class="columns small-12">
+                    <label>
+                      Country:
+                      <input name="emergency_contact_1_country_id" type="text" value=" {{ profile_aboutme.emergency_contact_1_country_id }}">
+                    </label>
+                  </div>
+                  <div class="columns small-4">
+                    <label>
+                      Postal code:
+                      <input name="emergency_contact_1_PostalCode" type="text" value=" {{ profile_aboutme.emergency_contact_1_PostalCode }}">
+                    </label>
+                  </div>
+                  <div class="columns small-8">
+                    <label>
+                      City:
+                      <input name="emergency_contact_1_city_name" type="text" value=" {{ profile_aboutme.emergency_contact_1_city_name }}">
+                    </label>
+                  </div>
+                  <div class="columns small-12">
+                    <label>
+                      State/Province:
+                      <input name="emergency_contact_1_province_name" type="text" value=" {{ profile_aboutme.emergency_contact_1_province_name }}">
+                    </label>
+                  </div>
+                </div>
+                <div class="columns small-6">
+                  <div class="columns small-12">
+                      <label><b>Emergency contact #2:</b></label>
+                  </div>
+                  <div class="columns small-12">
+                    <label>
+                      Preferred name:
+                      <input name="emergency_contact_2_name" type="text" value=" {{ profile_aboutme.emergency_contact_2_name }}">
+                    </label>
+                  </div>
+                  <div class="columns small-12">
+                    <label>
+                      Personal email:
+                      <input name="emergency_contact_2_personal_email_value" type="email" value=" {{ profile_aboutme.emergency_contact_2_personal_email_value }}">
+                    </label>
+                  </div>
+                  <div class="columns small-4">
+                    <label>
+                      Country code:
+                      <input name="emergency_contact_2_phone_home_CountryCode" type="number" value="{{ profile_aboutme.emergency_contact_2_phone_home_CountryCode }}">
+                    </label>
+                  </div>
+                  <div class="columns small-8">
+                    <label>
+                      Phone number:
+                      <input name="emergency_contact_2_phone_home_value" type="text" value="{{ profile_aboutme.emergency_contact_2_phone_home_value }}">
+                    </label>
+                  </div>
+                  <div class="columns small-4">
+                    <label>
+                      Address:
+                      <input name="emergency_contact_2_home_street_number" type="text" value=" {{ profile_aboutme.emergency_contact_2_home_street_number }}">
+                    </label>
+                  </div>
+                  <div class="columns small-8">
+                    <label>
+                      Street:
+                      <input name="emergency_contact_2_home_street_name" type="text" value=" {{ profile_aboutme.emergency_contact_2_home_street_name }}">
+                    </label>
+                  </div>
+                  <div class="columns small-12">
+                    <label>
+                      Apartment number:
+                      <input name="emergency_contact_2_home_ApartmentNumber" type="text" value=" {{ profile_aboutme.emergency_contact_2_home_ApartmentNumber }}">
+                    </label>
+                  </div>
+                  <div class="columns small-12">
+                    <label>
+                      Country:
+                      <input name="emergency_contact_2_country_id" type="text" value=" {{ profile_aboutme.emergency_contact_2_country_id }}">
+                    </label>
+                  </div>
+                  <div class="columns small-4">
+                    <label>
+                      Postal code:
+                      <input name="emergency_contact_2_PostalCode" type="text" value=" {{ profile_aboutme.emergency_contact_2_PostalCode }}">
+                    </label>
+                  </div>
+                  <div class="columns small-8">
+                    <label>
+                      City:
+                      <input name="emergency_contact_2_city_name" type="text" value=" {{ profile_aboutme.emergency_contact_2_city_name }}">
+                    </label>
+                  </div>
+                  <div class="columns small-12">
+                    <label>
+                      State/Province:
+                      <input name="emergency_contact_2_province_name" type="text" value=" {{ profile_aboutme.emergency_contact_2_province_name }}">
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="columns small-6">
+                  <input type="submit" class="success expanded button" value="Save changes" />
+                </div>
+                <div class="columns small-6">
+                  <a href="/user/{{ req_user.username }}" class="alert expanded button">Cancel changes</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+    </form>
+    </div>
+
+{% endblock usermain %}

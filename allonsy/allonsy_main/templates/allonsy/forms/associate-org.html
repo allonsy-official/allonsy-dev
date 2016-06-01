@@ -1,0 +1,47 @@
+{% extends "allonsy/user_admin.html" %}
+
+{% block adminmain %}
+<div class="columns small-9">
+    <div class="row">
+        <div class="callout primary">Use this form to associate organizations</div>
+    </div>
+
+    <div class="row">
+
+        <form id="assoc_organization_form" method="post" action="/user/{{ request.user }}/user-admin/assoc/org/do/">
+
+            {% csrf_token %}
+
+            <div class="row">
+                <div class="columns small-6">
+                    <label>Parent
+                      <select name="parent">
+                          {% for org in orgs %}
+                                <option value="{{ org.uuid_org }}">{{ org }}</option>
+                          {% endfor %}
+                      </select>
+                    </label>
+                </div>
+                <div class="columns small-6">
+                    <label>Child
+                      <select name="child">
+                          {% for org in orgs %}
+                                <option value="{{ org.uuid_org }}">{{ org }}</option>
+                          {% endfor %}
+                      </select>
+                    </label>
+                </div>
+
+            </div>
+
+            <div class="row">
+                    <div class="large-4 columns">
+                        <input type="submit" class="button default-accent" value="Submit" />
+                    </div>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+{% endblock adminmain %}
