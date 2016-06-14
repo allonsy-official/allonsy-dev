@@ -13,13 +13,17 @@
               <li>
                 <a href="#">Elements</a>
                 <ul class="vertical menu">
+                  {% if user_extension_object.user_type == 'X' %}
                   <li>
                     <a href="#">Accounts</a>
                     <ul class="vertical menu">
-                      <li><a href="#">Add new</a></li>
+                      <li><a href="/user/{{ request.user }}/user-admin/create/account/do">Add new</a></li>
                       <li><a href="#">Edit existing</a></li>
                     </ul>
                   </li>
+                  {% else %}
+                  {% endif %}
+                  {% if user_extension_object.user_type == 'X' or user_extension_object.user_type == 'A' or user_extension_object.user_type == 'D' %}
                   <li>
                     <a href="#">Epochs</a>
                     <ul class="vertical menu">
@@ -27,6 +31,9 @@
                       <li><a href="#">Edit existing</a></li>
                     </ul>
                   </li>
+                  {% else %}
+                  {% endif %}
+                  {% if user_extension_object.user_type == 'X' or user_extension_object.user_type == 'A' or user_extension_object.user_type == 'D' %}
                   <li>
                     <a href="#">Locations</a>
                     <ul class="vertical menu">
@@ -34,6 +41,9 @@
                       <li><a href="#">Edit existing</a></li>
                     </ul>
                   </li>
+                  {% else %}
+                  {% endif %}
+                  {% if user_extension_object.user_type == 'X' or user_extension_object.user_type == 'A' or user_extension_object.user_type == 'D' %}
                   <li>
                     <a href="#">Organizaions</a>
                     <ul class="vertical menu">
@@ -41,6 +51,9 @@
                       <li><a href="#">Edit existing</a></li>
                     </ul>
                   </li>
+                  {% else %}
+                  {% endif %}
+                  {% if user_extension_object.user_type == 'X' or user_extension_object.user_type == 'A' or user_extension_object.user_type == 'D' %}
                   <li>
                     <a href="#">Users</a>
                     <ul class="vertical menu">
@@ -48,24 +61,36 @@
                       <li><a href="#">Edit existing</a></li>
                     </ul>
                   </li>
+                  {% else %}
+                  {% endif %}
                 </ul>
               </li>
               <li>
                 <a href="#">Connections</a>
                 <ul class="vertical menu">
+                  {% if user_extension_object.user_type == 'X' or user_extension_object.user_type == 'A' or user_extension_object.user_type == 'D' %}
                   <li><a href="#">Epochs</a></li>
+                  {% else %}
+                  {% endif %}
+                  {% if user_extension_object.user_type == 'X' or user_extension_object.user_type == 'A' or user_extension_object.user_type == 'D' %}
                   <li>
                     <a href="#">Locations</a>
                     <ul class="vertical menu">
                       <li><a href="#">Connect Location to Parent/Child</a></li>
                     </ul>
                   </li>
+                  {% else %}
+                  {% endif %}
+                  {% if user_extension_object.user_type == 'X' or user_extension_object.user_type == 'A' or user_extension_object.user_type == 'D' %}
                   <li>
                     <a href="#">Organizations</a>
                     <ul class="vertical menu">
                       <li><a href="/user/{{ request.user }}/user-admin/assoc/org/do">Connect Organization to Parent/Child</a></li>
                     </ul>
                   </li>
+                  {% else %}
+                  {% endif %}
+                  {% if user_extension_object.user_type == 'X' or user_extension_object.user_type == 'A' or user_extension_object.user_type == 'D' %}
                   <li>
                     <a href="#">Users</a>
                     <ul class="vertical menu">
@@ -73,6 +98,8 @@
                       <li><a href="#">Connect User to Organization</a></li>
                     </ul>
                   </li>
+                  {% else %}
+                  {% endif %}
                 </ul>
               </li>
             </ul>

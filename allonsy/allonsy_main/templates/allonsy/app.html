@@ -6,11 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Allonsy | Welcome</title>
     <link rel="stylesheet" href="/static/css/foundation.css" />
-    <link rel="stylesheet" href="/static/css/app.css" />
+    <link rel="stylesheet" href="/static/css/static-app.css" />
   </head>
   <body id="pages-app-background">
 
-    <div class="expanded row">
+    <!--<div class="expanded row">
         <div class="columns small-1 small-offset-11">
             <button class="button" type="button" data-toggle="example-dropdown">Toggle Dropdown</button>
               <div class="dropdown-pane" id="example-dropdown" data-dropdown data-auto-focus="true">
@@ -43,6 +43,29 @@
 
               </div>
         </div>
+    </div> -->
+   <div class="row expanded slide">
+      <div class="slidecontainer">
+        <div class="row expanded">
+          <p class="text-center titletext"><font color="#512DA8">Allons</font><font color="#FFC107">y</font></p>
+        </div>
+        <form id="login_form" method="post" action="/login/">
+                    {% csrf_token %}
+          <div class="row expanded">
+            <div class="small-2 columns small-offset-5 columns">
+                <div class="callout allonsygrey">
+                    <label>Username
+                        <input type="text" name="username" placeholder="Please enter your username" />
+                    </label>
+                    <label>Password
+                        <input type="password" name="password" placeholder="Please enter your password" />
+                    </label>
+                    <input type="submit" class="buttonylw" value="Submit" />
+                </div>
+            </div>
+        </div>
+        </form>
+      </div>
     </div>
 
     <script src="/static/js/vendor/jquery.min.js"></script>

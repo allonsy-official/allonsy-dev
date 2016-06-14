@@ -11,6 +11,40 @@ from allonsy_main.models import UserExtension, User, UserProfile, Organization, 
 
 
 #create user_passes_check decorators here
+def data_privacy_check(User):
+    current_user_id = User.id
+
+def allonsy_dev_check(User):
+    current_user_id = User.id
+    user_extension_object = UserExtension.objects.get(user=current_user_id)
+    user_type = user_extension_object.user_type
+
+    if user_type == 'X':
+        return True
+
+    else:
+        return False
+
+
+def user_admin_check(User):
+    current_user_id = User.id
+    user_extension_object = UserExtension.objects.get(user=current_user_id)
+    user_type = user_extension_object.user_type
+
+    if user_type == 'A' or user_type == 'D':
+        return True
+
+    else:
+        return False
+
+
+def access_admin_check(User):
+
+    if user_admin_check(User) or allonsy_dev_check(User):
+        return True
+
+    else:
+        return False
 
 
 # Create your views here.
@@ -153,9 +187,14 @@ def create_location(request):
     return render(request, 'allonsy/location.html',)
 
 
+@user_passes_test(allonsy_dev_check)
 @login_required
-def do_add_account(request):
+def do_add_account(request, username):
     do_add_account_form = DoAddAccount(request.POST)
+    current_user = User.objects.get(username=username)
+
+    context_dict = {'form': do_add_account_form, 'cur_user': current_user}
+
     if request.method == 'POST':
         if do_add_account_form.is_valid():
             account_name = do_add_account_form.cleaned_data['account_name']
@@ -178,13 +217,14 @@ def do_add_account(request):
 
         else:
                 # Return a 'disabled account' error message
-                return render_to_response('allonsy/account.html', {'form': do_add_account_form})
+                return render_to_response('allonsy/forms/add-account.html', {'form': do_add_account_form})
 
     else:
             # Return a 'disabled account' error message
-        return render_to_response('allonsy/account.html', {'form': do_add_account_form})
+        return render(request, 'allonsy/forms/add-account.html', context_dict, context_instance=RequestContext(request))
 
 
+@user_passes_test(access_admin_check)
 @login_required
 def do_add_organization(request, username):
     do_add_organization_form = DoAddOrganization(request.POST)
@@ -219,12 +259,14 @@ def do_add_organization(request, username):
         return render(request, 'allonsy/forms/add-org.html', context_dict, context_instance=RequestContext(request))
 
 
+@user_passes_test(access_admin_check)
 @login_required
 def assoc_organization(request):
     orglist = Organization.objects.all().filter(uuid_account=request.user.userextension.uuid_account)
     return render(request, 'allonsy/forms/associate-org.html', {'orgs': orglist}, context_instance=RequestContext(request))
 
 
+@user_passes_test(access_admin_check)
 @login_required
 def do_assoc_organization(request, username):
     #TODO: Handle exception when user attempts to assign same org as child. Should pop error modal and ask if sure user wishes to move the node. Modify node.parent to complete.
@@ -264,6 +306,7 @@ def do_assoc_organization(request, username):
         return render(request, 'allonsy/forms/associate-org.html', {'orgs': orglist}, context_instance=RequestContext(request))
 
 
+@user_passes_test(access_admin_check)
 @login_required
 def assoc_organization_user(request):
     orglist = Organization.objects.all().filter(uuid_account=request.user.userextension.uuid_account)
@@ -271,6 +314,7 @@ def assoc_organization_user(request):
     return render(request, 'allonsy/associate-user.html', {'orgs': orglist, 'users': usrlist}, context_instance=RequestContext(request))
 
 
+@user_passes_test(access_admin_check)
 @login_required
 def do_assoc_organization_user(request):
     #TODO: Handle exception when user attempts to assign same org as child. Should pop error modal and ask if sure user wishes to move the node. Modify node.parent to complete.
@@ -720,6 +764,60 @@ def do_edit_user_emergency_contact(request, username):
             # Return a 'disabled account' error message
 
         return render(request, 'allonsy/forms/user_editemergencycontacts.html', context_dict, context_instance=RequestContext(request))
+
+
+def roles_dashboard(request, username):
+    current_user_obj = request.user
+    current_user = User.objects.get(username=request.user)
+    current_userextension = UserExtension.objects.get(user=current_user_obj)
+    current_user_acct = current_userextension.uuid_account
+    req_user = User.objects.get(username=username)
+    req_userextension = UserExtension.objects.get(user=req_user)
+    req_user_uuid = req_userextension.uuid_user
+    req_user_acct = req_userextension.uuid_account
+    req_orgs_affil = Organization.objects.filter(org_type_special='X')
+    req_user_orgs_affil = RelationOrganizationUser.objects.values('relation_name', 'relation_url').all().filter(uuid_user=req_user_uuid, uuid_org__in=req_orgs_affil)
+    req_user_orgs_primary = RelationOrganizationUser.objects.values('relation_name').all().filter(uuid_user=req_user_uuid, uuid_org__in=req_orgs_affil, relation_is_primary=True)
+
+    context_dict = {'cur_user': current_user, 'req_user': req_user, 'req_userextension': req_userextension, 'orgs_affil': req_user_orgs_affil, 'orgs_primary': req_user_orgs_primary,}
+
+    return render(request, 'allonsy/roles_dashboard.html', context_dict, context_instance=RequestContext(request))
+
+
+def roles_oncall(request, username):
+    current_user_obj = request.user
+    current_user = User.objects.get(username=request.user)
+    current_userextension = UserExtension.objects.get(user=current_user_obj)
+    current_user_acct = current_userextension.uuid_account
+    req_user = User.objects.get(username=username)
+    req_userextension = UserExtension.objects.get(user=req_user)
+    req_user_uuid = req_userextension.uuid_user
+    req_user_acct = req_userextension.uuid_account
+    req_orgs_affil = Organization.objects.filter(org_type_special='X')
+    req_user_orgs_affil = RelationOrganizationUser.objects.values('relation_name', 'relation_url').all().filter(uuid_user=req_user_uuid, uuid_org__in=req_orgs_affil)
+    req_user_orgs_primary = RelationOrganizationUser.objects.values('relation_name').all().filter(uuid_user=req_user_uuid, uuid_org__in=req_orgs_affil, relation_is_primary=True)
+
+    context_dict = {'cur_user': current_user, 'req_user': req_user, 'req_userextension': req_userextension, 'orgs_affil': req_user_orgs_affil, 'orgs_primary': req_user_orgs_primary,}
+
+    return render(request, 'allonsy/roles_oncall.html', context_dict, context_instance=RequestContext(request))
+
+
+def roles_onduty(request, username):
+    current_user_obj = request.user
+    current_user = User.objects.get(username=request.user)
+    current_userextension = UserExtension.objects.get(user=current_user_obj)
+    current_user_acct = current_userextension.uuid_account
+    req_user = User.objects.get(username=username)
+    req_userextension = UserExtension.objects.get(user=req_user)
+    req_user_uuid = req_userextension.uuid_user
+    req_user_acct = req_userextension.uuid_account
+    req_orgs_affil = Organization.objects.filter(org_type_special='X')
+    req_user_orgs_affil = RelationOrganizationUser.objects.values('relation_name', 'relation_url').all().filter(uuid_user=req_user_uuid, uuid_org__in=req_orgs_affil)
+    req_user_orgs_primary = RelationOrganizationUser.objects.values('relation_name').all().filter(uuid_user=req_user_uuid, uuid_org__in=req_orgs_affil, relation_is_primary=True)
+
+    context_dict = {'cur_user': current_user, 'req_user': req_user, 'req_userextension': req_userextension, 'orgs_affil': req_user_orgs_affil, 'orgs_primary': req_user_orgs_primary,}
+
+    return render(request, 'allonsy/roles_onduty.html', context_dict, context_instance=RequestContext(request))
 
 
 def app(request):

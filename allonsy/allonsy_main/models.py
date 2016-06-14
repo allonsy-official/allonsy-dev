@@ -4,11 +4,14 @@ from django.db import models
 
 from django.contrib.auth.models import Group, User
 
+from django_tenants.models import TenantMixin, DomainMixin
+
 from mptt.models import MPTTModel, TreeForeignKey
 
 
 # Create your models here.
-class Account (models.Model):
+
+class Account (TenantMixin):
     uuid_account = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     # TODO: Remove default val for account_name, account_institution_name before production
     account_name = models.CharField(max_length=100, unique=True, default="Example University")
@@ -27,8 +30,15 @@ class Account (models.Model):
     date_added = models.DateTimeField(auto_now_add=True)
     date_edited = models.DateTimeField(auto_now=True)
 
+    # default true, schema will be automatically created and synced when it is saved
+    auto_create_schema = True
+
     def __str__(self):
         return self.account_name
+
+
+class Domain(DomainMixin):
+    pass
 
 
 class Organization (models.Model):
@@ -44,6 +54,7 @@ class Organization (models.Model):
     ORG_AFFILIATION = 'A'
     ORG_INTEREST = 'I'
     ORG_ACHIEVEMENT = 'V'
+    ORG_RESLIFE = 'R'
     ORG_NOSPECIAL = 'X'
 
     org_type_choices = (
@@ -60,6 +71,7 @@ class Organization (models.Model):
         (ORG_AFFILIATION, 'Affiliation'),
         (ORG_INTEREST, 'Interest'),
         (ORG_ACHIEVEMENT, 'Achievement'),
+        (ORG_RESLIFE, 'Residence Life'),
         (ORG_NOSPECIAL, 'No special class'),
     )
 
@@ -83,6 +95,7 @@ class UserExtension (models.Model):
     ALLONSY_DEV = 'X'
     ALLONSY_STAFF = 'Z'
     ACCT_DEV = 'D'
+    ACCT_ADM = 'A'
     STAFF = 'S'
     STUDENT = 'T'
 
@@ -90,6 +103,7 @@ class UserExtension (models.Model):
         (ALLONSY_DEV, 'Allonsy Developer'),
         (ALLONSY_STAFF, 'Allonsy Staff'),
         (ACCT_DEV, 'Account Developer'),
+        (ACCT_ADM, 'Account Admin'),
         (STAFF, 'Account Staff'),
         (STUDENT, 'Student')
     )
@@ -251,55 +265,6 @@ class UserInteraction (models.Model):
     def __str__(self):
         return self.uuid_interaction
 
-'''class UserInteractionLedger (models.Model):
-
-    RECEIVED = 'R'
-    SENT = 'S'
-    DROPPED = 'D'
-
-    interaction_direction_choices = (
-        (RECEIVED, 'Target of this interaction'),
-        (SENT, 'Sender of this interaction'),
-        (DROPPED, 'Dropped message')
-    )
-
-    NEW = 'O'
-    READ = 'I'
-    DELETED = 'X'
-    BLOCKED = 'B'
-    FLAGGED = 'F'
-
-    interaction_status_choices = (
-        (NEW, 'New interaction'),
-        (READ, 'Reviewed interaction'),
-        (DELETED, 'Deleted interaction'),
-        (BLOCKED, 'Blocked interaction'),
-        (FLAGGED, 'Flagged as inappropriate')
-    )
-
-    uuid_interaction = models.ManyToManyField(UserInteraction)
-    interaction_record_owner = models.ManyToManyField(UserExtension)
-    interaction_direction = models.CharField(max_length=1, choices=interaction_direction_choices, default=DROPPED)
-    interaction_status = models.CharField(max_length=1, choices=interaction_status_choices, default=NEW)'''
-
-
-class UserOrgPermission (models.Model):
-    uuid_account = models.ManyToManyField(Account)
-    permission_name = models.CharField(max_length=100)
-    permission_is_staff = models.BooleanField(default=False)
-    permission_is_faculty = models.BooleanField(default=False)
-    permission_is_student = models.BooleanField(default=True)
-    permission_is_expired = models.BooleanField(default=False)
-    #TODO: Allow users to upload permission templates via XML, for example
-    permission_template = models.CharField(max_length=100)
-    date_active = models.DateTimeField()
-    date_expires = models.DateTimeField()
-    date_added = models.DateTimeField(auto_now_add=True)
-    date_edited = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return self.permission_name
-
 
 class Location (models.Model):
 
@@ -400,13 +365,24 @@ class TreeLocation(MPTTModel):
 
 # TODO: Remove blank=True before production
 class RelationOrganizationUser (models.Model):
+    # Creates a permission for each User-Org assoc. By default, students have read-only on the immediate group (and
+    # child groups?), faculty will have read-only on immediate group and -rw on child groups, with ability to create
+    # children, staff will have -rw on immediate and child, with ability to create children, and admin will have
+    # create/delete on the parent and all children. Any user may assign a task to a group for which they have -w.
+
     relation_name = models.CharField(max_length=100)
     relation_url = models.CharField(max_length=100)
     relation_is_primary = models.BooleanField(default=False)
     uuid_account = models.ForeignKey(Account, on_delete=models.CASCADE)
     uuid_user = models.ManyToManyField(UserExtension)
     uuid_org = models.ManyToManyField(Organization)
-    uuid_permission = models.ManyToManyField(UserOrgPermission)
+    permission_is_admin = models.BooleanField(default=False)
+    permission_is_staff = models.BooleanField(default=False)
+    permission_is_faculty = models.BooleanField(default=False)
+    permission_is_student = models.BooleanField(default=True)
+    permission_is_expired = models.BooleanField(default=False)
+    #TODO: Allow users to upload permission templates via XML, for example
+    permission_template = models.CharField(max_length=100)
     date_active = models.DateTimeField()
     date_expires = models.DateTimeField()
     date_added = models.DateTimeField(auto_now_add=True)

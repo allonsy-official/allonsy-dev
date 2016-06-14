@@ -1,8 +1,11 @@
-#pages-app-background
+
+
+/*app root background img */
+/*#pages-app-background
 {
 background: url(/static/img/app/app-background.jpg) no-repeat;
 background-size: 100%;
-}
+} */
 
 /*Custom settings for testing TODO: Remove before production, productize this for accounts */
 

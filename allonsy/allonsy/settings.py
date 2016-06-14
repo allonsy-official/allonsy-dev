@@ -44,7 +44,14 @@ INSTALLED_APPS = [
     'storages',
 ]
 
+#TODO: django-tenants has a shared app capability. See https://django-tenants.readthedocs.io/en/latest/install.html
+TENANT_MODEL = "allonsy.allonsy_main.Account" # app.Model
+
+TENANT_DOMAIN_MODEL = "allonsy.allonsy_main.Domain"  # app.Model
+
 MIDDLEWARE_CLASSES = [
+    'django_tenants.middleware.TenantMiddleware',
+    # Testing the above. Remove if schemas fail.
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -68,11 +75,16 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'allonsy_main.context_processors.base_user',
                 'allonsy_main.context_processors.base_interactions'
             ],
         },
     },
 ]
+
+TEMPLATE_CONTEXT_PROCESSORS = (
+    'django.core.context_processors.request',
+)
 
 WSGI_APPLICATION = 'allonsy.wsgi.application'
 
@@ -80,7 +92,7 @@ WSGI_APPLICATION = 'allonsy.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.9/ref/settings/#databases
 
-DATABASES = {
+'''DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'test_allonsy_dev',
@@ -89,7 +101,23 @@ DATABASES = {
         'HOST': '127.0.0.1',
         'PORT': '5432',
     }
+}'''
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django_tenants.postgresql_backend',
+        'NAME': 'test_allonsy_dev',
+        'USER': 'admin',
+        'PASSWORD': 'admin',
+        'HOST': '127.0.0.1',
+        'PORT': '5432',
+    }
 }
+
+
+DATABASE_ROUTERS = (
+    'django_tenants.routers.TenantSyncRouter',
+)
 
 
 # Password validation

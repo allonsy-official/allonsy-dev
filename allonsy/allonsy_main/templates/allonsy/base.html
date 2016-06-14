@@ -51,7 +51,11 @@
           <li>
             <a href="#">My Role</a>
             <ul class="menu">
+              {% if user_extension_object.user_type == 'X' or user_extension_object.user_type == 'A' or user_extension_object.user_type == 'D' %}
               <li><a href="/user/{{ request.user }}/user-admin/">Admin</a></li>
+              {% else %}
+              {% endif %}
+              <li><a href="/user/{{ request.user }}/roles/">Roles Dashboard</a></li>
               <li><a href="#">Nightly Rounds</a></li>
               <li><a href="#">Incident Report</a></li>
               <li><a href="#">Damage Report</a></li>

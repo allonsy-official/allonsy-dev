@@ -1,0 +1,39 @@
+{% extends "allonsy/allonsy_base.html" %}
+
+{% block content %}
+   <div class="row expanded">
+
+   <!--Start left nav -->
+      <div class="columns small-2">
+         <div class="row">
+            <div class="columns small-12">
+               Picture!
+            </div>
+            <div class="columns small-12">
+               <h5><center>{{req_user.first_name}} {{req_user.last_name}}</center></h5>
+            </div>
+         </div>
+         <div class="row">
+            <ul class="vertical menu" data-drilldown>
+              <li>
+                <a href="#Item-1">Residence Life</a>
+                <ul class="vertical menu">
+                  <li><a href="/user/{{ request.user }}/roles/oncall">On-call</a></li>
+                  <li><a href="/user/{{ request.user }}/roles/onduty">Rounds</a></li>
+                  <li><a href="#Item-1A">Check-in</a></li>
+                  <li><a href="#Item-1A">Check-out</a></li>
+                </ul>
+              </li>
+              <li><a href="#Item-2">Facilities</a></li>
+            </ul>
+         </div>
+      </div>
+
+   <!--Start content space-->
+      <div class="columns small-10">
+   {% block rolesdash %}{% endblock rolesdash %}
+      </div>
+
+   </div>
+
+{% endblock content %}

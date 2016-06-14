@@ -2,6 +2,23 @@ from allonsy_main.models import UserExtension, User, UserProfile, Organization, 
 from django.db.models import Q
 
 
+def base_user(request):
+    current_user = request.user
+
+    if request.user.is_authenticated():
+        current_user_id = current_user.id
+        user_extension_object = UserExtension.objects.get(user=current_user_id)
+
+        return {
+            'user_extension_object': user_extension_object,
+        }
+
+    else:
+        return {
+
+        }
+
+
 def base_interactions(request):
     current_user = request.user
 
