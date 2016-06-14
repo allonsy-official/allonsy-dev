@@ -125,7 +125,7 @@ def do_logout(request):
 
 @login_required
 def user_admin(request, account):
-    
+
     username = request.user
 
     context_helper = get_user_data(request, username, account)
