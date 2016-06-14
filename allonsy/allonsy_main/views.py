@@ -7,7 +7,49 @@ from django.db.models import Q
 from django_ajax.decorators import ajax
 
 from allonsy_main.forms import DoAddAccount, DoAddOrganization, DoAddLocation, DoAssocOrganization, DoAssocOrganizationUser, DoEditUserProfile, DoEditUserInfoContact, DoEditUserEmergencyContact, DoSendReplyMessage
-from allonsy_main.models import UserExtension, User, UserProfile, Organization, TreeOrganization, RelationOrganizationUser, UserInteraction, UserAlert
+from allonsy_main.models import Account, UserExtension, User, UserProfile, Organization, TreeOrganization, RelationOrganizationUser, UserInteraction, UserAlert
+
+
+#Helper functions
+#TODO: middleware?
+
+def get_user_data(request, username, account):
+    current_user_obj = request.user
+    current_user = User.objects.get(username=request.user)
+    current_userextension = UserExtension.objects.get(user=current_user_obj)
+    current_user_acct = current_userextension.uuid_account
+    req_account = Account.objects.get(account_url_name=account)
+    req_user = User.objects.get(username=username)
+    req_userextension = UserExtension.objects.get(user=req_user)
+    req_user_acct = req_userextension.uuid_account
+    req_user_uuid = req_userextension.uuid_user
+
+    context_helper = {'current_user_obj': current_user_obj,
+                      'cur_user': current_user,
+                      'current_userextension': current_userextension,
+                      'current_user_acct': current_user_acct,
+                      'req_account': req_account,
+                      'req_user': req_user,
+                      'req_userextension': req_userextension,
+                      'req_user_acct': req_user_acct,
+                      'req_user_uuid': req_user_uuid
+                      }
+
+    return context_helper
+
+
+def get_user_data_objects(request, username, account):
+    current_user_obj = request.user
+    current_user = User.objects.get(username=request.user)
+    current_userextension = UserExtension.objects.get(user=current_user_obj)
+    current_user_acct = current_userextension.uuid_account
+    req_account = Account.objects.get(account_url_name=account)
+    req_user = User.objects.get(username=username)
+    req_userextension = UserExtension.objects.get(user=req_user)
+    req_user_acct = req_userextension.uuid_account
+    req_user_uuid = req_userextension.uuid_user
+
+    return current_user_obj, current_user, current_userextension, current_user_acct, req_account, req_user, req_userextension, req_user_acct, req_user_uuid
 
 
 #create user_passes_check decorators here
@@ -57,10 +99,13 @@ def do_login(request):
         username = request.POST['username']
         password = request.POST['password']
         user = authenticate(username=username, password=password)
+        user_extension = UserExtension.objects.get(user=user)
+        user_account = Account.objects.get(account_name=user_extension.uuid_account)
+        user_account_url = user_account.account_url_name
         if user is not None:
             if user.is_active:
                 login(request, user)
-                return HttpResponseRedirect('/user/'+str(user))
+                return HttpResponseRedirect('/'+str(user_account_url)+'/user/'+str(user))
             else:
                 # Return a 'disabled account' error message
                 return HttpResponse("Disabled")
@@ -79,18 +124,34 @@ def do_logout(request):
 
 
 @login_required
-def user_admin(request, username):
-    current_user = request.user
-    current_user_id = current_user.id
-    user_extension = UserExtension.objects.get(user=current_user_id)
-    req_user = User.objects.get(username=username)
-    req_userextension = UserExtension.objects.get(user=req_user)
-    req_user_uuid = req_userextension.uuid_user
-    req_user_acct = req_userextension.uuid_account
+def user_admin(request, account):
+    
+    username = request.user
+
+    context_helper = get_user_data(request, username, account)
+
+    current_user_obj, current_user, current_userextension, current_user_acct, req_account, req_user, req_userextension, req_user_acct, req_user_uuid = get_user_data_objects(request, username, account)
+
     req_orgs_affil = Organization.objects.filter(org_type_special='X')
     req_user_orgs_primary = RelationOrganizationUser.objects.values('relation_name').all().filter(uuid_user=req_user_uuid, uuid_org__in=req_orgs_affil, relation_is_primary=True)
-    context_dict = {'cur_user': current_user, 'req_user': req_user, 'req_userextension': req_userextension, 'orgs_primary': req_user_orgs_primary}
-    return render(request, 'allonsy/user_admin_main.html', context_dict, context_instance=RequestContext(request))
+    context_dict_local = {'orgs_primary': req_user_orgs_primary}
+
+    context_dict = context_helper.copy()
+    context_dict.update(context_dict_local)
+
+    if str.lower(current_user_acct.account_url_name) == str.lower(req_account.account_url_name):
+
+        if current_user_acct == req_user_acct:
+
+            #TODO: CHANGE BACK TO USER
+            return render(request, 'allonsy/user_admin_main.html', context_dict, context_instance=RequestContext(request))
+
+        else:
+            # Return a 'disabled account' error message
+            return HttpResponse("Disabled")
+
+    else:
+        return HttpResponse("Account not available to this user")
 
 
 @login_required
@@ -104,59 +165,69 @@ def usr(request):
 
 
 @login_required
-def resolve_user_url(request, username):
-    current_user_obj = request.user
-    current_user = User.objects.get(username=request.user)
-    current_userextension = UserExtension.objects.get(user=current_user_obj)
-    current_user_acct = current_userextension.uuid_account
-    req_user = User.objects.get(username=username)
-    req_userextension = UserExtension.objects.get(user=req_user)
-    req_user_uuid = req_userextension.uuid_user
-    req_user_acct = req_userextension.uuid_account
+def resolve_user_url(request, username, account):
+    context_helper = get_user_data(request, username, account)
+
+    current_user_obj, current_user, current_userextension, current_user_acct, req_account, req_user, req_userextension, req_user_acct, req_user_uuid = get_user_data_objects(request, username, account)
+
     req_orgs_affil = Organization.objects.filter(org_type_special='X')
     req_user_orgs_affil = RelationOrganizationUser.objects.values('relation_name', 'relation_url').all().filter(uuid_user=req_user_uuid, uuid_org__in=req_orgs_affil)
     req_user_orgs_primary = RelationOrganizationUser.objects.values('relation_name').all().filter(uuid_user=req_user_uuid, uuid_org__in=req_orgs_affil, relation_is_primary=True)
     req_profile_aboutme = UserProfile.objects.get(uuid_user=req_user_uuid)
-    context_dict = {'cur_user': current_user, 'req_user': req_user, 'req_userextension': req_userextension, 'orgs_affil': req_user_orgs_affil, 'orgs_primary': req_user_orgs_primary, 'profile_aboutme': req_profile_aboutme}
+    context_dict_local = {'orgs_affil': req_user_orgs_affil, 'orgs_primary': req_user_orgs_primary, 'profile_aboutme': req_profile_aboutme}
+
+    context_dict = context_helper.copy()
+    context_dict.update(context_dict_local)
     # return render(request, 'allonsy/user.html', context_dict)
 
-    if current_user_acct == req_user_acct:
+    if str.lower(current_user_acct.account_url_name) == str.lower(req_account.account_url_name):
 
-        #TODO: CHANGE BACK TO USER
-        return render(request, 'allonsy/user_main.html', context_dict, context_instance=RequestContext(request))
+        if current_user_acct == req_user_acct:
+
+            #TODO: CHANGE BACK TO USER
+            return render(request, 'allonsy/user_main.html', context_dict, context_instance=RequestContext(request))
+
+        else:
+            # Return a 'disabled account' error message
+            return HttpResponse("Disabled")
 
     else:
-        # Return a 'disabled account' error message
-        return HttpResponse("Disabled")
+        return HttpResponse("Account not available to this user")
 
 
 @login_required
-def edit_user_url(request, username):
-    current_user_obj = request.user
-    current_user = User.objects.get(username=request.user)
-    current_userextension = UserExtension.objects.get(user=current_user_obj)
-    current_user_acct = current_userextension.uuid_account
-    req_user = User.objects.get(username=username)
-    req_userextension = UserExtension.objects.get(user=req_user)
-    req_user_uuid = req_userextension.uuid_user
-    req_user_acct = req_userextension.uuid_account
+def edit_user_url(request, username, account):
+
+    context_helper = get_user_data(request, username, account)
+
+    current_user_obj, current_user, current_userextension, current_user_acct, req_account, req_user, req_userextension, req_user_acct, req_user_uuid = get_user_data_objects(request, username, account)
+
     req_orgs_affil = Organization.objects.filter(org_type_special='X')
     req_user_orgs_affil = RelationOrganizationUser.objects.values('relation_name', 'relation_url').all().filter(uuid_user=req_user_uuid, uuid_org__in=req_orgs_affil)
     req_user_orgs_primary = RelationOrganizationUser.objects.values('relation_name').all().filter(uuid_user=req_user_uuid, uuid_org__in=req_orgs_affil, relation_is_primary=True)
     req_profile_aboutme = UserProfile.objects.get(uuid_user=req_user_uuid)
-    context_dict = {'cur_user': current_user, 'req_user': req_user, 'req_userextension': req_userextension, 'orgs_affil': req_user_orgs_affil, 'orgs_primary': req_user_orgs_primary, 'profile_aboutme': req_profile_aboutme}
+    context_dict_local = {'cur_user': current_user, 'req_user': req_user, 'req_userextension': req_userextension, 'orgs_affil': req_user_orgs_affil, 'orgs_primary': req_user_orgs_primary, 'profile_aboutme': req_profile_aboutme}
     # return render(request, 'allonsy/user.html', context_dict)
 
-    if current_user_acct == req_user_acct:
+    context_dict = context_helper.copy()
+    context_dict.update(context_dict_local)
 
-        return render(request, 'allonsy/forms/edituser.html', context_dict, context_instance=RequestContext(request))
+    if str.lower(current_user_acct.account_url_name) == str.lower(req_account.account_url_name):
+
+        if current_user_acct == req_user_acct:
+
+            return render(request, 'allonsy/forms/edituser.html', context_dict, context_instance=RequestContext(request))
+
+        else:
+            # Return a 'disabled account' error message
+            return HttpResponse("Disabled")
 
     else:
-        # Return a 'disabled account' error message
-        return HttpResponse("Disabled")
+        return HttpResponse("Account not available to this user")
 
 @login_required
 def resolve_org_url(request, orgname):
+    #TODO: UPDATE WITH HELPER FUNCTIONS
     current_user = request.user
     current_user_id = current_user.id
     current_user_userextension = UserExtension.objects.get(user=current_user_id)
@@ -358,44 +429,43 @@ def do_assoc_organization_user(request):
 
 
 @login_required
-def do_get_user_alerts(request, username):
-    current_user = User.objects.get(username=request.user)
+def do_get_user_alerts(request, username, account):
+
+    context_helper = get_user_data(request, username, account)
+
+    current_user_obj, current_user, current_userextension, current_user_acct, req_account, req_user, req_userextension, req_user_acct, req_user_uuid = get_user_data_objects(request, username, account)
+
     new_user_interactions = UserInteraction.objects.all().filter(interaction_target=current_user, interaction_status='O')
     count_new_user_interactions = new_user_interactions.count
-    current_user_obj = request.user
-    current_user = User.objects.get(username=request.user)
-    current_userextension = UserExtension.objects.get(user=current_user_obj)
-    current_user_acct = current_userextension.uuid_account
-    req_user = User.objects.get(username=username)
-    req_userextension = UserExtension.objects.get(user=req_user)
-    req_user_uuid = req_userextension.uuid_user
     req_orgs_affil = Organization.objects.filter(org_type_special='X')
     req_user_orgs_primary = RelationOrganizationUser.objects.values('relation_name').all().filter(uuid_user=req_user_uuid, uuid_org__in=req_orgs_affil, relation_is_primary=True)
     current_user_interactions = UserAlert.objects.all().filter(Q(interaction_target=current_user), Q(interaction_direction='R'), Q(interaction_status='O') | Q(interaction_status='I'))
 
-    context_dict = {'cur_user': current_user,  'req_user': req_user, 'req_userextension': req_userextension, 'cur_user_interacts': current_user_interactions, 'orgs_primary': req_user_orgs_primary, 'count_new_user_interactions': count_new_user_interactions}
+    context_dict_local = {'cur_user_interacts': current_user_interactions, 'orgs_primary': req_user_orgs_primary, 'count_new_user_interactions': count_new_user_interactions}
+
+    context_dict = context_helper.copy()
+    context_dict.update(context_dict_local)
 
     return render(request, 'allonsy/user_interactions.html', context_dict, context_instance=RequestContext(request))
 
 
 @login_required
-def do_get_user_interactions(request, username):
-    current_user = User.objects.get(username=request.user)
+def do_get_user_interactions(request, username, account):
+
+    context_helper = get_user_data(request, username, account)
+
+    current_user_obj, current_user, current_userextension, current_user_acct, req_account, req_user, req_userextension, req_user_acct, req_user_uuid = get_user_data_objects(request, username, account)
+
     new_user_interactions = UserInteraction.objects.all().filter(interaction_target=current_user, interaction_status='O')
     count_new_user_interactions = new_user_interactions.count
-    current_user_obj = request.user
-    current_user = User.objects.get(username=request.user)
-    current_userextension = UserExtension.objects.get(user=current_user_obj)
-    current_user_acct = current_userextension.uuid_account
-    req_user = User.objects.get(username=username)
-    req_userextension = UserExtension.objects.get(user=req_user)
-    req_user_uuid = req_userextension.uuid_user
     req_orgs_affil = Organization.objects.filter(org_type_special='X')
     req_user_orgs_primary = RelationOrganizationUser.objects.values('relation_name').all().filter(uuid_user=req_user_uuid, uuid_org__in=req_orgs_affil, relation_is_primary=True)
-    #current_user_interactions = UserInteraction.objects.all()
     current_user_interactions = UserInteraction.objects.all().filter(Q(interaction_target=current_user), Q(interaction_direction='R'), Q(interaction_status='O') | Q(interaction_status='I'))
 
-    context_dict = {'cur_user': current_user,  'req_user': req_user, 'req_userextension': req_userextension, 'cur_user_interacts': current_user_interactions, 'orgs_primary': req_user_orgs_primary, 'count_new_user_interactions': count_new_user_interactions}
+    context_dict_local = {'cur_user_interacts': current_user_interactions, 'orgs_primary': req_user_orgs_primary, 'count_new_user_interactions': count_new_user_interactions}
+
+    context_dict = context_helper.copy()
+    context_dict.update(context_dict_local)
 
     return render(request, 'allonsy/user_interactions.html', context_dict, context_instance=RequestContext(request))
 
@@ -580,7 +650,7 @@ def do_update_alert_status(request, username, status, uuidmsg):
 
 
 @login_required
-def do_edit_user_profile(request, username):
+def do_edit_user_profile(request, username, account):
     do_edit_user_profile_form = DoEditUserProfile(request.POST)
 
     current_user_obj = request.user
@@ -591,6 +661,7 @@ def do_edit_user_profile(request, username):
     req_userextension = UserExtension.objects.get(user=req_user)
     req_user_uuid = req_userextension.uuid_user
     req_user_acct = req_userextension.uuid_account
+    req_account = Account.objects.get(account_url_name=account)
     req_orgs_affil = Organization.objects.filter(org_type_special='X')
     req_user_orgs_affil = RelationOrganizationUser.objects.values('relation_name', 'relation_url').all().filter(uuid_user=req_user_uuid, uuid_org__in=req_orgs_affil)
     req_user_orgs_primary = RelationOrganizationUser.objects.values('relation_name').all().filter(uuid_user=req_user_uuid, uuid_org__in=req_orgs_affil, relation_is_primary=True)
@@ -599,20 +670,24 @@ def do_edit_user_profile(request, username):
     context_dict = {'cur_user': current_user, 'req_user': req_user, 'req_userextension': req_userextension, 'orgs_affil': req_user_orgs_affil, 'orgs_primary': req_user_orgs_primary, 'profile_aboutme': req_profile_aboutme}
 
     if request.method == 'POST':
-        if do_edit_user_profile_form.is_valid():
-            profile_aboutme = do_edit_user_profile_form.cleaned_data['profile_aboutme']
+        if str.lower(current_user_acct.account_url_name) == str.lower(req_account.account_url_name):
+            if do_edit_user_profile_form.is_valid():
+                profile_aboutme = do_edit_user_profile_form.cleaned_data['profile_aboutme']
 
-            do_edit_profile_object = UserProfile.objects.get(uuid_user=req_userextension)
-            do_edit_profile_object.profile_aboutme = profile_aboutme
-            do_edit_profile_object.save()
+                do_edit_profile_object = UserProfile.objects.get(uuid_user=req_userextension)
+                do_edit_profile_object.profile_aboutme = profile_aboutme
+                do_edit_profile_object.save()
 
-            return HttpResponseRedirect(reverse('resolve_user_url', kwargs={'username': username}))
+                return HttpResponseRedirect(reverse('resolve_user_url', kwargs={'username': username, 'account': account}))
+
+            else:
+                return HttpResponseRedirect(reverse('resolve_user_url', kwargs={'username': username, 'account': account}))
 
         else:
-            return HttpResponseRedirect(reverse('resolve_user_url', kwargs={'username': username}))
+            return HttpResponse("Account not available to this user")
 
     else:
-            # Return a 'disabled account' error message
+        # Return a 'disabled account' error message
         return render(request, 'allonsy/forms/user_edituser.html', context_dict, context_instance=RequestContext(request))
 
 @login_required

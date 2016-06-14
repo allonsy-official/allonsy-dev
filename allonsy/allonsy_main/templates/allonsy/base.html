@@ -39,10 +39,10 @@
 
         <ul class="dropdown menu" data-dropdown-menu>
           <li>
-            <a href="/user/{{request.user}}">My Profile {% if total_interactions > 0 %} <span class="badge default-accent-badge">{{ total_interactions }}</span> {% else %}{% endif %}</a>
+            <a href="{% url 'resolve_user_url' user_account_url request.user %}">My Profile {% if total_interactions > 0 %} <span class="badge default-accent-badge">{{ total_interactions }}</span> {% else %}{% endif %}</a>
             <ul class="menu">
-              <li><a href="/user/{{request.user}}/interactions">Interactions {% if count_current_user_interactions > 0 %} <span class="badge default-accent-badge">{{ count_current_user_interactions }}</span> {% else %}{% endif %} </a></li>
-              <li><a href="/user/{{ request.user }}/alerts">Alerts {% if count_current_user_alerts > 0 %} <span class="badge default-accent-badge">{{ count_current_user_alerts }}</span> {% else %}{% endif %} </a></li>
+              <li><a href="{% url 'do_get_user_interactions' user_account_url request.user %}">Interactions {% if count_current_user_interactions > 0 %} <span class="badge default-accent-badge">{{ count_current_user_interactions }}</span> {% else %}{% endif %} </a></li>
+              <li><a href="{% url 'do_get_user_alerts' user_account_url request.user %}">Alerts {% if count_current_user_alerts > 0 %} <span class="badge default-accent-badge">{{ count_current_user_alerts }}</span> {% else %}{% endif %} </a></li>
               <li><a href="#">Preferences</a></li>
               <li><a href="#">Privacy</a></li>
               <li><a href="#">Report Abuse</a></li>
@@ -52,7 +52,7 @@
             <a href="#">My Role</a>
             <ul class="menu">
               {% if user_extension_object.user_type == 'X' or user_extension_object.user_type == 'A' or user_extension_object.user_type == 'D' %}
-              <li><a href="/user/{{ request.user }}/user-admin/">Admin</a></li>
+              <li><a href="{% url 'user_admin' user_account_url%}">Admin</a></li>
               {% else %}
               {% endif %}
               <li><a href="/user/{{ request.user }}/roles/">Roles Dashboard</a></li>

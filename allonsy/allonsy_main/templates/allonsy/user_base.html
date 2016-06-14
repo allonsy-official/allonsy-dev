@@ -48,7 +48,7 @@
               <div class="row">
                 {% if cur_user == req_user %}
                 <div class="columns small-3">
-                  <a href="/user/{{ req_user.username }}/edit/profile" class="button default-accent">Edit your profile</a>
+                  <a href="/{{ user_account_url }}/user/{{ req_user.username }}/edit/profile" class="button default-accent">Edit your profile</a>
                 </div>
                 {% else %}
                 <div class="columns small-3">
