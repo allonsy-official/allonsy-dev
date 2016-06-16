@@ -91,6 +91,8 @@ MIDDLEWARE_CLASSES = [
 
 ROOT_URLCONF = 'allonsy.urls'
 
+PUBLIC_SCHEMA_URLCONF = 'allonsy.urls_public'
+
 #PUBLIC_SCHEMA_URLCONF = 'allonsy.urls_public'
 
 TEMPLATES = [
@@ -100,7 +102,7 @@ TEMPLATES = [
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
-                'django.core.context_processors.request',
+                'django.template.context_processors.request',
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
@@ -110,6 +112,10 @@ TEMPLATES = [
             ],
         },
     },
+]
+
+MULTITENANT_TEMPLATE_DIRS = [
+    'tenant_templates'
 ]
 
 
