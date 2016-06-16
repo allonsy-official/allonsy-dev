@@ -30,7 +30,38 @@ ALLOWED_HOSTS = []
 
 # Application definition
 
-INSTALLED_APPS = [
+SHARED_APPS = (
+    'tenant_schemas',  # mandatory
+    'allonsy_main.apps.AllonsyMainConfig', # you must list the app where your tenant model resides in
+
+    'django.contrib.contenttypes',
+
+    # everything below here is optional
+    #'allonsy_main.apps.AllonsyMainConfig',
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'mptt',
+    'django_ajax',
+    'django_extensions',
+    'storages',
+)
+
+TENANT_APPS = (
+    # The following Django contrib apps must be in TENANT_APPS
+    'django.contrib.contenttypes',
+
+    # your tenant-specific apps
+)
+
+INSTALLED_APPS = list(SHARED_APPS) + [app for app in TENANT_APPS if app not in SHARED_APPS]
+
+TENANT_MODEL = "allonsy_main.Account" # app.Model
+
+
+'''INSTALLED_APPS = [
     'allonsy_main.apps.AllonsyMainConfig',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -42,10 +73,12 @@ INSTALLED_APPS = [
     'django_ajax',
     'django_extensions',
     'storages',
-]
+]'''
+
 
 #TODO: django-tenants has a shared app capability. See https://django-tenants.readthedocs.io/en/latest/install.html
 MIDDLEWARE_CLASSES = [
+    'tenant_schemas.middleware.TenantMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -58,6 +91,8 @@ MIDDLEWARE_CLASSES = [
 
 ROOT_URLCONF = 'allonsy.urls'
 
+#PUBLIC_SCHEMA_URLCONF = 'allonsy.urls_public'
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -65,6 +100,7 @@ TEMPLATES = [
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
+                'django.core.context_processors.request',
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
@@ -83,7 +119,7 @@ WSGI_APPLICATION = 'allonsy.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.9/ref/settings/#databases
 
-DATABASES = {
+'''DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'test_allonsy_dev',
@@ -92,7 +128,23 @@ DATABASES = {
         'HOST': '127.0.0.1',
         'PORT': '5432',
     }
+}'''
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'tenant_schemas.postgresql_backend',
+        'NAME': 'test_allonsy_dev',
+        'USER': 'admin',
+        'PASSWORD': 'admin',
+        'HOST': '127.0.0.1',
+        'PORT': '5432',
+    }
 }
+
+#tenant-schemas
+DATABASE_ROUTERS = (
+    'tenant_schemas.routers.TenantSyncRouter',
+)
 
 
 # Password validation
