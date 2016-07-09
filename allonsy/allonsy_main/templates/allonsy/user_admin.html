@@ -17,7 +17,7 @@
                   <li>
                     <a href="#">Accounts</a>
                     <ul class="vertical menu">
-                      <li><a href="/user/{{ request.user }}/user-admin/create/account/do">Add new</a></li>
+                      <li><a href="{% url 'do_add_account' %}">Add new</a></li>
                       <li><a href="#">Edit existing</a></li>
                     </ul>
                   </li>
@@ -37,7 +37,7 @@
                   <li>
                     <a href="#">Locations</a>
                     <ul class="vertical menu">
-                      <li><a href="#">Add new</a></li>
+                      <li><a href="{% url 'do_add_location' %}">Add new</a></li>
                       <li><a href="#">Edit existing</a></li>
                     </ul>
                   </li>
@@ -47,7 +47,7 @@
                   <li>
                     <a href="#">Organizaions</a>
                     <ul class="vertical menu">
-                      <li><a href="/user/{{ request.user }}/user-admin/create/org/do/">Add new</a></li>
+                      <li><a href="{% url 'do_add_organization' %}">Add new</a></li>
                       <li><a href="#">Edit existing</a></li>
                     </ul>
                   </li>
@@ -57,7 +57,7 @@
                   <li>
                     <a href="#">Users</a>
                     <ul class="vertical menu">
-                      <li><a href="#">Add new</a></li>
+                      <li><a href="{% url 'do_add_user' %}">Add new</a></li>
                       <li><a href="#">Edit existing</a></li>
                     </ul>
                   </li>
@@ -101,6 +101,9 @@
                   {% else %}
                   {% endif %}
                 </ul>
+              </li>
+              <li>
+                <a href="{% url 'user_admin' %}">Return to dashboard</a>
               </li>
             </ul>
           </div>

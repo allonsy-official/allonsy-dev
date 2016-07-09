@@ -70,9 +70,9 @@
                     <!--TODO: Reporting/blocking functionality-->
                     <a href="status/F/{{interact.uuid_interaction}}/" class="small secondary hollow button">Report</a>
                     {% elif interact.interaction_type == 'C' %}
-                    <button class="small success button" href="#">Accept connection</button>
-                    <button class="small alert hollow button" href="#">Decline connection</button>
-                    <button class="small secondary hollow button" href="#">Report</button>
+                    <button class="small success button" href="status/A/{{interact.uuid_interaction}}/">Accept connection</button>
+                    <button class="small alert hollow button" href="status/R/{{interact.uuid_interaction}}/">Decline connection</button>
+                    <button class="small secondary hollow button" href="">Report</button>
                     {% elif interact.interaction_type == 'R' %}
                     <button class="small button" href="#">Send message</button>
                     <button class="small success button" href="#">Accept roommate</button>

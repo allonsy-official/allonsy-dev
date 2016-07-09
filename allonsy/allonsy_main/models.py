@@ -6,41 +6,10 @@ from django.contrib.auth.models import Group, User
 
 from mptt.models import MPTTModel, TreeForeignKey
 
-from tenant_schemas.models import TenantMixin
+from allonsy_schemas import models as allonsy_schema_models
 
 
 # Create your models here.
-
-class Account (TenantMixin):
-
-    randomset = random.randint(1, 100)
-
-    uuid_account = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    # TODO: Remove default val for account_name, account_institution_name before production
-    account_name = models.CharField(max_length=100, unique=True)
-    account_institution_name = models.CharField(max_length=100, default="Example University")
-    account_url_name = models.CharField(max_length=24)
-    account_billing_title = models.CharField(max_length=100, default='TESTING')
-    account_billing_attn = models.CharField(max_length=100, default='TESTING')
-    account_billing_country_id = models.CharField(max_length=2, default="US")
-    account_billing_province_name = models.CharField(max_length=100, default='TESTING')
-    account_billing_city_name = models.CharField(max_length=100, default='TESTING')
-    account_billing_PostalCode = models.CharField(max_length=10, default='TESTING')
-    account_billing_street_number = models.CharField(max_length=100, default='TESTING')
-    account_billing_street_name = models.CharField(max_length=100, default='TESTING')
-    account_billing_ApartmentNumber = models.CharField(max_length=16, blank=True)
-    account_billing_CountryCode = models.CharField(max_length=3, default='555')
-    account_billing_phone_value = models.CharField(max_length=10, default='TESTING')
-    date_added = models.DateTimeField(auto_now_add=True)
-    date_edited = models.DateTimeField(auto_now=True)
-
-    # default true, schema will be automatically created and synced when it is saved
-    auto_create_schema = True
-
-    def __str__(self):
-        return self.account_name
-
-
 class Organization (models.Model):
 
     UNIVERSITY = 'U'
@@ -75,7 +44,7 @@ class Organization (models.Model):
         (ORG_NOSPECIAL, 'No special class'),
     )
 
-    uuid_account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    uuid_account = models.ForeignKey(allonsy_schema_models.Account, on_delete=models.CASCADE)
     uuid_org = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     org_FullName = models.CharField(max_length=100, default='TESTING')
     org_ShortName = models.CharField(max_length=32, default='TESTING')
@@ -109,7 +78,7 @@ class UserExtension (models.Model):
     )
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    uuid_account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    uuid_account = models.ForeignKey(allonsy_schema_models.Account, on_delete=models.CASCADE)
     uuid_user = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user_name_alias = models.CharField(max_length=100, default='TESTING')
     user_role_name = models.CharField(max_length=100, default='TESTING')
@@ -215,57 +184,6 @@ class UserAlert (models.Model):
         return self.interaction_text
 
 
-class UserInteraction (models.Model):
-
-    CONNECT = 'C'
-    ROOMMATE = 'R'
-    MESSAGE = 'M'
-
-    interaction_type_choices = (
-        (CONNECT, 'Connection request'),
-        (ROOMMATE, 'Roommate request'),
-        (MESSAGE, 'Message')
-    )
-
-    RECEIVED = 'R'
-    SENT = 'S'
-    DROPPED = 'D'
-
-    interaction_direction_choices = (
-        (RECEIVED, 'Target of this interaction'),
-        (SENT, 'Sender of this interaction'),
-        (DROPPED, 'Dropped message')
-    )
-
-    NEW = 'O'
-    READ = 'I'
-    DELETED = 'X'
-    BLOCKED = 'B'
-    FLAGGED = 'F'
-
-    interaction_status_choices = (
-        (NEW, 'New interaction'),
-        (READ, 'Reviewed interaction'),
-        (DELETED, 'Deleted interaction'),
-        (BLOCKED, 'Blocked interaction'),
-        (FLAGGED, 'Flagged as inappropriate')
-    )
-
-    uuid_interaction = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    interaction_direction = models.CharField(max_length=1, choices=interaction_direction_choices, default=DROPPED)
-    interaction_status = models.CharField(max_length=1, choices=interaction_status_choices, default=NEW)
-    interaction_sender = models.ManyToManyField(User, related_name='interaction_sender')
-    interaction_target = models.ManyToManyField(User, related_name='interaction_target')
-    interaction_type = models.CharField(max_length=1, choices=interaction_type_choices, default=MESSAGE)
-    interaction_subject = models.CharField(max_length=100, default='New message')
-    interaction_text = models.CharField(max_length=1000, default='Hello!')
-    date_added = models.DateTimeField(auto_now_add=True)
-    date_edited = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return self.uuid_interaction
-
-
 class Location (models.Model):
 
     # Villages are collections of Buildings, Suites are collections of rooms
@@ -288,7 +206,7 @@ class Location (models.Model):
     )
 
     uuid_location = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    uuid_account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    uuid_account = models.ForeignKey(allonsy_schema_models.Account, on_delete=models.CASCADE)
     location_HasParent = models.BooleanField(default=True)
     # If below is selected, child will inherit address/contact data from parent
     location_InheritGeoFromParent = models.BooleanField(default=True)
@@ -317,7 +235,7 @@ class Location (models.Model):
 
 class Epoch (models.Model):
     uuid_epoch = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    uuid_account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    uuid_account = models.ForeignKey(allonsy_schema_models.Account, on_delete=models.CASCADE)
     epoch_Name = models.CharField(max_length=100)
     epoch_StartDate = models.DateField()
     epoch_EndDate = models.DateField()
@@ -335,7 +253,7 @@ class Epoch (models.Model):
 
 class TreeOrganization(MPTTModel):
     relation_name = models.CharField(max_length=100, default='Test')
-    uuid_account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    uuid_account = models.ForeignKey(allonsy_schema_models.Account, on_delete=models.CASCADE)
     uuid_org = models.OneToOneField(Organization, on_delete=models.CASCADE)
     parent = TreeForeignKey('self', null=True, blank=True, related_name='children', db_index=True)
     date_added = models.DateTimeField(auto_now_add=True)
@@ -349,7 +267,7 @@ class TreeOrganization(MPTTModel):
 
 
 class TreeLocation(MPTTModel):
-    uuid_account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    uuid_account = models.ForeignKey(allonsy_schema_models.Account, on_delete=models.CASCADE)
     uuid_location = models.ForeignKey(Location, on_delete=models.CASCADE)
     parent = TreeForeignKey('self', null=True, blank=True, related_name='children', db_index=True)
     date_added = models.DateTimeField(auto_now_add=True)
@@ -373,7 +291,7 @@ class RelationOrganizationUser (models.Model):
     relation_name = models.CharField(max_length=100)
     relation_url = models.CharField(max_length=100)
     relation_is_primary = models.BooleanField(default=False)
-    uuid_account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    uuid_account = models.ForeignKey(allonsy_schema_models.Account, on_delete=models.CASCADE)
     uuid_user = models.ManyToManyField(UserExtension)
     uuid_org = models.ManyToManyField(Organization)
     permission_is_admin = models.BooleanField(default=False)
@@ -443,7 +361,7 @@ class RelationUserConnection (models.Model):
     REJECTED = 'R'
     DROPPED = 'D'
 
-    connection_status_choices = (
+    relation_status_choices = (
         (ACTIVE, 'Active connection'),
         (PENDING, 'Pending connection'),
         (REJECTED, 'Rejected connection'),
@@ -457,19 +375,70 @@ class RelationUserConnection (models.Model):
     connection_type_choices = (
         (PERSONAL, 'Personal connection'),
         (ROOMMATE, 'Roommate connection'),
-        (GROUP, 'Group connection'),
+        #(GROUP, 'Group connection'),
     )
 
-    uuid_user_1 = models.OneToOneField(UserExtension, related_name='uuid_user_1')
-    uuid_user_2 = models.OneToOneField(UserExtension, related_name='uuid_user_2')
-    relation_type = models.CharField(max_length=1, choices=connection_type_choices)
-    relation_status = models.CharField(max_length=1, choices=connection_status_choices)
-    relation_expires = models.DateTimeField()
+    uuid_relation = models.UUIDField(default=uuid.uuid4, editable=False)
+    uuid_user_1 = models.ManyToManyField(User, related_name='uuid_user_1')
+    uuid_user_2 = models.ManyToManyField(User, related_name='uuid_user_2')
+    relation_type = models.CharField(max_length=255, choices=connection_type_choices)
+    relation_status = models.CharField(max_length=255, choices=relation_status_choices)
+    relation_expires = models.DateTimeField(blank=True, null=True)
     date_added = models.DateTimeField(auto_now_add=True)
     date_edited = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.id
+        return str(self.uuid_relation)
 
 
+class UserInteraction (models.Model):
+
+    CONNECT = 'C'
+    ROOMMATE = 'R'
+    MESSAGE = 'M'
+
+    interaction_type_choices = (
+        (CONNECT, 'Connection request'),
+        (ROOMMATE, 'Roommate request'),
+        (MESSAGE, 'Message')
+    )
+
+    RECEIVED = 'R'
+    SENT = 'S'
+    DROPPED = 'D'
+
+    interaction_direction_choices = (
+        (RECEIVED, 'Target of this interaction'),
+        (SENT, 'Sender of this interaction'),
+        (DROPPED, 'Dropped message')
+    )
+
+    NEW = 'O'
+    READ = 'I'
+    DELETED = 'X'
+    BLOCKED = 'B'
+    FLAGGED = 'F'
+
+    interaction_status_choices = (
+        (NEW, 'New interaction'),
+        (READ, 'Reviewed interaction'),
+        (DELETED, 'Deleted interaction'),
+        (BLOCKED, 'Blocked interaction'),
+        (FLAGGED, 'Flagged as inappropriate')
+    )
+
+    uuid_interaction = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    interaction_direction = models.CharField(max_length=1, choices=interaction_direction_choices, default=DROPPED)
+    interaction_status = models.CharField(max_length=1, choices=interaction_status_choices, default=NEW)
+    interaction_sender = models.ManyToManyField(User, related_name='interaction_sender')
+    interaction_target = models.ManyToManyField(User, related_name='interaction_target')
+    interaction_type = models.CharField(max_length=1, choices=interaction_type_choices, default=MESSAGE)
+    interaction_subject = models.CharField(max_length=100, default='New message')
+    interaction_text = models.CharField(max_length=1000, default='Hello!')
+    uuid_request = models.ManyToManyField(RelationUserConnection, blank=True, null=True)
+    date_added = models.DateTimeField(auto_now_add=True)
+    date_edited = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return str(self.uuid_interaction)
 

@@ -1,0 +1,150 @@
+{% extends "allonsy/user_admin.html" %}
+
+{% block adminmain %}
+<div class="columns small-9">
+    <div class="row">
+        <div class="callout primary">Use this form to create a new location</div>
+    </div>
+
+    <div class="row">
+        <form id="add_location_form" method="post" action="{% url 'do_add_location' %}">
+
+            {% csrf_token %}
+
+            <div class="row">
+                <div class="row">
+                    <div class="columns small-12">
+                        <label>Select the location level
+                              <select name="location_type">
+                                <option value="C">Campus</option>
+                                <option value="V">Village</option>
+                                <option value="B">Building</option>
+                                <option value="F">Floor</option>
+                                <option value="S">Suite</option>
+                                <option value="R">Room</option>
+                                <option value="L">Location</option>
+                              </select>
+                        </label>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="columns small-6">
+                        <label>Does this location have a parent?
+                            <input type="checkbox" value='True' name="location_HasParent">
+                        </label>
+                    </div>
+                    <div class="columns small-6">
+                        <label>Inherit geodata from parent?
+                            <input type="checkbox" value='True' name="location_InheritGeoFromParent">
+                        </label>
+                    </div>
+                </div>
+            </div>
+             <div class="row">
+                <div class="columns small-12">
+                    <label>Name for this location
+                        <input type="text" name="location_FullName" placeholder="Example" />
+                    </label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="columns small-12">
+                    <label>A shorter name for this location
+                        <input type="text" name="location_ShortName" placeholder="Example" />
+                    </label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="columns small-4">
+                    <label>A positional ID for this location (e.g., "A1")
+                        <input type="text" name="location_SubLocIdent" placeholder="Example" />
+                    </label>
+                </div>
+                <div class="columns small-4">
+                    <label>An abbreviation for this location
+                        <input type="text" name="location_abbreviation" placeholder="Example" />
+                    </label>
+                </div>
+                <div class="columns small-2">
+                    <label>Co. Code:
+                        <input type="text" name="location_CountryCode" placeholder="001" />
+                    </label>
+                </div>
+                <div class="columns small-2">
+                    <label>Primary phone:
+                        <input type="text" name="location_phone_value" placeholder="Example" />
+                    </label>
+                </div>
+            </div>
+
+            <!--This can go to a second page -->
+            <div class="row">
+                <div class="columns small-3">
+                    <label>Street No.:
+                        <input type="text" name="location_street_number" placeholder="Example" />
+                    </label>
+                </div>
+                <div class="columns small-9">
+                    <label>Street name:
+                        <input type="text" name="location_street_name" placeholder="Example" />
+                    </label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="columns small-8">
+                    <label>Apartment/Unit No.:
+                        <input type="text" name="location_ApartmentNumber" placeholder="Example" />
+                    </label>
+                </div>
+                <div class="columns small-4">
+                    <label>Postal Code:
+                        <input type="text" name="location_PostalCode" placeholder="Example" />
+                    </label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="columns small-6">
+                    <label>City name:
+                        <input type="text" name="location_city_name" placeholder="Example" />
+                    </label>
+                </div>
+                <div class="columns small-3">
+                    <label>State:
+                        <input type="text" name="location_province_name" placeholder="Example" />
+                    </label>
+                </div>
+                 <div class="columns small-3">
+                    <label>Country code:
+                        <input type="text" name="location_country_id" placeholder="Example" />
+                    </label>
+                </div>
+            </div>
+
+            <!--end future second page -->
+
+            <div class="row">
+                    <div class="large-4 columns">
+                        <input type="submit" class="button" value="Submit" />
+                    </div>
+                    <p>{{ request.user.userextension.uuid_account_id }}</p>
+            </div>
+
+            {{form.errors}}
+
+            {{form.non_field_errors}}
+
+            <!--{% if form.errors %}
+                <div id="form-error">
+                    <p>The operation could not be performed because one or more error(s) occurred.<br />Please resubmit the form after making the following changes:</p>
+                    <ul>
+                    {% for field in form %}
+                    <li>{{field.html_name}} {{ field.errors|striptags }}</li>
+                    {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}-->
+
+        </form>
+    </div>
+</div>
+{% endblock adminmain %}

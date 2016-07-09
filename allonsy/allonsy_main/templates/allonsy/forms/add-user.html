@@ -1,0 +1,83 @@
+{% extends "allonsy/user_admin.html" %}
+
+{% block adminmain %}
+<div class="columns small-9">
+    <div class="row">
+        <div class="callout primary">Use this form to create a new user</div>
+    </div>
+
+    <div class="row">
+    <form id="add_organization_form" method="post" action="{% url 'do_add_user' %}">
+
+        {% csrf_token %}
+
+         <div class="row">
+            <div class="columns small-12">
+                <label>Username
+                    <input type="text" name="username" placeholder="Username" />
+                </label>
+            </div>
+        </div>
+        <div class="row">
+            <div class="columns small-6">
+                <label>Password
+                    <input type="password" name="password" placeholder="Password" />
+                </label>
+            </div>
+            <div class="columns small-6">
+                <label>Confirm password
+                    <input type="password" name="conf_password" placeholder="Password" />
+                </label>
+            </div>
+        </div>
+        <div class="row">
+            <div class="columns small-6">
+                <label>Confirm password
+                    <input type="text" name="first_name" placeholder="First" />
+                </label>
+            </div>
+            <div class="columns small-6">
+                <label>Confirm password
+                    <input type="text" name="last_name" placeholder="Last" />
+                </label>
+            </div>
+        </div>
+        <div class="row">
+            <div class="columns small-12">
+                <label>Email
+                    <input type="email" name="email" placeholder="someone@someone.org" />
+                </label>
+            </div>
+        </div>
+        <div class="row">
+            <div class="columns small-12">
+                <label>Superuser:
+                    <input type="checkbox" name="is_superuser">
+                </label>
+                <label>Staff:
+                    <input type="checkbox" name="is_staff">
+                </label>
+            </div>
+        </div>
+        <div class="row">
+                <div class="large-4 columns">
+                    <input type="submit" class="button" value="Submit" />
+                </div>
+                <p>{{ request.user.userextension.uuid_account_id }}</p>
+        </div>
+
+        {% if form.errors %}
+            <div id="form-error">
+                <p>The operation could not be performed because one or more error(s) occurred.<br />Please resubmit the form after making the following changes:</p>
+                <ul>
+                {% for field in form %}
+                <li>{{field.html_name}} {{ field.errors|striptags }}</li>
+                {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+    </form>
+    </div>
+</div>
+{% endblock adminmain %}

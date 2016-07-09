@@ -1,4 +1,5 @@
-from allonsy_main.models import Account, UserExtension, User, UserProfile, Organization, TreeOrganization, RelationOrganizationUser, UserAlert, UserInteraction
+from allonsy_main.models import UserExtension, User, UserProfile, Organization, TreeOrganization, RelationOrganizationUser, UserAlert, UserInteraction
+from allonsy_schemas.models import Account
 from django.db.models import Q
 
 
@@ -11,12 +12,12 @@ def base_user(request):
             current_user_id = current_user.id
             user_extension = UserExtension.objects.get(user=current_user_id)
             user_extension_object = UserExtension.objects.get(user=current_user_id)
-            user_account = Account.objects.get(account_name=user_extension.uuid_account)
-            user_account_url = user_account.account_url_name
+            #user_account = Account.objects.get(account_name=user_extension.uuid_account)
+            #user_account_url = user_account.account_url_name
 
             return {
                 'user_extension_object': user_extension_object,
-                'user_account_url': user_account_url,
+                #'user_account_url': user_account_url,
             }
 
         except UserExtension.DoesNotExist:

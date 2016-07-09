@@ -1,7 +1,8 @@
 from django import forms
 from django.core.exceptions import ValidationError
 from django.forms import ModelForm
-from allonsy_main.models import Account, Organization, Location, User, UserExtension, RelationOrganizationUser, UserExtension, UserProfile, UserInteraction
+from allonsy_main.models import Organization, Location, User, UserExtension, RelationOrganizationUser, UserExtension, UserProfile, UserInteraction
+from allonsy_schemas.models import Account
 
 
 class DoAddAccount(ModelForm):
@@ -20,13 +21,64 @@ class DoAddOrganization(ModelForm):
         fields = ['org_FullName', 'org_ShortName', 'org_abbreviation', 'org_type', 'org_HasParent']
 
 
-class DoAddLocation(ModelForm):
+class DoAddLocation(forms.Form):
+    location_HasParent = forms.CharField(max_length=8, required=False)
+    location_InheritGeoFromParent = forms.CharField(max_length=8, required=False)
+    location_type = forms.CharField(max_length=1)
+    location_SubLocIdent = forms.CharField(max_length=16)
+    location_FullName = forms.CharField(max_length=100)
+    location_ShortName = forms.CharField(max_length=32)
+    location_abbreviation = forms.CharField(max_length=8)
+    location_country_id = forms.CharField(max_length=2)
+    location_province_name = forms.CharField(max_length=100)
+    location_city_name = forms.CharField(max_length=100)
+    location_PostalCode = forms.CharField(max_length=10)
+    location_street_number = forms.CharField(max_length=100)
+    location_street_name = forms.CharField(max_length=100)
+    location_ApartmentNumber = forms.CharField(max_length=16)
+    location_CountryCode = forms.CharField(max_length=3)
+    location_phone_value = forms.CharField(max_length=10)
+
+    def clean_HasParent(self):
+        location_HasParent = self.cleaned_data['location_HasParent']
+        if location_HasParent == 'on':
+            location_HasParent = True
+        else:
+            location_HasParent = False
+        # Always return the cleaned data, whether you have changed it or
+        # not.
+        return location_HasParent
+
+    def clean_InheritGeoFromParent(self):
+        location_InheritGeoFromParent = self.cleaned_data['location_InheritGeoFromParent']
+        if location_InheritGeoFromParent == 'on':
+            location_InheritGeoFromParent = True
+        else:
+            location_InheritGeoFromParent = False
+        # Always return the cleaned data, whether you have changed it or
+        # not.
+        return location_InheritGeoFromParent
+
+
+'''class DoAddUser(ModelForm):
     class Meta:
-        model = Location
-        fields = ['location_HasParent', 'location_InheritGeoFromParent', 'location_type', 'location_SubLocIdent',
-                  'location_FullName', 'location_ShortName', 'location_abbreviation', 'location_country_id',
-                  'location_province_name', 'location_city_name', 'location_PostalCode', 'location_street_number',
-                  'location_street_name', 'location_ApartmentNumber', 'location_CountryCode', 'location_phone_value']
+        model = User
+        fields = ['username', 'email', 'password']'''
+
+
+class DoUserConnect(forms.Form):
+    interaction_text = forms.CharField(max_length=500, required=False)
+    relation_type = forms.CharField(max_length=500)
+
+    def clean_interaction_text(self):
+        interaction_text = self.cleaned_data['interaction_text']
+        if interaction_text == '':
+            interaction_text = 'Please add me as a connection.'
+        else:
+            interaction_text = self.cleaned_data['interaction_text']
+        # Always return the cleaned data, whether you have changed it or
+        # not.
+        return interaction_text
 
 
 class DoSendReplyMessage(ModelForm):
@@ -37,6 +89,37 @@ class DoSendReplyMessage(ModelForm):
 
 class DoEditUserProfile(forms.Form):
     profile_aboutme = forms.CharField(max_length=5000)
+
+
+class DoAddUser(forms.Form):
+    username = forms.CharField(max_length=100)
+    password = forms.CharField(max_length=100)
+    conf_password = forms.CharField(max_length=100)
+    email = forms.EmailField(max_length=100)
+    first_name = forms.CharField(max_length=100)
+    last_name = forms.CharField(max_length=100)
+    is_superuser = forms.CharField(max_length=10, required=False)
+    is_staff = forms.CharField(max_length=10, required=False)
+
+    def clean_is_superuser(self):
+        is_superuser = self.cleaned_data['is_superuser']
+        if is_superuser == 'on':
+            is_superuser = True
+        else:
+            is_superuser = False
+        # Always return the cleaned data, whether you have changed it or
+        # not.
+        return is_superuser
+
+    def clean_is_staff(self):
+        location_is_staff = self.cleaned_data['is_staff']
+        if location_is_staff == 'on':
+            location_is_staff = True
+        else:
+            location_is_staff = False
+        # Always return the cleaned data, whether you have changed it or
+        # not.
+        return location_is_staff
 
 
 class DoEditUserInfoContact(forms.Form):

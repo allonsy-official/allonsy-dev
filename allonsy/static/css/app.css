@@ -32,6 +32,9 @@ a {
 .default-accent:hover {
     background-color: #FFC107; }
 
+.default-accent:hover, .default-accent:focus {
+    background-color: #FFC107; }
+
 .label.default {
   display: inline-block;
   padding: 0.33333rem 0.5rem;

@@ -32,12 +32,11 @@ ALLOWED_HOSTS = []
 
 SHARED_APPS = (
     'tenant_schemas',  # mandatory
-    'allonsy_main.apps.AllonsyMainConfig', # you must list the app where your tenant model resides in
+    'allonsy_schemas', # you must list the app where your tenant model resides in
 
     'django.contrib.contenttypes',
 
     # everything below here is optional
-    #'allonsy_main.apps.AllonsyMainConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.sessions',
@@ -52,13 +51,14 @@ SHARED_APPS = (
 TENANT_APPS = (
     # The following Django contrib apps must be in TENANT_APPS
     'django.contrib.contenttypes',
+    'allonsy_main',
 
     # your tenant-specific apps
 )
 
 INSTALLED_APPS = list(SHARED_APPS) + [app for app in TENANT_APPS if app not in SHARED_APPS]
 
-TENANT_MODEL = "allonsy_main.Account" # app.Model
+TENANT_MODEL = "allonsy_schemas.Account" # app.Model
 
 
 '''INSTALLED_APPS = [
@@ -114,13 +114,13 @@ TEMPLATES = [
     },
 ]
 
-MULTITENANT_TEMPLATE_DIRS = [
-    'tenant_templates'
-]
-
 
 WSGI_APPLICATION = 'allonsy.wsgi.application'
 
+#tenant-schemas
+DATABASE_ROUTERS = (
+    'tenant_schemas.routers.TenantSyncRouter',
+)
 
 # Database
 # https://docs.djangoproject.com/en/1.9/ref/settings/#databases
@@ -146,11 +146,6 @@ DATABASES = {
         'PORT': '5432',
     }
 }
-
-#tenant-schemas
-DATABASE_ROUTERS = (
-    'tenant_schemas.routers.TenantSyncRouter',
-)
 
 
 # Password validation
