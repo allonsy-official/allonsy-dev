@@ -13,8 +13,8 @@
           <div class="columns small-12 medium-3 large-3">
             <div class="row">
             <div class="columns small-6 small-centered medium-6 medium-centered large-12">
-            <div style="background-color:#333; width:200px; height:200px;">
-            </div>
+            <!-- <div style="background-color:#333; width:200px; height:200px;"> -->
+              <img class="img-circle-lg" src="http://i.imgur.com/lnRFVtA.jpg" />
             </div>
             </div>
           </div>
@@ -79,26 +79,62 @@
                 </div>
 
                 {% elif relation_status.relation_status == 'P' %}
-                <a href="" class="button warning">Connection pending...</a>
+                <div class="columns small-5">
+                  <a href="" class="button warning">Connection pending...</a>
+                </div>
 
-                {% elif relation_status == 'A' %}
-                <a href="" class="button success">You're connected!</a>
+                {% elif relation_status.relation_status == 'A' %}
+                <div class="columns small-5">
+                  <div class="button-group">
+                    <a data-open="messagemodal" class="button success">Message!</a>
+                    <a href="" class="button success">You're connected!</a>
+
+                    <div class="reveal" id="messagemodal" data-reveal>
+                      <form id="do_send_message_form" method="post" action=interactions/send/">
+                          {% csrf_token %}
+                          <h5>Message to: {{ req_user.first_name }} {{ req_user.last_name }}</h5>
+                          <p>
+                            <label>
+                            Subject:
+                              <input name="interaction_subject" type="text" value="Message from {{ cur_user.first_name }} {{ cur_user.last_name }}">
+                            </label>
+                          </p>
+                          <p>
+                            <textarea name="interaction_text"></textarea>
+                          </p>
+                            <div class="columns small-6">
+                            <input type="submit" class="button" value="Send" />
+                          </div>
+                          <button class="close-button" data-close aria-label="Close modal" type="button">
+                            <span aria-hidden="true">&times;</span>
+                          </button>
+                      </form>
+                      <button class="close-button" data-close aria-label="Close modal" type="button">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                    </div>
+
+                  </div>
+                </div>
+
 
                 {% else %}
-                <a href="" class="button error">Connections unavailable</a>
-
+                <div class="columns small-5">
+                  <a href="" class="button error">Status unavailable</a>
+                </div>
                 {% endif %}
-                <div class="columns small-9">
+
+                <div class="columns small-7">
                   {% if cur_user == req_user %}
                   <div class="columns small-6">
-                    <a href="/user/{{ req_user.username }}/edit/contact" class="extended button default-accent">Edit your on-campus info</a>
+                    <a href="/user/{{ req_user.username }}/edit/contact" class="extended button default-accent">On-campus info</a>
                   </div>
                   <div class="columns small-6">
-                    <a href="/user/{{ req_user.username }}/edit/emergencycontacts" class="extended button default-accent">Edit your emergency info</a>
+                    <a href="/user/{{ req_user.username }}/edit/emergencycontacts" class="extended button default-accent">Emergency info</a>
                   </div>
                   {% else %}
                   <div class="columns small-6">
-                    <button class="dropdown button default-accent" data-toggle="on-campus-contact-data">On-campus contact information</button>
+                    <button class="dropdown button default-accent" data-toggle="on-campus-contact-data">On-campus info</button>
                     <div class="dropdown-pane" id="on-campus-contact-data" data-dropdown data-auto-focus="true">
                       <table class="hover">
                         <tbody>
@@ -115,7 +151,7 @@
                     </div>
                   </div>
                   <div class="columns small-6">
-                    <button class="dropdown button default-accent" data-toggle="home-contact-data">Personal contact information</button>
+                    <button class="dropdown button default-accent" data-toggle="home-contact-data">Emergency info</button>
                     <div class="dropdown-pane" id="home-contact-data" data-dropdown data-auto-focus="true">
                       <table class="hover">
                         <tbody>

@@ -64,8 +64,8 @@ TENANT_MODEL = "allonsy_schemas.Account" # app.Model
 '''INSTALLED_APPS = [
     'allonsy_main.apps.AllonsyMainConfig',
     'django.contrib.admin',
-    'django.contrib.auth',
     'django.contrib.contenttypes',
+    'django.contrib.auth',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
@@ -139,7 +139,7 @@ DATABASE_ROUTERS = (
 DATABASES = {
     'default': {
         'ENGINE': 'tenant_schemas.postgresql_backend',
-        'NAME': 'test_allonsy_dev',
+        'NAME': 'allonsy_dev_alpha001',
         'USER': 'admin',
         'PASSWORD': 'admin',
         'HOST': '127.0.0.1',

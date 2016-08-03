@@ -391,7 +391,7 @@ class RelationUserConnection (models.Model):
         return str(self.uuid_relation)
 
 
-class UserInteraction (models.Model):
+class UserInteractionTree (MPTTModel):
 
     CONNECT = 'C'
     ROOMMATE = 'R'
@@ -428,17 +428,165 @@ class UserInteraction (models.Model):
     )
 
     uuid_interaction = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    interaction_direction = models.CharField(max_length=1, choices=interaction_direction_choices, default=DROPPED)
+    parent = TreeForeignKey('self', null=True, blank=True, related_name='children', db_index=True)
+    #interaction_direction = models.CharField(max_length=1, choices=interaction_direction_choices, default=DROPPED)
     interaction_status = models.CharField(max_length=1, choices=interaction_status_choices, default=NEW)
     interaction_sender = models.ManyToManyField(User, related_name='interaction_sender')
     interaction_target = models.ManyToManyField(User, related_name='interaction_target')
     interaction_type = models.CharField(max_length=1, choices=interaction_type_choices, default=MESSAGE)
     interaction_subject = models.CharField(max_length=100, default='New message')
     interaction_text = models.CharField(max_length=1000, default='Hello!')
-    uuid_request = models.ManyToManyField(RelationUserConnection, blank=True, null=True)
+    uuid_request = models.ManyToManyField(RelationUserConnection, blank=True)
+    date_added = models.DateTimeField(auto_now_add=True)
+    date_edited = models.DateTimeField(auto_now=True)
+
+    class MPTTMeta:
+        order_insertion_by = ['date_added']
+
+    def __str__(self):
+        return str(self.uuid_interaction)
+
+
+'''class WorkflowItemTree (MPTTModel):
+
+    WFSET = 'S'
+    WFITEM = 'I'
+    WFITEMTEXT = 'T'
+
+    wf_item_is_type_choices = (
+        (WFSET, 'Workflow Set'),
+        (WFITEM, 'Workflow Item'),
+        (WFITEMTEXT, 'Item body text'),
+    )
+
+    NOSET = 'X'
+    ROUNDS = 'N'
+    DUTY = 'D'
+    CHECKIN = 'I'
+    CHECKOUT = 'O'
+
+    wf_set_is_type_choices = (
+        (NOSET, 'No group set'),
+        (ROUNDS, 'Nightly rounds'),
+        (DUTY, 'On-call duty'),
+        (CHECKIN, 'Room check-in'),
+        (CHECKOUT, 'Room check-out')
+    )
+
+    uuid_wf_item = models.UUIDField(primary_key=True, editable=False)
+    parent = TreeForeignKey('self', null=True, blank=True, related_name='children', db_index=True)
+    wf_item_name = models.CharField(max_length=64, default=uuid_wf_item)
+    wf_item_type = models.CharField(max_length=1, choices=wf_item_is_type_choices, default=WFSET)
+    wf_item_is_active = models.BooleanField(default=True)
+    wf_item_text = models.CharField(max_length=256, blank=True)
+    wf_set_is_type = models.CharField(max_length=1, choices=wf_set_is_type_choices, default=NOSET)
+    wf_set_is_default_parent_for_type = models.BooleanField(default=False)
+    date_added = models.DateTimeField(auto_now_add=True)
+    date_edited = models.DateTimeField(auto_now=True)
+
+    class MPTTMeta:
+        order_insertion_by = ['date_added']
+
+    def __str__(self):
+        return str(self.uuid_wf_item)'''
+
+
+class WorkflowSet (models.Model):
+
+    NOSET = 'X'
+    ROUNDS = 'N'
+    DUTY = 'D'
+    CHECKIN = 'I'
+    CHECKOUT = 'O'
+
+    wf_set_is_type_choices = (
+        (NOSET, 'No group set'),
+        (ROUNDS, 'Nightly rounds'),
+        (DUTY, 'On-call duty'),
+        (CHECKIN, 'Room check-in'),
+        (CHECKOUT, 'Room check-out')
+    )
+
+    uuid_wf_set = models.UUIDField(default=uuid.uuid4, editable=False)
+    wf_set_name = models.CharField(max_length=64, default=uuid_wf_set)
+    wf_set_is_type = models.CharField(max_length=1, choices=wf_set_is_type_choices, default=NOSET)
+    wf_set_is_default_parent_for_type = models.BooleanField(default=False)
+    wf_set_has_child = models.BooleanField(default=False)
+    wf_set_is_active = models.BooleanField(default=True)
     date_added = models.DateTimeField(auto_now_add=True)
     date_edited = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return str(self.uuid_interaction)
+        return str(self.wf_set_name)
+
+
+class RelationWorkflow (models.Model):
+    uuid_relation = models.UUIDField(default=uuid.uuid4, editable=False)
+    wf_parent = models.ManyToManyField(WorkflowSet, related_name='wf_parent', blank=True)
+    wf_child = models.ManyToManyField(WorkflowSet, related_name='wf_child', blank=True)
+    wf_disp_order = models.CharField(max_length=2, default='1')
+    date_added = models.DateTimeField(auto_now_add=True)
+    date_edited = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return str(self.uuid_relation)
+
+
+class WorkflowItem (models.Model):
+    uuid_wf_item = models.UUIDField(default=uuid.uuid4, editable=False)
+    wf_item_is_active = models.BooleanField(default=True)
+    wf_item_parent_wfset = models.ManyToManyField(WorkflowSet, blank=True)
+    wf_item_name = models.CharField(max_length=64, blank=True)
+    wf_item_text = models.CharField(max_length=256, blank=True)
+    wf_item_disp_order = models.CharField(max_length=2, default='1')
+    date_added = models.DateTimeField(auto_now_add=True)
+    date_edited = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return str(self.wf_item_name)
+
+
+class WorkflowDocumentMaster (models.Model):
+    # TODO: Ensure that changes to parent form do not show after create (or perhaps submit)
+
+    CREATE = 'C'
+    INPROG = 'I'
+    SUBMIT = 'S'
+    REVIEW = 'R'
+    APPROVE = 'A'
+    COMPLETE = 'O'
+
+    user_instance_state_choices = (
+        (CREATE, 'Created'),
+        (INPROG, 'Edited and saved'),
+        (SUBMIT, 'Submitted for review'),
+        (REVIEW, 'Reverted for edit'),
+        (APPROVE, 'Approved'),
+        (COMPLETE, 'Saved as complete')
+    )
+
+    uuid_doc = models.UUIDField(default=uuid.uuid4, editable=False)
+    uuid_wf_user = models.ManyToManyField(User, related_name='user')
+    uuid_wf_edited_user = models.ManyToManyField(User, related_name='edited_by')
+    user_instance_name = models.CharField(max_length=256, default='New form')
+    user_instance_state = models.CharField(max_length=1, choices=user_instance_state_choices, default=CREATE)
+    date_added = models.DateTimeField(auto_now_add=True)
+    date_edited = models.DateTimeField(auto_now=True)
+
+
+class WorkflowDocumentItem (models.Model):
+    # TODO: Split instance from relation so that an instance can be tracked through multiple user transactions
+
+    uuid_doc_item = models.UUIDField(default=uuid.uuid4, editable=False)
+    uuid_doc = models.ManyToManyField(WorkflowDocumentMaster, related_name='document_parent')
+    wf_item_root_parent = models.ManyToManyField(WorkflowSet, related_name='root_parent')
+    wf_parent_set_name = models.CharField(max_length=64)
+    wf_item_sub_parent = models.ManyToManyField(WorkflowSet, related_name='immediate_parent')
+    wf_sub_parent_set_name = models.CharField(max_length=64)
+    wf_item_sub_parent_disp_order = models.CharField(max_length=2, default='1')
+    wf_item_text = models.CharField(max_length=256, blank=True)
+    user_item_state = models.CharField(max_length=16, default='Off')
+    date_added = models.DateTimeField(auto_now_add=True)
+    date_edited = models.DateTimeField(auto_now=True)
+
 

@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 
 from mptt.admin import MPTTModelAdmin
 
-from allonsy_main.models import UserExtension, Organization, Location, Epoch, RelationOrganizationUser, TreeOrganization, TreeLocation, UserProfile, UserAlert, UserInteraction, RelationUserConnection
+from allonsy_main.models import UserExtension, Organization, Location, Epoch, RelationOrganizationUser, TreeOrganization, TreeLocation, UserProfile, UserAlert, UserInteractionTree, RelationUserConnection, WorkflowSet, RelationWorkflow, WorkflowItem
 from allonsy_schemas.models import Account
 
 
@@ -23,7 +23,7 @@ admin.site.register(TreeOrganization, MPTTModelAdmin)
 admin.site.register(User, UserAdmin)
 admin.site.register(UserProfile)
 admin.site.register(UserAlert)
-admin.site.register(UserInteraction)
+admin.site.register(UserInteractionTree)
 admin.site.register(Account)
 admin.site.register(Organization)
 admin.site.register(Location)
@@ -31,3 +31,9 @@ admin.site.register(Epoch)
 admin.site.register(TreeLocation)
 admin.site.register(RelationOrganizationUser)
 admin.site.register(RelationUserConnection)
+admin.site.register(WorkflowSet)
+admin.site.register(RelationWorkflow)
+admin.site.register(WorkflowItem)
+
+
+

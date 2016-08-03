@@ -1,7 +1,7 @@
 from django import forms
 from django.core.exceptions import ValidationError
 from django.forms import ModelForm
-from allonsy_main.models import Organization, Location, User, UserExtension, RelationOrganizationUser, UserExtension, UserProfile, UserInteraction
+from allonsy_main.models import Organization, Location, User, UserExtension, RelationOrganizationUser, UserExtension, UserProfile, UserInteractionTree
 from allonsy_schemas.models import Account
 
 
@@ -83,7 +83,13 @@ class DoUserConnect(forms.Form):
 
 class DoSendReplyMessage(ModelForm):
     class Meta:
-        model = UserInteraction
+        model = UserInteractionTree
+        fields = ['interaction_subject', 'interaction_text']
+
+
+class DoSendMessage(ModelForm):
+    class Meta:
+        model = UserInteractionTree
         fields = ['interaction_subject', 'interaction_text']
 
 
@@ -172,5 +178,75 @@ class DoAssocOrganizationUser(forms.Form):
     org = forms.CharField(max_length=100)
     user = forms.CharField(max_length=100)
 
+
+class DoAddEditWFSet(forms.Form):
+    wf_set_name = forms.CharField(max_length=64)
+    wf_set_is_type = forms.CharField(max_length=1)
+    wf_set_is_default_parent_for_type = forms.CharField(max_length=16, required=False)
+    wf_set_is_active = forms.CharField(max_length=16, required=False)
+    wf_set_has_child = forms.CharField(max_length=16, required=False)
+
+    def clean_wf_item_is_active(self):
+        wf_item_is_active = self.cleaned_data['wf_item_is_active']
+        if wf_item_is_active == 'True':
+            wf_item_is_active = True
+        else:
+            wf_item_is_active = False
+        # Always return the cleaned data, whether you have changed it or
+        # not.
+        return wf_item_is_active
+
+    def clean_wf_set_is_default_parent_for_type(self):
+        wf_set_is_default_parent_for_type = self.cleaned_data['wf_set_is_default_parent_for_type']
+        if wf_set_is_default_parent_for_type == 'True':
+            wf_set_is_default_parent_for_type = True
+        else:
+            wf_set_is_default_parent_for_type = False
+        # Always return the cleaned data, whether you have changed it or
+        # not.
+        return wf_set_is_default_parent_for_type
+
+    def clean_wf_set_has_child(self):
+        wf_set_has_child = self.cleaned_data['wf_set_has_child']
+        if wf_set_has_child == 'True':
+            wf_set_has_child = True
+        else:
+            wf_set_has_child = False
+        # Always return the cleaned data, whether you have changed it or
+        # not.
+        return wf_set_has_child
+
+
+class DoAddEditWFChild(forms.Form):
+    wf_set_name = forms.CharField(max_length=64)
+    wf_disp_order = forms.CharField(max_length=2)
+    wf_set_is_active = forms.CharField(max_length=16, required=False)
+
+    def clean_wf_set_is_active(self):
+        wf_set_is_active = self.cleaned_data['wf_set_is_active']
+        if wf_set_is_active == 'True':
+            wf_set_is_active = True
+        else:
+            wf_set_is_active = False
+        # Always return the cleaned data, whether you have changed it or
+        # not.
+        return wf_set_is_active
+
+
+class DoAddEditWFItem(forms.Form):
+    wf_item_is_active = forms.CharField(max_length=16)
+    wf_item_name = forms.CharField(max_length=64)
+    wf_item_text = forms.CharField(max_length=256)
+    wf_item_disp_order = forms.CharField(max_length=2)
+
+    def clean_wf_item_is_active(self):
+        wf_item_is_active = self.cleaned_data['wf_item_is_active']
+        if wf_item_is_active == 'True':
+            wf_item_is_active = True
+        else:
+            wf_item_is_active = False
+        # Always return the cleaned data, whether you have changed it or
+        # not.
+        return wf_item_is_active
 
 

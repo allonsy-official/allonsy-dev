@@ -26,11 +26,11 @@
             {% for target in interact.interaction_target.all %}
             <li>
               <a href="#">
-                {% if interact.interaction_status == 'O' and interact.interaction_direction = 'R' %}
+                {% if interact.interaction_status == 'O' and target == cur_user %}
                 <b>[NEW] {{ sender.first_name }} {{ sender.last_name }}:</b> {{interact.interaction_subject}}
-                {% elif interact.interaction_status == 'I' and interact.interaction_direction = 'R' %}
+                {% elif interact.interaction_status == 'I' %}
                 {{ sender.first_name }} {{ sender.last_name }}: {{interact.interaction_subject}}
-                 {% elif interact.interaction_direction = 'S' %}
+                 {% elif sender == cur_user %}
                 {{ target.first_name }} {{ target.last_name }}: {{interact.interaction_subject}}
                 {% endif %}
               </a>
@@ -70,8 +70,8 @@
                     <!--TODO: Reporting/blocking functionality-->
                     <a href="status/F/{{interact.uuid_interaction}}/" class="small secondary hollow button">Report</a>
                     {% elif interact.interaction_type == 'C' %}
-                    <button class="small success button" href="status/A/{{interact.uuid_interaction}}/">Accept connection</button>
-                    <button class="small alert hollow button" href="status/R/{{interact.uuid_interaction}}/">Decline connection</button>
+                    <a href="status/I/A/{{interact.uuid_interaction}}/" class="small success button">Accept connection</a>
+                    <button class="small alert hollow button" href="status/C/{{interact.uuid_interaction}}/">Decline connection</button>
                     <button class="small secondary hollow button" href="">Report</button>
                     {% elif interact.interaction_type == 'R' %}
                     <button class="small button" href="#">Send message</button>

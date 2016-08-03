@@ -8,8 +8,32 @@
         <h3>Roles & Tasks Dashboard</h3>
     </div>
 </div>
-<div class="row">
 
+{% if current_userextension.user_type != 'T' %}
+<div class="row">
+    <div class="columns small-12">
+        This space for dashboards!
+    </div>
+</div>
+{% else %}
+
+{% endif %}
+
+<div class="row">
+    <div class="columns small-4 text-center">
+        <!-- To-do list -->
+        <h5>My tasks</h5>
+    </div>
+    <div class="columns small-8 text-center">
+        <!-- What's up -->
+        <div class="row">
+            <h5>Posts & Updates</h5>
+        </div>
+        <div class="row">
+
+        </div>
+
+    </div>
 </div>
 
 

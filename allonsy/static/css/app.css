@@ -17,6 +17,22 @@ a {
   a:hover, a:focus {
     color: #512DA8; }
 
+.img-circle-sm {
+  width: auto;
+  max-width: 150px;
+  height: auto;
+  max-height: 100px;
+  border-radius: 50%;
+}
+
+.img-circle-lg {
+  width: auto;
+  max-width: 175px;
+  height: auto;
+  max-height: 175px;
+  border-radius: 50%;
+}
+
 .yellow-accent {
   background-color: #FFC107;
 }

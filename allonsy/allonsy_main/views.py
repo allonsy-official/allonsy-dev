@@ -1,4 +1,5 @@
-import uuid, random
+import uuid, random, copy, collections
+from itertools import chain
 
 from django.shortcuts import render, render_to_response, RequestContext, redirect
 from django.http import HttpResponse, HttpResponseRedirect
@@ -8,8 +9,8 @@ from django.core.urlresolvers import reverse
 from django.db.models import Q
 from django_ajax.decorators import ajax
 
-from allonsy_main.forms import DoAddAccount, DoAddOrganization, DoAddLocation, DoAddUser, DoAssocOrganization, DoAssocOrganizationUser, DoEditUserProfile, DoEditUserInfoContact, DoEditUserEmergencyContact, DoUserConnect, DoSendReplyMessage
-from allonsy_main.models import UserExtension, User, UserProfile, Organization, TreeOrganization, RelationOrganizationUser, UserInteraction, UserAlert, Location, RelationUserConnection
+from allonsy_main.forms import DoAddAccount, DoAddOrganization, DoAddLocation, DoAddUser, DoAssocOrganization, DoAssocOrganizationUser, DoEditUserProfile, DoEditUserInfoContact, DoEditUserEmergencyContact, DoUserConnect, DoSendReplyMessage, DoSendMessage, DoAddEditWFSet, DoAddEditWFChild, DoAddEditWFItem
+from allonsy_main.models import UserExtension, User, UserProfile, Organization, TreeOrganization, RelationOrganizationUser, UserInteractionTree, UserAlert, Location, RelationUserConnection, WorkflowSet, RelationWorkflow, WorkflowItem, RelationWorkflow, WorkflowItem
 from allonsy_schemas.models import Account
 
 
@@ -175,7 +176,14 @@ def resolve_user_url(request, username):
     req_user_orgs_affil = RelationOrganizationUser.objects.values('relation_name', 'relation_url').all().filter(uuid_user=req_user_uuid, uuid_org__in=req_orgs_affil)
     req_user_orgs_primary = RelationOrganizationUser.objects.values('relation_name').all().filter(uuid_user=req_user_uuid, uuid_org__in=req_orgs_affil, relation_is_primary=True)
     req_profile_aboutme = UserProfile.objects.get(uuid_user=req_user_uuid)
+    req_user_connects_1 = RelationUserConnection.objects.filter(Q(uuid_user_1=req_user) & Q(relation_status='A')).values_list('uuid_user_2', flat=True)
+    req_user_connects_2 = RelationUserConnection.objects.filter(Q(uuid_user_2=req_user) & Q(relation_status='A')).values_list('uuid_user_1', flat=True)
+    current_user_connects_1 = RelationUserConnection.objects.filter(Q(uuid_user_1=current_user) & Q(relation_status='A')).values_list('uuid_user_2', flat=True)
+    current_user_connects_2 = RelationUserConnection.objects.filter(Q(uuid_user_2=current_user) & Q(relation_status='A')).values_list('uuid_user_1', flat=True)
+    # connects = list(chain(req_user_connects_1, req_user_connects_2, current_user_connects_1, current_user_connects_2))
+    connects = set(chain(req_user_connects_1, req_user_connects_2, current_user_connects_1, current_user_connects_2))
 
+    # Set status of connect button when visiting profile of another user
     if RelationUserConnection.objects.all().filter(uuid_user_1=current_user, uuid_user_2=req_user).exists():
         relation_status = RelationUserConnection.objects.get(uuid_user_1=current_user, uuid_user_2=req_user)
 
@@ -185,7 +193,43 @@ def resolve_user_url(request, username):
     else:
         relation_status = 'None'
 
-    context_dict_local = {'orgs_affil': req_user_orgs_affil, 'orgs_primary': req_user_orgs_primary, 'profile_aboutme': req_profile_aboutme, 'relation_status': relation_status}
+    # Get connections common between current user and the requested user page
+    common_connects_set = []
+    unique_connects = []
+
+    for connect in connects:
+        if connect not in common_connects_set:
+            unique_connects.append(connect)
+            common_connects_set.append(connect)
+
+    #Select five random users in common and pass to view
+    def randselect(commons):
+        if current_user.id not in commons:
+            pass
+        else:
+            commons.remove(current_user.id)
+            commons.remove(req_user.id)
+        commons_count = len(commons)
+        if commons_count > 5:
+            get_these_users = random.sample(commons, 5)
+
+        else:
+            get_these_users = commons
+
+        return get_these_users
+
+    common_connects_list = randselect(common_connects_set)
+
+    # http://stackoverflow.com/questions/852414/how-to-dynamically-compose-an-or-query-filter-in-django
+    connects_in_common = User.objects.filter(pk__in=common_connects_list)
+
+    '''connect_users = []
+
+    for connect in common_connects_set:
+        append_this_obj = User.objects.values('first_name', 'last_name').all().filter(id__in=str(connect))
+        connect_users.append(append_this_obj)'''
+
+    context_dict_local = {'orgs_affil': req_user_orgs_affil, 'orgs_primary': req_user_orgs_primary, 'profile_aboutme': req_profile_aboutme, 'relation_status': relation_status, 'common_connects': connects_in_common}
 
     context_dict = context_helper.copy()
     context_dict.update(context_dict_local)
@@ -559,11 +603,11 @@ def do_get_user_alerts(request, username):
 
     current_user_obj, current_user, current_userextension, current_user_acct, req_user, req_userextension, req_user_acct, req_user_uuid = get_user_data_objects(request, username)
 
-    new_user_interactions = UserInteraction.objects.all().filter(interaction_target=current_user, interaction_status='O')
+    new_user_interactions = UserInteractionTree.objects.all().filter(interaction_target=current_user, interaction_status='O')
     count_new_user_interactions = new_user_interactions.count
     req_orgs_affil = Organization.objects.filter(org_type_special='X')
     req_user_orgs_primary = RelationOrganizationUser.objects.values('relation_name').all().filter(uuid_user=req_user_uuid, uuid_org__in=req_orgs_affil, relation_is_primary=True)
-    current_user_interactions = UserAlert.objects.all().filter(Q(interaction_target=current_user), Q(interaction_direction='R'), Q(interaction_status='O') | Q(interaction_status='I'))
+    current_user_interactions = UserAlert.objects.all().filter(Q(interaction_target=current_user), Q(interaction_status='O') | Q(interaction_status='I'))
 
     context_dict_local = {'cur_user_interacts': current_user_interactions, 'orgs_primary': req_user_orgs_primary, 'count_new_user_interactions': count_new_user_interactions}
 
@@ -580,13 +624,14 @@ def do_get_user_interactions(request, username):
 
     current_user_obj, current_user, current_userextension, current_user_acct, req_user, req_userextension, req_user_acct, req_user_uuid = get_user_data_objects(request, username)
 
-    new_user_interactions = UserInteraction.objects.all().filter(interaction_target=current_user, interaction_status='O')
+    new_user_interactions = UserInteractionTree.objects.all().filter(interaction_target=current_user, interaction_status='O')
     count_new_user_interactions = new_user_interactions.count
     req_orgs_affil = Organization.objects.filter(org_type_special='X')
     req_user_orgs_primary = RelationOrganizationUser.objects.values('relation_name').all().filter(uuid_user=req_user_uuid, uuid_org__in=req_orgs_affil, relation_is_primary=True)
-    current_user_interactions = UserInteraction.objects.all().filter(Q(interaction_target=current_user), Q(interaction_direction='R'), Q(interaction_status='O') | Q(interaction_status='I'))
+    current_user_interactions = UserInteractionTree.objects.all().filter(Q(interaction_target=current_user), Q(interaction_status='O') | Q(interaction_status='I'))
+    current_user_sent = UserInteractionTree.objects.all().filter(interaction_sender=current_user)
 
-    context_dict_local = {'cur_user_interacts': current_user_interactions, 'orgs_primary': req_user_orgs_primary, 'count_new_user_interactions': count_new_user_interactions}
+    context_dict_local = {'cur_user_interacts': current_user_interactions, 'cur_user_sent': current_user_sent, 'orgs_primary': req_user_orgs_primary, 'count_new_user_interactions': count_new_user_interactions}
 
     context_dict = context_helper.copy()
     context_dict.update(context_dict_local)
@@ -597,7 +642,7 @@ def do_get_user_interactions(request, username):
 @login_required
 def do_get_user_sent(request, username):
     current_user = User.objects.get(username=request.user)
-    new_user_interactions = UserInteraction.objects.all().filter(interaction_target=current_user, interaction_status='O')
+    new_user_interactions = UserInteractionTree.objects.all().filter(interaction_target=current_user, interaction_status='O')
     count_new_user_interactions = new_user_interactions.count
     current_user_obj = request.user
     current_user = User.objects.get(username=request.user)
@@ -609,7 +654,7 @@ def do_get_user_sent(request, username):
     req_orgs_affil = Organization.objects.filter(org_type_special='X')
     req_user_orgs_primary = RelationOrganizationUser.objects.values('relation_name').all().filter(uuid_user=req_user_uuid, uuid_org__in=req_orgs_affil, relation_is_primary=True)
     #current_user_interactions = UserInteraction.objects.all()
-    current_user_sent = UserInteraction.objects.all().filter(Q(interaction_sender=current_user), Q(interaction_direction='S'))
+    current_user_sent = UserInteractionTree.objects.all().filter(Q(interaction_sender=current_user))
 
     context_dict = {'cur_user': current_user,  'req_user': req_user, 'req_userextension': req_userextension, 'cur_user_interacts': current_user_sent, 'orgs_primary': req_user_orgs_primary, 'count_new_user_interactions': count_new_user_interactions}
 
@@ -632,8 +677,8 @@ def do_user_connect(request, username):
     context_dict = context_helper.copy()
     context_dict.update(context_dict_local)
     interaction_subject_text = 'New connection request from ' + current_user.first_name + ' ' + current_user.last_name
-    interaction_direction_sent = 'S'
-    interaction_direction_received = 'R'
+    #interaction_direction_sent = 'S'
+    #interaction_direction_received = 'R'
     interaction_status_sent = 'I'
     interaction_status_received = 'O'
     interaction_type = 'C'
@@ -651,8 +696,8 @@ def do_user_connect(request, username):
 
                 proto_relation_uuid = uuid.uuid4()
 
-                proto_interaction_sender = UserInteraction.objects.create(
-                    interaction_direction=interaction_direction_sent,
+                proto_interaction_sender = UserInteractionTree.objects.create(
+                    #interaction_direction=interaction_direction_sent,
                     interaction_status=interaction_status_sent,
                     interaction_type=interaction_type,
                     interaction_subject=interaction_subject_text,
@@ -664,8 +709,8 @@ def do_user_connect(request, username):
                 proto_interaction_sender.interaction_target.add(req_user)
                 proto_interaction_sender.interaction_sender.add(current_user)
 
-                proto_interaction_receiver = UserInteraction.objects.create(
-                    interaction_direction=interaction_direction_received,
+                proto_interaction_receiver = UserInteractionTree.objects.create(
+                    #interaction_direction=interaction_direction_received,
                     interaction_status=interaction_status_received,
                     interaction_type=interaction_type,
                     interaction_subject=interaction_subject_text,
@@ -704,7 +749,7 @@ def do_user_connect(request, username):
 
 
 @login_required
-def do_update_connect_status(request, username, status, uuidmsg):
+def do_update_connect_status(request, username, status, cstatus, uuidmsg):
 
     #Request context_helper for user object toolkit
     context_helper = get_user_data(request, username)
@@ -714,18 +759,34 @@ def do_update_connect_status(request, username, status, uuidmsg):
 
 
     #Add local context
-    this_user_interaction = UserInteraction.objects.get(uuid_interaction=uuidmsg)
+    this_user_interaction = UserInteractionTree.objects.get(uuid_interaction=uuidmsg)
+    this_user_crequest_list = UserInteractionTree.objects.filter(uuid_interaction=uuidmsg).values_list('uuid_request', flat=True)
+    this_user_crequest = this_user_crequest_list[0]
+
+    # May cause problems and need to be converted to UUID see here:
+    # http://stackoverflow.com/questions/15859156/python-how-to-convert-a-valid-uuid-from-string-to-uuid
+    # this_connection_request = this_user_interaction.uuid_request.values('id').all()
+    # this_connection = RelationUserConnection.objects.get(id=this_connection_request)
+
+    this_connection_update = RelationUserConnection.objects.get(id=this_user_crequest)
+
     this_interaction_status_raw = str(status)
+    this_crequest_cstatus_raw = str(cstatus)
     # Get only the first character to avoid bad inputs
     this_interaction_status_new = this_interaction_status_raw[0]
+    this_crequest_cstatus_new = this_crequest_cstatus_raw[0]
 
     context_dict_local = {'orgs_primary': ''}
     context_dict = context_helper.copy()
     context_dict.update(context_dict_local)
 
-    if this_interaction_status_new == 'A':
+    if this_crequest_cstatus_new == 'A':
         this_user_interaction.interaction_status = this_interaction_status_new
         this_user_interaction.save()
+        this_connection_update.relation_status = this_crequest_cstatus_new
+
+        this_user_interaction.save()
+        this_connection_update.save()
 
         return HttpResponseRedirect(reverse('do_get_user_interactions', kwargs={'username': username}))
 
@@ -757,7 +818,7 @@ def do_send_reply_message(request, username, uuidmsg):
     do_send_reply_message_form = DoSendReplyMessage(request.POST)
 
     current_user = User.objects.get(username=request.user)
-    new_user_interactions = UserInteraction.objects.all().filter(interaction_target=current_user, interaction_status='O')
+    new_user_interactions = UserInteractionTree.objects.all().filter(interaction_target=current_user, interaction_status='O')
     count_new_user_interactions = new_user_interactions.count
     current_user_obj = request.user
     current_user = User.objects.get(username=request.user)
@@ -768,7 +829,7 @@ def do_send_reply_message(request, username, uuidmsg):
     req_user_uuid = req_userextension.uuid_user
     req_orgs_affil = Organization.objects.filter(org_type_special='X')
     req_user_orgs_primary = RelationOrganizationUser.objects.values('relation_name').all().filter(uuid_user=req_user_uuid, uuid_org__in=req_orgs_affil, relation_is_primary=True)
-    this_user_interaction = UserInteraction.objects.get(uuid_interaction=uuidmsg)
+    this_user_interaction = UserInteractionTree.objects.get(uuid_interaction=uuidmsg)
     this_user_interaction_sender = this_user_interaction.interaction_sender.values('id').all()
 
     context_dict = {'cur_user': current_user,
@@ -786,19 +847,22 @@ def do_send_reply_message(request, username, uuidmsg):
             interaction_type = 'M'
             interaction_status = 'O'
             interaction_target = User.objects.get(id=this_user_interaction_sender)
-            interaction_direction_target = 'R'
-            interaction_direction_sender = 'S'
+            #interaction_direction_target = 'R'
+            #interaction_direction_sender = 'S'
+            uuid_previous_msg = this_user_interaction
 
             this_user_interaction.interaction_status = 'I'
             this_user_interaction.save()
 
             #Create first of two ledger records
 
-            do_create_reply_message_1 = UserInteraction.objects.create(interaction_subject=interaction_subject,
-                                                                       interaction_text=interaction_text,
-                                                                       interaction_type=interaction_type,
-                                                                       interaction_status=interaction_status,
-                                                                       interaction_direction=interaction_direction_target)
+            do_create_reply_message_1 = UserInteractionTree.objects.create(interaction_subject=interaction_subject,
+                                                                           interaction_text=interaction_text,
+                                                                           interaction_type=interaction_type,
+                                                                           interaction_status=interaction_status,
+                                                                           #interaction_direction=interaction_direction_target,
+                                                                           parent=uuid_previous_msg,
+                                                                           )
 
             #many-to-many only after object created
             do_create_reply_message_1.save()
@@ -807,7 +871,7 @@ def do_send_reply_message(request, username, uuidmsg):
 
             #Create second of two ledger records
 
-            do_create_reply_message_2 = UserInteraction.objects.create(interaction_subject=interaction_subject,
+            '''do_create_reply_message_2 = UserInteraction.objects.create(interaction_subject=interaction_subject,
                                                                        interaction_text=interaction_text,
                                                                        interaction_type=interaction_type,
                                                                        interaction_status=interaction_status,
@@ -816,9 +880,45 @@ def do_send_reply_message(request, username, uuidmsg):
             #many-to-many only after object created
             do_create_reply_message_2.save()
             do_create_reply_message_2.interaction_target.add(interaction_target)
-            do_create_reply_message_2.interaction_sender.add(current_user)
+            do_create_reply_message_2.interaction_sender.add(current_user)'''
 
             return HttpResponseRedirect(reverse('do_get_user_interactions', kwargs={'username': username}))
+
+        else:
+            return HttpResponseRedirect(reverse('resolve_user_url', kwargs={'username': username}))
+
+    else:
+        return HttpResponse('Fail 3')
+
+
+@login_required
+def do_send_message(request, username):
+    do_send_message_form = DoSendMessage(request.POST)
+    current_user = User.objects.get(username=request.user)
+    req_user = User.objects.get(username=username)
+    interaction_sender = current_user
+    interaction_target = req_user
+    interaction_type = 'M'
+    interaction_status = 'O'
+
+    if request.method == 'POST':
+        if do_send_message_form.is_valid():
+
+            interaction_subject = do_send_message_form.cleaned_data['interaction_subject']
+            interaction_text = do_send_message_form.cleaned_data['interaction_text']
+
+            do_create_reply_message_1 = UserInteractionTree.objects.create(interaction_subject=interaction_subject,
+                                                                           interaction_text=interaction_text,
+                                                                           interaction_type=interaction_type,
+                                                                           interaction_status=interaction_status,
+                                                                           )
+
+            #many-to-many only after object created
+            do_create_reply_message_1.save()
+            do_create_reply_message_1.interaction_target.add(interaction_target)
+            do_create_reply_message_1.interaction_sender.add(interaction_sender)
+
+            return HttpResponseRedirect(reverse('resolve_user_url', kwargs={'username': username}))
 
         else:
             return HttpResponseRedirect(reverse('resolve_user_url', kwargs={'username': username}))
@@ -834,7 +934,7 @@ def do_update_msg_status(request, username, status, uuidmsg):
     current_user = User.objects.get(username=request.user)
     current_userextension = UserExtension.objects.get(user=current_user_obj)
     current_user_acct = current_userextension.uuid_account
-    this_user_interaction = UserInteraction.objects.get(uuid_interaction=uuidmsg)
+    this_user_interaction = UserInteractionTree.objects.get(uuid_interaction=uuidmsg)
     this_interaction_status_raw = str(status)
     # Get only the first character to avoid bad inputs
     this_interaction_status_new = this_interaction_status_raw[0]
@@ -1097,19 +1197,18 @@ def do_edit_user_emergency_contact(request, username):
 
 
 def roles_dashboard(request, username):
-    current_user_obj = request.user
-    current_user = User.objects.get(username=request.user)
-    current_userextension = UserExtension.objects.get(user=current_user_obj)
-    current_user_acct = current_userextension.uuid_account
-    req_user = User.objects.get(username=username)
-    req_userextension = UserExtension.objects.get(user=req_user)
-    req_user_uuid = req_userextension.uuid_user
-    req_user_acct = req_userextension.uuid_account
+
+    context_helper = get_user_data(request, username)
+
+    current_user_obj, current_user, current_userextension, current_user_acct, req_user, req_userextension, req_user_acct, req_user_uuid = get_user_data_objects(request, username)
+
     req_orgs_affil = Organization.objects.filter(org_type_special='X')
     req_user_orgs_affil = RelationOrganizationUser.objects.values('relation_name', 'relation_url').all().filter(uuid_user=req_user_uuid, uuid_org__in=req_orgs_affil)
     req_user_orgs_primary = RelationOrganizationUser.objects.values('relation_name').all().filter(uuid_user=req_user_uuid, uuid_org__in=req_orgs_affil, relation_is_primary=True)
+    context_dict_local = {'orgs_primary': req_user_orgs_primary}
 
-    context_dict = {'cur_user': current_user, 'req_user': req_user, 'req_userextension': req_userextension, 'orgs_affil': req_user_orgs_affil, 'orgs_primary': req_user_orgs_primary,}
+    context_dict = context_helper.copy()
+    context_dict.update(context_dict_local)
 
     return render(request, 'allonsy/roles_dashboard.html', context_dict, context_instance=RequestContext(request))
 
@@ -1148,6 +1247,157 @@ def roles_onduty(request, username):
     context_dict = {'cur_user': current_user, 'req_user': req_user, 'req_userextension': req_userextension, 'orgs_affil': req_user_orgs_affil, 'orgs_primary': req_user_orgs_primary,}
 
     return render(request, 'allonsy/roles_onduty.html', context_dict, context_instance=RequestContext(request))
+
+
+def wf_set_add_or_edit(request):
+
+    wf_set_add_or_edit_form = DoAddEditWFSet(request.POST)
+
+    username = request.user
+    context_helper = get_user_data(request, username)
+
+    current_user_obj, current_user, current_userextension, current_user_acct, req_user, req_userextension, req_user_acct, req_user_uuid = get_user_data_objects(request, username)
+    context_dict_local = {'form': wf_set_add_or_edit_form}
+    context_dict = context_helper.copy()
+    context_dict.update(context_dict_local)
+
+    if request.method == 'POST':
+        if wf_set_add_or_edit_form.is_valid():
+            uuid_wf_set = uuid.uuid4()
+            wf_set_name = wf_set_add_or_edit_form.cleaned_data['wf_set_name']
+            wf_set_is_type = wf_set_add_or_edit_form.cleaned_data['wf_set_is_type']
+            wf_set_is_default_parent_for_type = wf_set_add_or_edit_form.cleaned_data['wf_set_is_default_parent_for_type']
+            wf_set_has_child = wf_set_add_or_edit_form.cleaned_data['wf_set_has_child']
+            wf_set_is_active = wf_set_add_or_edit_form.cleaned_data['wf_set_is_active']
+
+            do_create_wf_object = WorkflowSet.objects.create(uuid_wf_set=uuid_wf_set,
+                                                             wf_set_name=wf_set_name,
+                                                             wf_set_is_type=wf_set_is_type,
+                                                             wf_set_is_default_parent_for_type=wf_set_is_default_parent_for_type,
+                                                             wf_set_has_child=wf_set_has_child,
+                                                             wf_set_is_active=wf_set_is_active)
+
+            do_create_wf_object.save()
+
+            if wf_set_has_child is True:
+                return HttpResponseRedirect(reverse('wf_set_add_children', kwargs={'uuidwfparent': uuid_wf_set}))
+            else:
+                return HttpResponseRedirect(reverse('resolve_user_url', kwargs={'username': username}))
+
+        else:
+
+            return render(request, 'allonsy/forms/wf_create.html', context_dict, context_instance=RequestContext(request))
+            #return render_to_response('allonsy/forms/wf_create.html', {'form': wf_set_add_or_edit_form})
+
+    else:
+            # Return a 'disabled account' error message
+
+        return render(request, 'allonsy/forms/wf_create.html', context_dict, context_instance=RequestContext(request))
+
+
+def wf_set_add_children(request, uuidwfparent):
+    wf_set_add_or_edit_form = DoAddEditWFChild(request.POST)
+
+    username = request.user
+    context_helper = get_user_data(request, username)
+
+    current_user_obj, current_user, current_userextension, current_user_acct, req_user, req_userextension, req_user_acct, req_user_uuid = get_user_data_objects(request, username)
+    context_dict_local = {'form': wf_set_add_or_edit_form}
+    context_dict = context_helper.copy()
+    context_dict.update(context_dict_local)
+
+    parent_wf_object = WorkflowSet.objects.get(uuid_wf_set=uuidwfparent)
+
+    if request.method == 'POST':
+        if wf_set_add_or_edit_form.is_valid():
+            uuid_wf_set = uuid.uuid4()
+            uuid_wf_rel = uuid.uuid4()
+            wf_set_name = wf_set_add_or_edit_form.cleaned_data['wf_set_name']
+            wf_set_is_type = parent_wf_object.wf_set_is_type
+            wf_set_is_default_parent_for_type = False
+            wf_set_has_child = False
+            wf_set_is_active = wf_set_add_or_edit_form.cleaned_data['wf_set_is_active']
+            wf_disp_order = wf_set_add_or_edit_form.cleaned_data['wf_disp_order']
+
+            do_create_wf_object = WorkflowSet.objects.create(uuid_wf_set=uuid_wf_set,
+                                                             wf_set_name=wf_set_name,
+                                                             wf_set_is_type=wf_set_is_type,
+                                                             wf_set_is_default_parent_for_type=wf_set_is_default_parent_for_type,
+                                                             wf_set_has_child=wf_set_has_child,
+                                                             wf_set_is_active=wf_set_is_active)
+
+            proto_do_create_wf_rel_object = RelationWorkflow.objects.create(uuid_relation=uuid_wf_rel,
+                                                                            wf_disp_order=wf_disp_order)
+
+            do_create_wf_object.save()
+            proto_do_create_wf_rel_object.save()
+
+            child_wf_object = WorkflowSet.objects.get(uuid_wf_set=uuid_wf_set)
+            # many to many only after create
+            do_create_wf_rel_object = proto_do_create_wf_rel_object
+            do_create_wf_rel_object.wf_parent.add(parent_wf_object)
+            do_create_wf_rel_object.wf_child.add(child_wf_object)
+
+            do_create_wf_rel_object.save()
+
+            return HttpResponseRedirect(reverse('wf_set_add_items', kwargs={'uuidwfparent': uuid_wf_set}))
+
+        else:
+
+            return render(request, 'allonsy/forms/wf_child_create.html', context_dict, context_instance=RequestContext(request))
+            #return render_to_response('allonsy/forms/wf_create.html', {'form': wf_set_add_or_edit_form})
+
+    else:
+            # Return a 'disabled account' error message
+
+        return render(request, 'allonsy/forms/wf_child_create.html', context_dict, context_instance=RequestContext(request))
+
+
+def wf_set_add_items(request, uuidwfparent):
+    wf_items_add_or_edit_form = DoAddEditWFItem(request.POST)
+
+    username = request.user
+    context_helper = get_user_data(request, username)
+
+    current_user_obj, current_user, current_userextension, current_user_acct, req_user, req_userextension, req_user_acct, req_user_uuid = get_user_data_objects(request, username)
+    context_dict_local = {'form': wf_items_add_or_edit_form}
+    context_dict = context_helper.copy()
+    context_dict.update(context_dict_local)
+
+    parent_wf_object = WorkflowSet.objects.get(uuid_wf_set=uuidwfparent)
+
+    if request.method == 'POST':
+        if wf_items_add_or_edit_form.is_valid():
+            uuid_wf_item = uuid.uuid4()
+            wf_item_is_active = wf_items_add_or_edit_form.cleaned_data['wf_item_is_active']
+            wf_item_name = wf_items_add_or_edit_form.cleaned_data['wf_item_name']
+            wf_item_text = wf_items_add_or_edit_form.cleaned_data['wf_item_text']
+            wf_item_disp_order = wf_items_add_or_edit_form.cleaned_data['wf_item_disp_order']
+
+            proto_do_create_wf_object = WorkflowItem.objects.create(uuid_wf_item=uuid_wf_item,
+                                                                   wf_item_is_active=wf_item_is_active,
+                                                                   wf_item_name=wf_item_name,
+                                                                   wf_item_text=wf_item_text,
+                                                                   wf_item_disp_order=wf_item_disp_order)
+
+            proto_do_create_wf_object.save()
+            # many to many only after create
+            do_create_wf_object = proto_do_create_wf_object
+            do_create_wf_object.wf_item_parent_wfset.add(parent_wf_object)
+
+            do_create_wf_object.save()
+
+            return HttpResponseRedirect(reverse('resolve_user_url', kwargs={'username': username}))
+
+        else:
+
+            return render(request, 'allonsy/forms/wf_item_create.html', context_dict, context_instance=RequestContext(request))
+            #return render_to_response('allonsy/forms/wf_create.html', {'form': wf_set_add_or_edit_form})
+
+    else:
+            # Return a 'disabled account' error message
+
+        return render(request, 'allonsy/forms/wf_item_create.html', context_dict, context_instance=RequestContext(request))
 
 
 def app(request):
