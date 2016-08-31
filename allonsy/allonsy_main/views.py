@@ -1,16 +1,18 @@
-import uuid, random, copy, collections
+import time, uuid, random, copy, collections
 from itertools import chain
+from datetime import date
 
 from django.shortcuts import render, render_to_response, RequestContext, redirect
 from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.urlresolvers import reverse
+from django.db import IntegrityError
 from django.db.models import Q
 from django_ajax.decorators import ajax
 
-from allonsy_main.forms import DoAddAccount, DoAddOrganization, DoAddLocation, DoAddUser, DoAssocOrganization, DoAssocOrganizationUser, DoEditUserProfile, DoEditUserInfoContact, DoEditUserEmergencyContact, DoUserConnect, DoSendReplyMessage, DoSendMessage, DoAddEditWFSet, DoAddEditWFChild, DoAddEditWFItem
-from allonsy_main.models import UserExtension, User, UserProfile, Organization, TreeOrganization, RelationOrganizationUser, UserInteractionTree, UserAlert, Location, RelationUserConnection, WorkflowSet, RelationWorkflow, WorkflowItem, RelationWorkflow, WorkflowItem
+from allonsy_main.forms import DoAddAccount, DoAddOrganization, DoAddLocation, DoAddUser, DoAssocOrganization, DoAssocOrganizationUser, DoEditUserProfile, DoEditUserInfoContact, DoEditUserEmergencyContact, DoUserConnect, DoSendReplyMessage, DoSendMessage, DoAddEditWFSet, DoAddEditWFChild, DoAddEditWFItem, DoAddEditWFTreeNode, DoGetWFTreeForAddItem, DoAddWFTreeItem, DoDeleteWFTreeItem, DoGetWFInstance
+from allonsy_main.models import UserExtension, User, UserProfile, Organization, TreeOrganization, RelationOrganizationUser, UserInteractionTree, UserAlert, Location, RelationUserConnection, WorkflowSet, RelationWorkflow, WorkflowItem, RelationWorkflow, WorkflowItem, WorkflowDocumentItem, WorkflowDocumentMaster, WorkflowTree
 from allonsy_schemas.models import Account
 
 
@@ -27,6 +29,10 @@ def get_user_data(request, username):
     req_user_acct = req_userextension.uuid_account
     req_user_uuid = req_userextension.uuid_user
 
+    # Get defaults for workflows. Case insensitive
+    # TODO: Document the icontains descriptors for new account setup
+    wf_oncall = str(WorkflowTree.objects.values_list('uuid_wf_item', flat=True).get(wf_item_name__icontains='RA Duty', level=2))
+
     context_helper = {'current_user_obj': current_user_obj,
                       'cur_user': current_user,
                       'current_userextension': current_userextension,
@@ -35,6 +41,7 @@ def get_user_data(request, username):
                       'req_userextension': req_userextension,
                       'req_user_acct': req_user_acct,
                       'req_user_uuid': req_user_uuid,
+                      'wf_oncall': wf_oncall
                       }
 
     return context_helper
@@ -51,6 +58,17 @@ def get_user_data_objects(request, username):
     req_user_uuid = req_userextension.uuid_user
 
     return current_user_obj, current_user, current_userextension, current_user_acct, req_user, req_userextension, req_user_acct, req_user_uuid
+
+def get_dyn_items(request, uuidparentnode):
+    wf_parent = WorkflowTree.objects.get(uuid_wf_item=uuidparentnode)
+    wf_columns = wf_parent.get_children()
+    dyn_items_list = []
+
+    for column in wf_columns:
+        dyn_items_list_loc = column.get_children()
+        dyn_items_list.append(dyn_items_list_loc)
+
+    return dyn_items_list
 
 
 #create user_passes_check decorators here
@@ -92,6 +110,10 @@ def access_admin_check(User):
 
 
 # Create your views here.
+def app(request):
+    return render(request, 'allonsy/app.html')
+
+
 def do_login(request):
 
     context = RequestContext(request)
@@ -1045,6 +1067,7 @@ def do_edit_user_profile(request, username):
         # Return a 'disabled account' error message
         return render(request, 'allonsy/forms/user_edituser.html', context_dict, context_instance=RequestContext(request))
 
+
 @login_required
 def do_edit_user_info_contact(request, username):
     do_edit_user_info_contact_form = DoEditUserInfoContact(request.POST)
@@ -1214,37 +1237,37 @@ def roles_dashboard(request, username):
 
 
 def roles_oncall(request, username):
-    current_user_obj = request.user
-    current_user = User.objects.get(username=request.user)
-    current_userextension = UserExtension.objects.get(user=current_user_obj)
-    current_user_acct = current_userextension.uuid_account
-    req_user = User.objects.get(username=username)
-    req_userextension = UserExtension.objects.get(user=req_user)
-    req_user_uuid = req_userextension.uuid_user
-    req_user_acct = req_userextension.uuid_account
+
+    context_helper = get_user_data(request, username)
+
+    current_user_obj, current_user, current_userextension, current_user_acct, req_user, req_userextension, req_user_acct, req_user_uuid = get_user_data_objects(request, username)
+
     req_orgs_affil = Organization.objects.filter(org_type_special='X')
     req_user_orgs_affil = RelationOrganizationUser.objects.values('relation_name', 'relation_url').all().filter(uuid_user=req_user_uuid, uuid_org__in=req_orgs_affil)
     req_user_orgs_primary = RelationOrganizationUser.objects.values('relation_name').all().filter(uuid_user=req_user_uuid, uuid_org__in=req_orgs_affil, relation_is_primary=True)
 
-    context_dict = {'cur_user': current_user, 'req_user': req_user, 'req_userextension': req_userextension, 'orgs_affil': req_user_orgs_affil, 'orgs_primary': req_user_orgs_primary,}
+    context_dict_local = {'orgs_primary': req_user_orgs_primary}
+    context_dict = context_helper.copy()
+    context_dict.update(context_dict_local)
 
     return render(request, 'allonsy/roles_oncall.html', context_dict, context_instance=RequestContext(request))
 
 
 def roles_onduty(request, username):
-    current_user_obj = request.user
-    current_user = User.objects.get(username=request.user)
-    current_userextension = UserExtension.objects.get(user=current_user_obj)
-    current_user_acct = current_userextension.uuid_account
-    req_user = User.objects.get(username=username)
-    req_userextension = UserExtension.objects.get(user=req_user)
-    req_user_uuid = req_userextension.uuid_user
-    req_user_acct = req_userextension.uuid_account
+
+    context_helper = get_user_data(request, username)
+
+    current_user_obj, current_user, current_userextension, current_user_acct, req_user, req_userextension, req_user_acct, req_user_uuid = get_user_data_objects(request, username)
+
     req_orgs_affil = Organization.objects.filter(org_type_special='X')
     req_user_orgs_affil = RelationOrganizationUser.objects.values('relation_name', 'relation_url').all().filter(uuid_user=req_user_uuid, uuid_org__in=req_orgs_affil)
     req_user_orgs_primary = RelationOrganizationUser.objects.values('relation_name').all().filter(uuid_user=req_user_uuid, uuid_org__in=req_orgs_affil, relation_is_primary=True)
 
-    context_dict = {'cur_user': current_user, 'req_user': req_user, 'req_userextension': req_userextension, 'orgs_affil': req_user_orgs_affil, 'orgs_primary': req_user_orgs_primary,}
+    wf_pending = WorkflowTree.objects.order_by('date_added').filter(Q(wf_item_status='C') | Q(wf_item_status='I'), wf_item_owner=current_user, wf_item_proto_category='DUTY', level=4)
+
+    context_dict_local = {'orgs_primary': req_user_orgs_primary, 'wf_pending': wf_pending}
+    context_dict = context_helper.copy()
+    context_dict.update(context_dict_local)
 
     return render(request, 'allonsy/roles_onduty.html', context_dict, context_instance=RequestContext(request))
 
@@ -1400,5 +1423,503 @@ def wf_set_add_items(request, uuidwfparent):
         return render(request, 'allonsy/forms/wf_item_create.html', context_dict, context_instance=RequestContext(request))
 
 
-def app(request):
-    return render(request, 'allonsy/app.html')
+def roles_rpt_create_new(request, username, rpttype):
+    context_helper = get_user_data(request, username)
+
+    current_user_obj, current_user, current_userextension, current_user_acct, req_user, req_userextension, req_user_acct, req_user_uuid = get_user_data_objects(request, username)
+
+    item_dict = {}
+    context_dict_local = {}
+    context_dict = context_helper.copy()
+    #update context dict at end of function
+
+    report_type = rpttype
+    report_parent = WorkflowSet.objects.get(wf_set_is_type=report_type, wf_set_is_default_parent_for_type=True)
+    report_parent_uuid = report_parent.uuid_wf_set
+
+    if report_parent.wf_set_has_child is True:
+        # returns a flat list of WorkflowSet PKs
+        report_children = RelationWorkflow.objects.filter(wf_parent__uuid_wf_set=report_parent_uuid, wf_child__wf_set_is_active=True)
+        report_children_list = report_children.values_list('wf_child', flat=True).order_by('wf_disp_order')
+
+        for child in report_children_list:
+            get_child = WorkflowSet.objects.get(pk=child)
+            set_display_order = report_children.get(wf_child__pk=child).wf_disp_order
+            context_dict_local['set'+set_display_order] = get_child
+
+            get_child_items = WorkflowItem.objects.filter(wf_item_parent_wfset=get_child, wf_item_is_active=True)
+            context_dict_local['set'+set_display_order+'_items'] = get_child_items
+
+            # get_child_items = WorkflowItem.objects.filter(wf_item_parent_wfset=get_child, wf_item_is_active=True)
+            # get_child_items_list = get_child_items.values_list('pk', flat=True).order_by('wf_item_disp_order')
+
+            #for item in get_child_items_list:
+                #get_item = WorkflowItem.objects.filter(pk=item)
+                #item_display_order = get_child_items.get(pk=item).wf_item_disp_order
+                #item_dict['items'] = get_item
+                #context_dict_local['item'+set_display_order + '_' + item_display_order] = get_item
+
+    else:
+        get_child_items = WorkflowItem.objects.filter(wf_item_parent_wfset=report_parent, wf_item_is_active=True).order_by('wf_item_disp_order')
+        context_dict_local['set1'] = get_child_items
+
+    context_dict.update(context_dict_local)
+
+    return render(request, 'allonsy/roles_onduty.html', context_dict, context_instance=RequestContext(request))
+
+
+def wf_tree_node_add_or_edit(request):
+
+    wf_tree_node_add_or_edit_form = DoAddEditWFTreeNode(request.POST)
+
+    username = request.user
+    context_helper = get_user_data(request, username)
+
+    current_user_obj, current_user, current_userextension, current_user_acct, req_user, req_userextension, req_user_acct, req_user_uuid = get_user_data_objects(request, username)
+    context_dict_local = {}
+    add_this_list = []
+    context_dict = context_helper.copy()
+
+    wf_node_pk = WorkflowTree.objects.all().values_list('pk', flat=True)[:1]
+    wf_root_node = WorkflowTree.objects.get(pk=wf_node_pk).get_root()
+    wf_distant_parent_list = wf_root_node.get_children()
+
+    for item in wf_distant_parent_list:
+        add_this = item.get_children().values_list('wf_item_name', flat=True).order_by('wf_item_name')
+        add_this_list.extend(add_this)
+
+    context_dict_local.update({'wf_parent_list': add_this_list})
+
+    context_dict.update(context_dict_local)
+
+    if request.method == 'POST':
+        if wf_tree_node_add_or_edit_form.is_valid():
+
+            wf_item_name = wf_tree_node_add_or_edit_form.cleaned_data['wf_item_name']
+            wf_item_text = wf_tree_node_add_or_edit_form.cleaned_data['wf_item_text']
+            wf_item_is_default = wf_tree_node_add_or_edit_form.cleaned_data['wf_item_is_default']
+            wf_item_is_active = wf_tree_node_add_or_edit_form.cleaned_data['wf_item_is_active']
+            wf_item_is_proto = True
+
+            wf_doc_parent_selection = wf_tree_node_add_or_edit_form.cleaned_data['proto_wf_doc_type']
+            wf_doc_parent_node = WorkflowTree.objects.get(wf_item_name=wf_doc_parent_selection).get_children()
+            wf_doc_parent_proto = wf_doc_parent_node.get(wf_item_is_proto=True)
+
+            try:
+                do_create_wf_object = WorkflowTree.objects.create(parent=wf_doc_parent_proto,
+                                                                  uuid_wf_item=uuid.uuid4(),
+                                                                  wf_item_name=wf_item_name,
+                                                                  wf_item_text=wf_item_text,
+                                                                  wf_item_is_default=wf_item_is_default,
+                                                                  wf_item_is_proto=wf_item_is_proto,
+                                                                  wf_item_is_active=wf_item_is_active,)
+                do_create_wf_object.save()
+
+                do_create_wf_object.wf_item_owner.add(current_user_obj)
+
+            except IntegrityError:
+
+                return HttpResponse('Name already exists!')
+
+            return HttpResponse('Done!')
+
+        else:
+
+            context_dict_form_errors = {'form': wf_tree_node_add_or_edit}
+            context_dict_local.update(context_dict_form_errors)
+            context_dict.update(context_dict_local)
+
+            return render(request, 'allonsy/forms/wf_tree_create.html', context_dict, context_instance=RequestContext(request))
+            #return render_to_response('allonsy/forms/wf_create.html', {'form': wf_set_add_or_edit_form})
+
+    else:
+
+        return render(request, 'allonsy/forms/wf_tree_create.html', context_dict, context_instance=RequestContext(request))
+
+
+def get_tree_node_for_add_item_1(request):
+
+    get_tree_node_for_add_item_form = DoGetWFTreeForAddItem(request.POST)
+
+    username = request.user
+    context_helper = get_user_data(request, username)
+
+    current_user_obj, current_user, current_userextension, current_user_acct, req_user, req_userextension, req_user_acct, req_user_uuid = get_user_data_objects(request, username)
+    context_dict_local = {}
+    add_this_list = []
+    context_dict = context_helper.copy()
+
+    wf_node_pk = WorkflowTree.objects.all().values_list('pk', flat=True)[:1]
+    wf_root_node = WorkflowTree.objects.get(pk=wf_node_pk).get_root()
+    wf_distant_parent_list = wf_root_node.get_children()
+
+    for item in wf_distant_parent_list:
+        add_this = item.get_children().values_list('wf_item_name', flat=True).order_by('wf_item_name')
+        add_this_list.extend(add_this)
+
+    context_dict_local.update({'wf_parent_list': add_this_list})
+
+    context_dict.update(context_dict_local)
+
+    if request.method == 'POST':
+        if get_tree_node_for_add_item_form.is_valid():
+            get_this_node_docs = get_tree_node_for_add_item_form.cleaned_data['get_this_node_docs']
+
+            wf_doc_parent_node = WorkflowTree.objects.get(wf_item_name=get_this_node_docs).get_children()
+            wf_doc_parent_proto = wf_doc_parent_node.get(wf_item_is_proto=True)
+            wf_doc_parent_proto_uuid = wf_doc_parent_proto.uuid_wf_item
+            wf_doc_parent_proto_uuid_string = str(wf_doc_parent_proto_uuid)
+
+            return HttpResponseRedirect(reverse('get_tree_node_for_add_item_2', kwargs={'uuidtreenode': wf_doc_parent_proto_uuid_string}))
+
+        else:
+            #TODO FIX THIS
+            return
+
+    else:
+        return render(request, 'allonsy/forms/wf_tree_select_node_1.html', context_dict, context_instance=RequestContext(request))
+
+
+def get_tree_node_for_add_item_2(request, uuidtreenode):
+
+    get_tree_node_for_add_item_form = DoGetWFTreeForAddItem(request.POST)
+
+    username = request.user
+    context_helper = get_user_data(request, username)
+
+    current_user_obj, current_user, current_userextension, current_user_acct, req_user, req_userextension, req_user_acct, req_user_uuid = get_user_data_objects(request, username)
+    context_dict_local = {}
+    add_this_list = []
+    context_dict = context_helper.copy()
+
+    treenode_string_to_uuid = uuid.UUID(uuidtreenode)
+    wf_proto = WorkflowTree.objects.get(uuid_wf_item=treenode_string_to_uuid)
+    wf_proto_list = wf_proto.get_children().values_list('wf_item_name', flat=True).order_by('wf_item_name')
+    add_this_list.extend(wf_proto_list)
+
+    context_dict_local.update({'wf_parent_list': add_this_list})
+
+    context_dict.update(context_dict_local)
+
+    if request.method == 'POST':
+        if get_tree_node_for_add_item_form.is_valid():
+            get_this_node_docs = get_tree_node_for_add_item_form.cleaned_data['get_this_node_docs']
+
+            wf_doc_parent_node = WorkflowTree.objects.get(wf_item_name=get_this_node_docs)
+            wf_doc_parent_proto_uuid = wf_doc_parent_node.uuid_wf_item
+            wf_doc_parent_proto_uuid_string = str(wf_doc_parent_proto_uuid)
+
+            return HttpResponseRedirect(reverse('get_edit_tree_workflow_items', kwargs={'uuidtreenode': wf_doc_parent_proto_uuid_string}))
+
+        else:
+            #TODO:FIX THIS
+            return
+
+    else:
+        return render(request, 'allonsy/forms/wf_tree_select_node_2.html', context_dict, context_instance=RequestContext(request))
+
+
+def get_edit_tree_workflow_items(request, uuidtreenode):
+
+    get_edit_tree_node_for_add_item_form = DoGetWFTreeForAddItem(request.POST)
+
+    username = request.user
+    context_helper = get_user_data(request, username)
+
+    current_user_obj, current_user, current_userextension, current_user_acct, req_user, req_userextension, req_user_acct, req_user_uuid = get_user_data_objects(request, username)
+    context_dict_local = {}
+    context_dict = context_helper.copy()
+
+    treenode_string_to_uuid = uuid.UUID(uuidtreenode)
+    wf_proto = WorkflowTree.objects.get(uuid_wf_item=treenode_string_to_uuid)
+    wf_column_dict = wf_proto.get_children()
+    counter = 1
+
+    context_dict_local.update({'wf_column_dict': wf_column_dict, 'wf_proto': wf_proto})
+
+    if not wf_column_dict:
+        # TODO: return error if there are no columns, or start the column creator
+        return HttpResponse('Error! No columns!')
+
+    else:
+        for column in wf_column_dict:
+            column_pk = column.pk
+            this_column = WorkflowTree.objects.get(pk=column_pk)
+            context_dict_local.update({'name_for_column_' + str(counter): this_column})
+            this_column_uuid_str = str(this_column.uuid_wf_item)
+            context_dict_local.update({'uuid_str_for_column_' + str(counter): this_column_uuid_str})
+            items_for_column = this_column.get_children()
+            context_dict_local.update({'items_for_column_' + str(counter): items_for_column})
+            counter += 1
+
+    '''for item in wf_column_dict:
+        items_for_column = item.get_children()
+        context_dict_local.update({'items_for_column_' + str(item_counter): items_for_column})
+        item_counter += 1'''
+
+    context_dict.update(context_dict_local)
+
+    return render(request, 'allonsy/forms/wf_tree_edit_items.html', context_dict, context_instance=RequestContext(request))
+
+
+def create_new_wf_item_as_child(request, uuidtreenode):
+    get_add_wf_tree_item_form = DoAddWFTreeItem(request.POST)
+
+    username = request.user
+    treenode_string_to_uuid = uuid.UUID(uuidtreenode)
+    wf_parent = WorkflowTree.objects.get(uuid_wf_item=treenode_string_to_uuid)
+    wf_doc_ancestors = wf_parent.get_ancestors()
+
+    if wf_parent.level >= 6:
+        wf_doc = wf_doc_ancestors.reverse()[1]
+    else:
+        wf_doc = wf_doc_ancestors.reverse()[0]
+
+    wf_doc_uuid = wf_doc.uuid_wf_item
+    wf_doc_uuid_str = str(wf_doc_uuid)
+
+    context_helper = get_user_data(request, username)
+    current_user_obj, current_user, current_userextension, current_user_acct, req_user, req_userextension, req_user_acct, req_user_uuid = get_user_data_objects(request, username)
+    context_dict_local = {}
+    context_dict = context_helper.copy()
+
+    if request.method == 'POST':
+        if get_add_wf_tree_item_form.is_valid():
+            uuid_wf_item = uuid.uuid4()
+            wf_item_name = get_add_wf_tree_item_form.cleaned_data['wf_item_name']
+            wf_item_text = get_add_wf_tree_item_form.cleaned_data['wf_item_text']
+            wf_item_is_active = get_add_wf_tree_item_form.cleaned_data['wf_item_is_active']
+            wf_item_owner = username
+            wf_item_parent = wf_parent
+
+            do_create_wf_item = WorkflowTree.objects.create(uuid_wf_item=uuid_wf_item,
+                                                            wf_item_name=wf_item_name,
+                                                            wf_item_text=wf_item_text,
+                                                            wf_item_is_active=wf_item_is_active,
+                                                            parent=wf_item_parent)
+
+            do_create_wf_item.save()
+            do_create_wf_item.wf_item_owner.add(wf_item_owner)
+
+            return HttpResponseRedirect(reverse('get_edit_tree_workflow_items', kwargs={'uuidtreenode': wf_doc_uuid_str}))
+
+        else:
+            context_dict_form_errors = {'form': get_add_wf_tree_item_form}
+            context_dict_local.update(context_dict_form_errors)
+            context_dict.update(context_dict_local)
+
+            return render(request, 'allonsy/forms/wf_tree_create_items.html', context_dict, context_instance=RequestContext(request))
+
+    else:
+        return render(request, 'allonsy/forms/wf_tree_create_items.html', context_dict, context_instance=RequestContext(request))
+
+
+def edit_wf_item_as_child(request, uuiditemnode):
+    get_edit_wf_tree_item_form = DoAddWFTreeItem(request.POST)
+
+    username = request.user
+    # treenode_string_to_uuid = uuid.UUID(uuidtreenode)
+    # wf_parent = WorkflowTree.objects.get(uuid_wf_item=treenode_string_to_uuid)
+    wf_parent = WorkflowTree.objects.get(uuid_wf_item=uuiditemnode)
+    wf_doc_ancestors = wf_parent.get_ancestors()
+    # Check to see if this is a workflow column object (L5) or a workflow item (L6)
+    if wf_parent.level >= 6:
+        wf_doc = wf_doc_ancestors.reverse()[1]
+    else:
+        wf_doc = wf_doc_ancestors.reverse()[0]
+
+    wf_doc_uuid = wf_doc.uuid_wf_item
+    wf_doc_uuid_str = str(wf_doc_uuid)
+
+    context_helper = get_user_data(request, username)
+    current_user_obj, current_user, current_userextension, current_user_acct, req_user, req_userextension, req_user_acct, req_user_uuid = get_user_data_objects(request, username)
+    context_dict_local = {}
+    context_dict = context_helper.copy()
+
+    if request.method == 'POST':
+        if get_edit_wf_tree_item_form.is_valid():
+            wf_item_name = get_edit_wf_tree_item_form.cleaned_data['wf_item_name']
+            wf_item_text = get_edit_wf_tree_item_form.cleaned_data['wf_item_text']
+            wf_item_is_active = get_edit_wf_tree_item_form.cleaned_data['wf_item_is_active']
+
+            get_edit_wf_item = WorkflowTree.objects.get(uuid_wf_item=uuiditemnode)
+
+            get_edit_wf_item.wf_item_name = wf_item_name
+            get_edit_wf_item.wf_item_text = wf_item_text
+            get_edit_wf_item.wf_item_is_active = wf_item_is_active
+
+            get_edit_wf_item.save()
+
+            return HttpResponseRedirect(reverse('get_edit_tree_workflow_items', kwargs={'uuidtreenode': wf_doc_uuid_str}))
+
+        else:
+            context_dict_form_errors = {'form': get_edit_wf_tree_item_form}
+            context_dict_local.update(context_dict_form_errors)
+            context_dict.update(context_dict_local)
+
+            return render(request, 'allonsy/forms/wf_tree_edit_wf_items.html', context_dict, context_instance=RequestContext(request))
+
+    else:
+        get_edit_wf_item = WorkflowTree.objects.get(uuid_wf_item=uuiditemnode)
+
+        context_dict_local = {'get_edit_wf_item': get_edit_wf_item}
+        context_dict.update(context_dict_local)
+
+        return render(request, 'allonsy/forms/wf_tree_edit_wf_items.html', context_dict, context_instance=RequestContext(request))
+
+
+def delete_wf_item_as_child(request, uuiditemnode):
+    delete_wf_tree_item_form = DoDeleteWFTreeItem(request.POST)
+
+    username = request.user
+    # treenode_string_to_uuid = uuid.UUID(uuidtreenode)
+    # wf_parent = WorkflowTree.objects.get(uuid_wf_item=treenode_string_to_uuid)
+    wf_parent = WorkflowTree.objects.get(uuid_wf_item=uuiditemnode)
+    wf_doc_ancestors = wf_parent.get_ancestors()
+
+    if wf_parent.level >= 6:
+        wf_doc = wf_doc_ancestors.reverse()[1]
+    else:
+        wf_doc = wf_doc_ancestors.reverse()[0]
+
+    wf_doc_uuid = wf_doc.uuid_wf_item
+    wf_doc_uuid_str = str(wf_doc_uuid)
+
+    context_helper = get_user_data(request, username)
+    current_user_obj, current_user, current_userextension, current_user_acct, req_user, req_userextension, req_user_acct, req_user_uuid = get_user_data_objects(request, username)
+    context_dict_local = {}
+    context_dict = context_helper.copy()
+
+    if request.method == 'POST':
+        if delete_wf_tree_item_form.is_valid():
+            wf_item_do_delete = delete_wf_tree_item_form.cleaned_data['wf_item_do_delete']
+
+            if wf_item_do_delete == 'True':
+
+                get_edit_wf_item = WorkflowTree.objects.get(uuid_wf_item=uuiditemnode)
+
+                get_edit_wf_item.delete()
+
+                return HttpResponseRedirect(reverse('get_edit_tree_workflow_items', kwargs={'uuidtreenode': wf_doc_uuid_str}))
+
+            else:
+                # TODO: REPLACE WITH PROPER ERROR MESSAGE
+                return HttpResponse("Silly!")
+
+        else:
+            context_dict_form_errors = {'form': delete_wf_tree_item_form}
+            context_dict_local.update(context_dict_form_errors)
+            context_dict.update(context_dict_local)
+
+            return render(request, 'allonsy/forms/wf_tree_create_wf_items.html', context_dict, context_instance=RequestContext(request))
+
+    else:
+        get_edit_wf_item = WorkflowTree.objects.get(uuid_wf_item=uuiditemnode)
+
+        context_dict_local = {'get_edit_wf_item': get_edit_wf_item}
+        context_dict.update(context_dict_local)
+
+        return render(request, 'allonsy/forms/wf_tree_delete_wf_items.html', context_dict, context_instance=RequestContext(request))
+
+
+def do_create_wf_instance(request, username, uuidparentnode):
+
+    # bbb020f9-aee0-4a67-bba6-fe56a237dbbf
+    # uuidparentnode is the node selected as default for the type of workflow
+    # TODO: Ensure that there can be only one default per workflow type
+    # TODO: Document that the target node must ALWAYS be right of the Proto node in the tree on account setup
+    context_helper = get_user_data(request, username)
+    current_user_obj, current_user, current_userextension, current_user_acct, req_user, req_userextension, req_user_acct, req_user_uuid = get_user_data_objects(request, username)
+    context_dict_local = {}
+    context_dict = context_helper.copy()
+
+    wf_parent = WorkflowTree.objects.get(uuid_wf_item=uuidparentnode)
+    wf_node_list = wf_parent.get_children()
+    wf_proto_parent_node = wf_node_list[0]
+    wf_proto_node = WorkflowTree.objects.get(parent=wf_proto_parent_node, wf_item_is_proto=True)
+    wf_proto_columns = wf_proto_node.get_children().filter(wf_item_is_active=True)
+    wf_target_parent_node = wf_node_list[1]
+    wf_target_parent_cat = wf_proto_parent_node.wf_item_proto_category
+    today = date.today()
+    wf_name_text = str(current_user.first_name + '\'s ' + wf_proto_node.wf_item_name + today.strftime(' (%Y-%b-%d)'))
+    wf_target_uuid = uuid.uuid4()
+
+    try:
+        wf_target_node = WorkflowTree.objects.create(parent=wf_target_parent_node,
+                                                     wf_item_name=wf_name_text,
+                                                     wf_item_status='C',
+                                                     wf_item_proto_category=wf_target_parent_cat)
+
+        #many-to-many only after object created
+        wf_target_node.save()
+        wf_target_node.wf_item_owner.add(current_user)
+
+        for column in wf_proto_columns:
+            wf_item_name = column.wf_item_name
+            wf_item_text = column.wf_item_text
+            wf_item_status = 'C'
+
+            wf_target_column = WorkflowTree.objects.create(uuid_wf_item=wf_target_uuid,
+                                                           parent=wf_target_node,
+                                                           wf_item_name=wf_item_name,
+                                                           wf_item_text=wf_item_text,
+                                                           wf_item_status=wf_item_status)
+
+            #many-to-many only after object created
+            wf_target_column.save()
+            wf_target_column.wf_item_owner.add(current_user)
+
+            wf_proto_items = column.get_children()
+
+            for item in wf_proto_items:
+                wf_item_name = item.wf_item_name
+                wf_item_text = item.wf_item_text
+                wf_item_status = 'OFF'
+
+                wf_target_item = WorkflowTree.objects.create(parent=wf_target_column,
+                                                             wf_item_name=wf_item_name,
+                                                             wf_item_text=wf_item_text,
+                                                             wf_item_status=wf_item_status)
+
+                #many-to-many only after object created
+                wf_target_item.save()
+                wf_target_item.wf_item_owner.add(current_user)
+
+                #TODO:START HERE
+        # return HttpResponseRedirect(reverse('get_edit_tree_workflow_items', kwargs={'uuidtreenode': wf_doc_uuid_str}))
+        return HttpResponse("OK!")
+
+    except BaseException as e:
+        # TODO: narrow this clause
+        return HttpResponse("Error: The report could not be generated. " + str(e))
+
+
+def do_edit_wf_instance(request, username, uuidparentnode):
+
+    dyn_items_list = get_dyn_items(request, uuidparentnode)
+    do_get_wf_instance_form = DoGetWFInstance(request.POST, dyn_items=dyn_items_list)
+
+    context_helper = get_user_data(request, username)
+    current_user_obj, current_user, current_userextension, current_user_acct, req_user, req_userextension, req_user_acct, req_user_uuid = get_user_data_objects(request, username)
+    context_dict_local = {}
+    context_dict = context_helper.copy()
+
+    response_dict = {}
+
+    if request.method == 'POST':
+
+        if do_get_wf_instance_form.is_valid():
+            for (item, state) in do_get_wf_instance_form.extra_states:
+                response_dict[item] = state
+                return HttpResponse(response_dict)
+
+        else:
+            return HttpResponse("invalid")
+
+    else:
+        context_dict_form_errors = {'form': do_get_wf_instance_form}
+        context_dict_local.update(context_dict_form_errors)
+        context_dict.update(context_dict_local)
+
+        return render(request, 'allonsy/forms/wf_test.html', context_dict, context_instance=RequestContext(request))
+

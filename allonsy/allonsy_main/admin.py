@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 
 from mptt.admin import MPTTModelAdmin
 
-from allonsy_main.models import UserExtension, Organization, Location, Epoch, RelationOrganizationUser, TreeOrganization, TreeLocation, UserProfile, UserAlert, UserInteractionTree, RelationUserConnection, WorkflowSet, RelationWorkflow, WorkflowItem
+from allonsy_main.models import UserExtension, Organization, Location, Epoch, RelationOrganizationUser, TreeOrganization, TreeLocation, UserProfile, UserAlert, UserInteractionTree, RelationUserConnection, WorkflowSet, RelationWorkflow, WorkflowItem, WorkflowTree, WFMetaData
 from allonsy_schemas.models import Account
 
 
@@ -15,8 +15,16 @@ class UserExtensionInline(admin.StackedInline):
     verbose_name_plural = 'Additional fields'
 
 
+class WFMetaInline (admin.TabularInline):
+    model = WFMetaData
+
+
 class UserAdmin(BaseUserAdmin):
     inlines = (UserExtensionInline, )
+
+
+class WorkflowTreeAdmin(admin.ModelAdmin):
+    inlines = [WFMetaInline, ]
 
 admin.site.unregister(User)
 admin.site.register(TreeOrganization, MPTTModelAdmin)
@@ -34,6 +42,6 @@ admin.site.register(RelationUserConnection)
 admin.site.register(WorkflowSet)
 admin.site.register(RelationWorkflow)
 admin.site.register(WorkflowItem)
-
+admin.site.register(WorkflowTree)
 
 

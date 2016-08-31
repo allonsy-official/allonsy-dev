@@ -52,6 +52,7 @@ TENANT_APPS = (
     # The following Django contrib apps must be in TENANT_APPS
     'django.contrib.contenttypes',
     'allonsy_main',
+    'django_extensions',
 
     # your tenant-specific apps
 )

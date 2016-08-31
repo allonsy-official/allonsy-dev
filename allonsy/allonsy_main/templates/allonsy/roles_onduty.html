@@ -10,248 +10,96 @@
 </div>
 <div class="row expanded">
     <div class="columns small-12">
-        <h5>Active tasks</h5>
+        <h5>Active Reports</h5>
     </div>
+</div>
+<div class="row expanded">
     <div class="columns small-12">
-        <div style="background-color:#666666; width:100%; height:200px;">
-    </div>
-</div>
-<div class="row expanded">
-    <div class="columns small-4">
-        <div class="row">
-            <div class="columns small-12">
-                <h5 class="text-center">1. Check-in to duty</h5>
-            </div>
-            <div class="columns small-12">
+        <table class="hover">
+            <thead>
+                <tr>
+                  <th width="30%">Report name</th>
+                  <th width="20%">Report ID</th>
+                  <th width="7.5%">Created</th>
+                  <th width="7.5%">Last edited</th>
+                  <th width="15%">Status</th>
+                  <th width="20%">Modify</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for pending in wf_pending %}
+            <tr>
+                <td>
+                    {% if pending.wf_item_name and pending.uuid_wf_item %}
+                    <a href="{% url 'do_edit_wf_instance' request.user pending.uuid_wf_item %}">
+                        {{ pending.wf_item_name }}
+                    </a>
+                    {% else %}
+                        ---------------
+                    {% endif %}
+                </td>
+                <td>
+                    {% if pending.uuid_wf_item %}
+                    <a href="{% url 'do_edit_wf_instance' request.user pending.uuid_wf_item %}">
+                        {{ pending.uuid_wf_item|truncatechars:11 }}
+                    </a>
+                    {% else %}
+                        ---------------
+                    {% endif %}
+                </td>
+                <td>
+                    {% if pending.date_added %}
+                        {{ pending.date_added|date:"SHORT_DATE_FORMAT" }}
+                    {% else %}
+                        ---------------
+                    {% endif %}
+                </td>
+                <td>
+                    {% if pending.date_edited %}
+                        {{ pending.date_edited|date:"SHORT_DATE_FORMAT" }}
+                    {% else %}
+                        ---------------
+                    {% endif %}
+                </td>
+                <td>
+                    {% if pending.wf_item_status %}
+                        {% if pending.wf_item_status == 'C' %}
+                            Created
+                        {% elif pending.wf_item_status == 'I' %}
+                            In-progress
+                        {% else %}
+                            Unknown status
+                        {% endif %}
+                    {% else %}
+                        ---------------
+                    {% endif %}
+                </td>
+                <td>
+                    {% if pending.uuid_wf_item %}
+                        <i class="fi-play"></i>   |   <i class="fi-page-edit"></i>   |   <i class="fi-check"></i>
+                    {% else %}
+                        Error!
+                    {% endif %}
+                </td>
 
-                <div class="columns small-10">
-                    <h5>A. Contact the on-call administrator</h5>
-                </div>
-                <div class="columns small-2">
-                    <div class="switch">
-                      <input class="switch-input" id="Switch1A" type="checkbox" name="Switch1A">
-                      <label class="switch-paddle" for="Switch1A">
-                        <span class="show-for-sr">Complete?</span>
-                      </label>
-                    </div>
-                </div>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
 
-                <div class="columns small-10">
-                    <h5>B. Check-in with your fellow RA's</h5>
-                </div>
-                <div class="columns small-2">
-                    <div class="switch">
-                      <input class="switch-input" id="Switch1B" type="checkbox" name="Switch1B">
-                      <label class="switch-paddle" for="Switch1B">
-                        <span class="show-for-sr">Complete?</span>
-                      </label>
-                    </div>
-                </div>
+        <a href="{% url 'do_create_wf_instance' request.user wf_oncall %}">
+            <div class="button default-accent">Create new report</div>
+        </a>
 
-                <div class="columns small-10">
-                    <h5>C. Update the duty board</h5>
-                </div>
-                <div class="columns small-2">
-                    <div class="switch">
-                      <input class="switch-input" id="Switch1C" type="checkbox" name="Switch1C">
-                      <label class="switch-paddle" for="Switch1C">
-                        <span class="show-for-sr">Complete?</span>
-                      </label>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </div>
-    <div class="columns small-4">
-        <div class="row">
-            <div class="columns small-12">
-                <h5 class="text-center">2. Go on 9:00PM rounds</h5>
-            </div>
-        </div>
-
-         <div class="columns small-10">
-            <h5>A. Begin your rounds </h5>
-         </div>
-         <div class="columns small-2">
-            <div class="switch">
-              <input class="switch-input" id="Switch2A" type="checkbox" name="Switch2A">
-              <label class="switch-paddle" for="Switch2A">
-                <span class="show-for-sr">Complete?</span>
-              </label>
-            </div>
-         </div>
-
-        <div class="columns small-10">
-            <h5>B. Create relevant incident reports </h5>
-         </div>
-         <div class="columns small-2">
-            <div class="switch">
-              <input class="switch-input" id="Switch2B" type="checkbox" name="Switch2B">
-              <label class="switch-paddle" for="Switch2B">
-                <span class="show-for-sr">Complete?</span>
-              </label>
-            </div>
-         </div>
-
-        <div class="columns small-10">
-            <h5>C. Create relevant work orders </h5>
-         </div>
-         <div class="columns small-2">
-            <div class="switch">
-              <input class="switch-input" id="Switch2C" type="checkbox" name="Switch2C">
-              <label class="switch-paddle" for="Switch2C">
-                <span class="show-for-sr">Complete?</span>
-              </label>
-            </div>
-         </div>
-
-        <div class="columns small-10">
-            <h5>D. Complete outstanding paperwork or hold until later </h5>
-         </div>
-         <div class="columns small-2">
-            <div class="switch">
-              <input class="switch-input" id="Switch2D" type="checkbox" name="Switch2D">
-              <label class="switch-paddle" for="Switch2D">
-                <span class="show-for-sr">Complete?</span>
-              </label>
-            </div>
-         </div>
-
-
-    </div>
-    <div class="columns small-4">
-        <div class="row">
-            <div class="columns small-12">
-                <h5 class="text-center">3. Go on 2:00 AM rounds </h5>
-            </div>
-        </div>
-
-        <div class="columns small-10">
-            <h5>A. Begin your rounds </h5>
-         </div>
-         <div class="columns small-2">
-            <div class="switch">
-              <input class="switch-input" id="Switch3A" type="checkbox" name="Switch3A">
-              <label class="switch-paddle" for="Switch3A">
-                <span class="show-for-sr">Complete?</span>
-              </label>
-            </div>
-         </div>
-
-        <div class="columns small-10">
-            <h5>B. Create relevant incident reports </h5>
-         </div>
-         <div class="columns small-2">
-            <div class="switch">
-              <input class="switch-input" id="Switch3B" type="checkbox" name="Switch3B">
-              <label class="switch-paddle" for="Switch3B">
-                <span class="show-for-sr">Complete?</span>
-              </label>
-            </div>
-         </div>
-
-        <div class="columns small-10">
-            <h5>C. Create relevant work orders </h5>
-         </div>
-         <div class="columns small-2">
-            <div class="switch">
-              <input class="switch-input" id="Switch3C" type="checkbox" name="Switch3C">
-              <label class="switch-paddle" for="Switch3C">
-                <span class="show-for-sr">Complete?</span>
-              </label>
-            </div>
-         </div>
-
-        <div class="columns small-10">
-            <h5>D. Complete outstanding paperwork or hold until later </h5>
-         </div>
-         <div class="columns small-2">
-            <div class="switch">
-              <input class="switch-input" id="Switch3D" type="checkbox" name="Switch3D">
-              <label class="switch-paddle" for="Switch3D">
-                <span class="show-for-sr">Complete?</span>
-              </label>
-            </div>
-         </div>
     </div>
 </div>
 
-
 <div class="row expanded">
-    <div class="columns small-4">
-        <div class="row">
-            <div class="columns small-12">
-                <h5 class="text-center">4. End of duty</h5>
-            </div>
-            <div class="columns small-12">
 
-                <div class="columns small-10">
-                    <h5>A. Complete outstanding incident reports</h5>
-                </div>
-                <div class="columns small-2">
-                    <div class="switch">
-                      <input class="switch-input" id="Switch4A" type="checkbox" name="Switch4A">
-                      <label class="switch-paddle" for="Switch4A">
-                        <span class="show-for-sr">Complete?</span>
-                      </label>
-                    </div>
-                </div>
-
-                <div class="columns small-10">
-                    <h5>B. Complete outstanding work orders</h5>
-                </div>
-                <div class="columns small-2">
-                    <div class="switch">
-                      <input class="switch-input" id="Switch4B" type="checkbox" name="Switch4B">
-                      <label class="switch-paddle" for="Switch4B">
-                        <span class="show-for-sr">Complete?</span>
-                      </label>
-                    </div>
-                </div>
-
-                <div class="columns small-10">
-                    <h5>C. Complete any reports from previous shifts</h5>
-                </div>
-                <div class="columns small-2">
-                    <div class="switch">
-                      <input class="switch-input" id="Switch4C" type="checkbox" name="Switch4C">
-                      <label class="switch-paddle" for="Switch4C">
-                        <span class="show-for-sr">Complete?</span>
-                      </label>
-                    </div>
-                </div>
-
-                <div class="columns small-10">
-                    <h5>D. Say goodbye your fellow RAs!</h5>
-                </div>
-                <div class="columns small-2">
-                    <div class="switch">
-                      <input class="switch-input" id="Switch5C" type="checkbox" name="Switch5C">
-                      <label class="switch-paddle" for="Switch5C">
-                        <span class="show-for-sr">Complete?</span>
-                      </label>
-                    </div>
-                </div>
-
-                <div class="columns small-10">
-                    <h5>E. Sign-off for the evening</h5>
-                </div>
-                <div class="columns small-2">
-                    <div class="switch">
-                      <input class="switch-input" id="Switch6C" type="checkbox" name="Switch6C">
-                      <label class="switch-paddle" for="Switch6C">
-                        <span class="show-for-sr">Complete?</span>
-                      </label>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </div>
 
 </div>
 
 
 
 {% endblock rolesdash %}
+

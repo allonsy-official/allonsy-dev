@@ -19,37 +19,20 @@
       <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/allonsy/allonsy_main/admin.py" />
       <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/allonsy/allonsy_main/apps.py" />
       <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/allonsy/allonsy_main/migrations/__init__.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/allonsy/allonsy_main/models.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/forms/wf_tree_edit_wf_items.html" />
       <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/allonsy/allonsy_main/tests.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/allonsy/allonsy_main/views.py" />
       <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/allonsy/manage.py" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/allonsy/allonsy_main/migrations/0001_initial.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/allonsy/allonsy_main/migrations/0002_auto_20160708_1128.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/allonsy/allonsy_main/migrations/0003_auto_20160708_1312.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/allonsy/allonsy_main/migrations/0004_auto_20160708_1319.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/allonsy/allonsy_main/migrations/0005_auto_20160708_1324.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/allonsy/allonsy_main/migrations/0006_relationuserconnection.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/allonsy/allonsy_main/migrations/0007_auto_20160708_1332.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/allonsy/allonsy_main/migrations/0008_userinteraction_uuid_request.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/allonsy/allonsy_main/migrations/0009_relationuserconnection_uuid_relation.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/allonsy/allonsy_schemas/migrations/0001_initial.py" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/allonsy/allonsy/settings.py" afterPath="$PROJECT_DIR$/allonsy/allonsy/settings.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/allonsy/allonsy_main/admin.py" afterPath="$PROJECT_DIR$/allonsy/allonsy_main/admin.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/allonsy/allonsy_main/context_processors.py" afterPath="$PROJECT_DIR$/allonsy/allonsy_main/context_processors.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/allonsy/allonsy_main/forms.py" afterPath="$PROJECT_DIR$/allonsy/allonsy_main/forms.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/allonsy/allonsy_main/models.py" afterPath="$PROJECT_DIR$/allonsy/allonsy_main/models.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/base.html" afterPath="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/base.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/interactions.html" afterPath="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/interactions.html" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/roles_base.html" afterPath="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/roles_base.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/roles_dashboard.html" afterPath="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/roles_dashboard.html" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/roles_onduty.html" afterPath="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/roles_onduty.html" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/user_admin.html" afterPath="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/user_admin.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/user_base.html" afterPath="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/user_base.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/user_interactions.html" afterPath="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/user_interactions.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/user_main.html" afterPath="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/user_main.html" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/allonsy/allonsy_main/urls.py" afterPath="$PROJECT_DIR$/allonsy/allonsy_main/urls.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/allonsy/allonsy_main/views.py" afterPath="$PROJECT_DIR$/allonsy/allonsy_main/views.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/allonsy/static/css/app.css" afterPath="$PROJECT_DIR$/allonsy/static/css/app.css" />
     </list>
     <ignored path="allonsy-dev.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -74,7 +57,7 @@
         <entry file="file://$PROJECT_DIR$/allonsy/allonsy/settings.py">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="32" column="11" selection-start-line="32" selection-start-column="7" selection-end-line="32" selection-end-column="11" />
+              <caret line="54" column="24" selection-start-line="54" selection-start-column="24" selection-end-line="54" selection-end-column="24" />
               <folding />
             </state>
           </provider>
@@ -84,20 +67,10 @@
         <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/urls.py">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="30" column="88" selection-start-line="30" selection-start-column="70" selection-end-line="30" selection-end-column="88" />
+              <caret line="24" column="97" selection-start-line="24" selection-start-column="78" selection-end-line="24" selection-end-column="97" />
               <folding>
                 <element signature="e#0#32#0" expanded="true" />
               </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="roles_base.html" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/roles_base.html">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.86329114">
-              <caret line="34" column="54" selection-start-line="34" selection-start-column="54" selection-end-line="34" selection-end-column="54" />
-              <folding />
             </state>
           </provider>
         </entry>
@@ -106,7 +79,7 @@
         <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/models.py">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="572" column="36" selection-start-line="572" selection-start-column="36" selection-end-line="572" selection-end-column="36" />
+              <caret line="637" column="16" selection-start-line="637" selection-start-column="4" selection-end-line="637" selection-end-column="16" />
               <folding>
                 <element signature="e#0#19#0" expanded="true" />
               </folding>
@@ -114,23 +87,33 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="0008_auto_20160802_2314.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/migrations/0008_auto_20160802_2314.py">
+      <file leaf-file-name="roles_onduty.html" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/roles_onduty.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="32" column="10" selection-start-line="32" selection-start-column="10" selection-end-line="32" selection-end-column="10" />
+            <state vertical-scroll-proportion="-10.870968">
+              <caret line="38" column="31" selection-start-line="38" selection-start-column="31" selection-end-line="38" selection-end-column="31" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="views.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="base.html" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/base.html">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="-5.419355">
+              <caret line="59" column="83" selection-start-line="59" selection-start-column="27" selection-end-line="59" selection-end-column="83" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="views.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/views.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="1381" column="0" selection-start-line="1381" selection-start-column="0" selection-end-line="1381" selection-end-column="0" />
+            <state vertical-scroll-proportion="-1.4942675">
+              <caret line="1069" column="0" selection-start-line="1069" selection-start-column="0" selection-end-line="1069" selection-end-column="0" />
               <folding>
-                <element signature="e#0#38#0" expanded="true" />
+                <element signature="e#0#44#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -140,10 +123,20 @@
         <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/forms.py">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="237" column="11" selection-start-line="237" selection-start-column="11" selection-end-line="237" selection-end-column="11" />
+              <caret line="289" column="89" selection-start-line="289" selection-start-column="89" selection-end-line="289" selection-end-column="89" />
               <folding>
                 <element signature="e#0#24#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="wf_test.html" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/forms/wf_test.html">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="-7.096774">
+              <caret line="10" column="7" selection-start-line="10" selection-start-column="7" selection-end-line="10" selection-end-column="7" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -164,14 +157,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/.gitignore" />
-        <option value="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/login.html" />
-        <option value="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/debugerrors.html" />
-        <option value="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/account.html" />
-        <option value="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/admin-base.html" />
-        <option value="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/create.html" />
-        <option value="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/organization.html" />
-        <option value="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/org.html" />
         <option value="$PROJECT_DIR$/allonsy/allonsy_main/migrations/0021_auto_20160516_1023.py" />
         <option value="$PROJECT_DIR$/allonsy/allonsy_main/migrations/0019_auto_20160516_1050.py" />
         <option value="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/associate-user.html" />
@@ -179,7 +164,6 @@
         <option value="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/formerrors.html" />
         <option value="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/forms/edituseremergencycontacts.html" />
         <option value="$PROJECT_DIR$/allonsy/static/js/foundation.js" />
-        <option value="$PROJECT_DIR$/allonsy/static/js/app.js" />
         <option value="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/forms/edituser.html" />
         <option value="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/user_edituser.html" />
         <option value="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/forms/user_editusercontacts.html" />
@@ -194,9 +178,6 @@
         <option value="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/forms/user_edituser.html" />
         <option value="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/forms/add-user.html" />
         <option value="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/forms/add-location.html" />
-        <option value="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/base.html" />
-        <option value="$PROJECT_DIR$/allonsy/allonsy/settings.py" />
-        <option value="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/user_main.html" />
         <option value="$PROJECT_DIR$/allonsy/allonsy_main/context_processors.py" />
         <option value="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/interactions.html" />
         <option value="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/user_interactions.html" />
@@ -206,15 +187,27 @@
         <option value="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/roles_dashboard.html" />
         <option value="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/forms/wf_create.html" />
         <option value="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/forms/wf_child_create.html" />
-        <option value="$PROJECT_DIR$/allonsy/allonsy_main/urls.py" />
-        <option value="$PROJECT_DIR$/allonsy/allonsy_main/forms.py" />
         <option value="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/forms/wf_item_create.html" />
-        <option value="$PROJECT_DIR$/allonsy/allonsy_main/views.py" />
-        <option value="$PROJECT_DIR$/allonsy/allonsy_main/admin.py" />
-        <option value="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/user_admin.html" />
         <option value="$PROJECT_DIR$/allonsy/allonsy_main/migrations/0008_auto_20160802_2314.py" />
-        <option value="$PROJECT_DIR$/allonsy/allonsy_main/models.py" />
         <option value="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/roles_base.html" />
+        <option value="$PROJECT_DIR$/allonsy/allonsy_main/admin.py" />
+        <option value="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/forms/wf_tree_create.html" />
+        <option value="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/user_admin.html" />
+        <option value="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/forms/wf_tree_select_node_1.html" />
+        <option value="$PROJECT_DIR$/allonsy/allonsy/settings.py" />
+        <option value="$PROJECT_DIR$/allonsy/static/js/app.js" />
+        <option value="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/forms/wf_tree_create_items.html" />
+        <option value="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/user_main.html" />
+        <option value="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/forms/wf_tree_edit_wf_items.html" />
+        <option value="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/forms/wf_tree_delete_wf_items.html" />
+        <option value="$PROJECT_DIR$/allonsy/allonsy_main/models.py" />
+        <option value="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/forms/wf_tree_edit_items.html" />
+        <option value="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/base.html" />
+        <option value="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/forms/wf_test.html" />
+        <option value="$PROJECT_DIR$/allonsy/allonsy_main/urls.py" />
+        <option value="$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/roles_onduty.html" />
+        <option value="$PROJECT_DIR$/allonsy/allonsy_main/forms.py" />
+        <option value="$PROJECT_DIR$/allonsy/allonsy_main/views.py" />
       </list>
     </option>
   </component>
@@ -296,6 +289,24 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
+              <option name="myItemId" value="static" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="allonsy-dev" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="allonsy-dev" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="allonsy" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
               <option name="myItemId" value="allonsy_main" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
@@ -340,6 +351,36 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
+              <option name="myItemId" value="allonsy_main" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="templates" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="allonsy" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="forms" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="allonsy-dev" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="allonsy-dev" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="allonsy" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
               <option name="myItemId" value="allonsy" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
@@ -350,7 +391,7 @@
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="settings.editor.selected.configurable" value="terminal" />
+    <property name="settings.editor.selected.configurable" value="preferences.sourceCode" />
     <property name="settings.editor.splitter.proportion" value="0.2" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="DefaultHtmlFileTemplate" value="HTML File" />
@@ -358,17 +399,17 @@
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\Marc\Documents\Github\allonsy-dev\allonsy\allonsy_main\templates\allonsy\forms" />
+      <recent name="C:\Users\Marc\Documents\Github\allonsy-dev\allonsy\static\css" />
       <recent name="C:\Users\Marc\Documents\Github\allonsy-dev\allonsy\allonsy_main\templates\allonsy" />
       <recent name="C:\Users\Marc\Documents\Github\allonsy-dev\allonsy\allonsy_main\migrations" />
       <recent name="C:\Users\Marc\Documents\Github\allonsy-dev\allonsy\allonsy" />
-      <recent name="C:\Users\Marc\Documents\Github\allonsy-dev\allonsy\allonsy_main" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\Marc\Documents\Github\allonsy-dev\allonsy\static\css" />
+      <recent name="C:\Users\Marc\Documents\Github\allonsy-dev\allonsy\static" />
       <recent name="C:\Users\Marc\Documents\Github\allonsy-dev\allonsy\allonsy_main\templates\allonsy\forms" />
       <recent name="C:\Users\Marc\Documents\Github\allonsy-dev\allonsy\allonsy_main\templates\allonsy" />
       <recent name="C:\Users\Marc\Documents\Github\allonsy-dev\allonsy\allonsy_main\templates" />
-      <recent name="C:\Users\Marc\Documents\Github\allonsy-dev\allonsy\static\img\app" />
-      <recent name="C:\Users\Marc\Documents\Github\allonsy-dev\allonsy\templates" />
     </key>
   </component>
   <component name="RunManager" selected="Python.views">
@@ -537,21 +578,21 @@
     <frame x="-8" y="7" width="1932" height="1015" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.15050344" sideWeight="0.647541" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.15050344" sideWeight="0.5620609" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32900432" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32786885" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32980973" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
-      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.15050344" sideWeight="0.352459" order="2" side_tool="true" content_ui="tabs" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.15050344" sideWeight="0.4379391" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32980973" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32980973" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3290398" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
     </layout>
@@ -574,114 +615,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/forms.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="237" column="11" selection-start-line="237" selection-start-column="11" selection-end-line="237" selection-end-column="11" />
-          <folding>
-            <element signature="e#0#24#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/allonsy/static/css/foundation.css">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.7647059">
-          <caret line="1845" column="18" selection-start-line="1845" selection-start-column="18" selection-end-line="1845" selection-end-column="18" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/forms/editusercontacts.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.09781358">
-          <caret line="5" column="66" selection-start-line="5" selection-start-column="10" selection-end-line="5" selection-end-column="66" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/forms/associate-org.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.8803222">
-          <caret line="45" column="6" selection-start-line="45" selection-start-column="6" selection-end-line="45" selection-end-column="6" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/allonsy_base.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.019562716">
-          <caret line="1" column="41" selection-start-line="1" selection-start-column="41" selection-end-line="1" selection-end-column="41" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/apps.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.094866075">
-          <caret line="5" column="0" selection-start-line="5" selection-start-column="0" selection-end-line="5" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/allonsy/allonsy/urls_public.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.34151787">
-          <caret line="19" column="5" selection-start-line="19" selection-start-column="5" selection-end-line="19" selection-end-column="5" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/allonsy/allonsy/urls.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.34151787">
-          <caret line="19" column="44" selection-start-line="19" selection-start-column="44" selection-end-line="19" selection-end-column="44" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_schemas/views.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/org.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.17790698">
-          <caret line="9" column="20" selection-start-line="9" selection-start-column="20" selection-end-line="9" selection-end-column="20" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/app.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.15813954">
-          <caret line="8" column="63" selection-start-line="8" selection-start-column="63" selection-end-line="8" selection-end-column="63" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/organization.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.8104651">
-          <caret line="41" column="27" selection-start-line="41" selection-start-column="27" selection-end-line="41" selection-end-column="27" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/forms/add-account.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-0.11860465">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/forms/user_editusercontacts.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-1.3441861">
-          <caret line="12" column="8" selection-start-line="12" selection-start-column="8" selection-end-line="12" selection-end-column="8" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/user_admin_main.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.09883721">
-          <caret line="5" column="37" selection-start-line="5" selection-start-column="8" selection-end-line="5" selection-end-column="37" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/create.html">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.5139535">
@@ -731,24 +664,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/base.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-0.4177215">
-          <caret line="6" column="30" selection-start-line="6" selection-start-column="30" selection-end-line="6" selection-end-column="30" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/allonsy/allonsy_schemas/migrations/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_schemas/models.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.8038977">
-          <caret line="38" column="22" selection-start-line="38" selection-start-column="22" selection-end-line="38" selection-end-column="22" />
         </state>
       </provider>
     </entry>
@@ -794,38 +713,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/user_base.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.4074074">
-          <caret line="41" column="20" selection-start-line="41" selection-start-column="20" selection-end-line="41" selection-end-column="20" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/forms/add-org.html">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-0.7096774">
           <caret line="8" column="21" selection-start-line="3" selection-start-column="0" selection-end-line="8" selection-end-column="21" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/forms/wf_create.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.1392405">
-          <caret line="8" column="21" selection-start-line="8" selection-start-column="21" selection-end-line="8" selection-end-column="21" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/forms/wf_child_create.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-21.225807">
-          <caret line="38" column="0" selection-start-line="38" selection-start-column="0" selection-end-line="38" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/user_main.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.9835443">
-          <caret line="85" column="25" selection-start-line="85" selection-start-column="25" selection-end-line="85" selection-end-column="25" />
         </state>
       </provider>
     </entry>
@@ -836,66 +727,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/admin.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.7771011">
-          <caret line="36" column="0" selection-start-line="36" selection-start-column="0" selection-end-line="36" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/forms/wf_item_create.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.22278482">
-          <caret line="17" column="55" selection-start-line="17" selection-start-column="55" selection-end-line="17" selection-end-column="55" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/admin-base.html">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-9.225806">
           <caret line="13" column="8" selection-start-line="13" selection-start-column="8" selection-end-line="13" selection-end-column="8" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/allonsy/allonsy/settings.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="32" column="11" selection-start-line="32" selection-start-column="7" selection-end-line="32" selection-end-column="11" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/forms.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="237" column="11" selection-start-line="237" selection-start-column="11" selection-end-line="237" selection-end-column="11" />
-          <folding>
-            <element signature="e#0#24#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/views.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="1381" column="0" selection-start-line="1381" selection-start-column="0" selection-end-line="1381" selection-end-column="0" />
-          <folding>
-            <element signature="e#0#38#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/user_admin.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.6507937">
-          <caret line="109" column="56" selection-start-line="109" selection-start-column="56" selection-end-line="110" selection-end-column="28" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/roles_onduty.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-0.08354431">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
         </state>
       </provider>
     </entry>
@@ -910,43 +745,251 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
           <caret line="32" column="10" selection-start-line="32" selection-start-column="10" selection-end-line="32" selection-end-column="10" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/migrations/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/roles_onduty_template.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/roles_dashboard.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.89113927">
+          <caret line="32" column="0" selection-start-line="32" selection-start-column="0" selection-end-line="32" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/roles_base.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-14.419354">
+          <caret line="31" column="72" selection-start-line="31" selection-start-column="72" selection-end-line="31" selection-end-column="72" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/admin.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.34835565">
+          <caret line="28" column="27" selection-start-line="28" selection-start-column="27" selection-end-line="28" selection-end-column="27" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/forms/wf_create.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.22278482">
+          <caret line="8" column="21" selection-start-line="8" selection-start-column="21" selection-end-line="8" selection-end-column="21" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/user_admin_main.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.1392405">
+          <caret line="5" column="37" selection-start-line="5" selection-start-column="8" selection-end-line="5" selection-end-column="37" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/user_admin.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.7898734">
+          <caret line="109" column="71" selection-start-line="109" selection-start-column="71" selection-end-line="109" selection-end-column="71" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/forms/wf_tree_select_node_1.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-12.064516">
+          <caret line="17" column="60" selection-start-line="17" selection-start-column="60" selection-end-line="17" selection-end-column="60" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/forms/wf_tree_select_node_2.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.1164557">
+          <caret line="19" column="52" selection-start-line="19" selection-start-column="52" selection-end-line="19" selection-end-column="52" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/forms/wf_item_create.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-5.903226">
+          <caret line="17" column="55" selection-start-line="17" selection-start-column="55" selection-end-line="17" selection-end-column="55" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/allonsy/static/js/app.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="3" column="45" selection-start-line="3" selection-start-column="45" selection-end-line="3" selection-end-column="45" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/forms/wf_child_create.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="1.0582279">
+          <caret line="38" column="0" selection-start-line="38" selection-start-column="0" selection-end-line="38" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/forms/editusercontacts.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.1392405">
+          <caret line="5" column="65" selection-start-line="5" selection-start-column="48" selection-end-line="5" selection-end-column="65" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/forms/wf_tree_create.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.94683546">
+          <caret line="34" column="30" selection-start-line="34" selection-start-column="30" selection-end-line="34" selection-end-column="30" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/forms/wf_tree_create_items.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="1.0860759">
+          <caret line="39" column="18" selection-start-line="39" selection-start-column="18" selection-end-line="39" selection-end-column="18" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/user_main.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="112" column="14" selection-start-line="112" selection-start-column="14" selection-end-line="112" selection-end-column="14" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/forms/wf_tree_delete_wf_items.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.47848102">
+          <caret line="20" column="103" selection-start-line="20" selection-start-column="103" selection-end-line="20" selection-end-column="103" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_schemas/models.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.8038977">
+          <caret line="38" column="22" selection-start-line="38" selection-start-column="22" selection-end-line="38" selection-end-column="22" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/allonsy/allonsy/settings.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="54" column="24" selection-start-line="54" selection-start-column="24" selection-end-line="54" selection-end-column="24" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/models.py">
+    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/user_base.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-29.096775">
+          <caret line="41" column="20" selection-start-line="41" selection-start-column="20" selection-end-line="41" selection-end-column="20" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/allonsy_base.html">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="572" column="36" selection-start-line="572" selection-start-column="36" selection-end-line="572" selection-end-column="36" />
-          <folding>
-            <element signature="e#0#19#0" expanded="true" />
-          </folding>
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/roles_oncall.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-0.2506329">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/forms/wf_tree_edit_wf_items.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.16455697">
+          <caret line="32" column="112" selection-start-line="32" selection-start-column="112" selection-end-line="32" selection-end-column="112" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/forms/wf_tree_edit_items.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="2.1443038">
+          <caret line="107" column="123" selection-start-line="107" selection-start-column="95" selection-end-line="107" selection-end-column="123" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/forms/wf_test.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-7.096774">
+          <caret line="10" column="7" selection-start-line="10" selection-start-column="7" selection-end-line="10" selection-end-column="7" />
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/urls.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="30" column="88" selection-start-line="30" selection-start-column="70" selection-end-line="30" selection-end-column="88" />
+          <caret line="24" column="97" selection-start-line="24" selection-start-column="78" selection-end-line="24" selection-end-column="97" />
           <folding>
             <element signature="e#0#32#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/roles_dashboard.html">
+    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/models.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-22.709677">
-          <caret line="32" column="0" selection-start-line="32" selection-start-column="0" selection-end-line="32" selection-end-column="0" />
+        <state vertical-scroll-proportion="0.0">
+          <caret line="637" column="16" selection-start-line="637" selection-start-column="4" selection-end-line="637" selection-end-column="16" />
+          <folding>
+            <element signature="e#0#19#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/forms.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="289" column="89" selection-start-line="289" selection-start-column="89" selection-end-line="289" selection-end-column="89" />
+          <folding>
+            <element signature="e#0#24#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/roles_onduty.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-10.870968">
+          <caret line="38" column="31" selection-start-line="38" selection-start-column="31" selection-end-line="38" selection-end-column="31" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/roles_base.html">
+    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/templates/allonsy/base.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.86329114">
-          <caret line="34" column="54" selection-start-line="34" selection-start-column="54" selection-end-line="34" selection-end-column="54" />
+        <state vertical-scroll-proportion="-5.419355">
+          <caret line="59" column="83" selection-start-line="59" selection-start-column="27" selection-end-line="59" selection-end-column="83" />
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/allonsy/allonsy_main/views.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-1.4942675">
+          <caret line="1069" column="0" selection-start-line="1069" selection-start-column="0" selection-end-line="1069" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#44#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

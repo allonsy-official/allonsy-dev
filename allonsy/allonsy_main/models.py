@@ -494,7 +494,7 @@ class UserInteractionTree (MPTTModel):
 class WorkflowSet (models.Model):
 
     NOSET = 'X'
-    ROUNDS = 'N'
+    ROUNDS = 'R'
     DUTY = 'D'
     CHECKIN = 'I'
     CHECKOUT = 'O'
@@ -573,6 +573,9 @@ class WorkflowDocumentMaster (models.Model):
     date_added = models.DateTimeField(auto_now_add=True)
     date_edited = models.DateTimeField(auto_now=True)
 
+    def __str__(self):
+        return str(self.user_instance_name)
+
 
 class WorkflowDocumentItem (models.Model):
     # TODO: Split instance from relation so that an instance can be tracked through multiple user transactions
@@ -589,4 +592,71 @@ class WorkflowDocumentItem (models.Model):
     date_added = models.DateTimeField(auto_now_add=True)
     date_edited = models.DateTimeField(auto_now=True)
 
+    def __str__(self):
+        return str(self.uuid_doc_item)
 
+
+class WorkflowTree (MPTTModel):
+
+    CREATE = 'C'
+    INPROG = 'I'
+    SUBMIT = 'S'
+    REVIEW = 'R'
+    APPROVE = 'A'
+    COMPLETE = 'O'
+    ON = 'ON'
+    OFF = 'OFF'
+    NOSTATUS = 'Z'
+
+    user_instance_state_choices = (
+        (CREATE, 'Created'),
+        (INPROG, 'Edited and saved'),
+        (SUBMIT, 'Submitted for review'),
+        (REVIEW, 'Reverted for edit'),
+        (APPROVE, 'Approved'),
+        (COMPLETE, 'Saved as complete'),
+        (ON, 'Switch is on'),
+        (OFF, 'Switch is off'),
+        (NOSTATUS, 'No status has been assigned'),
+    )
+
+    ONCALL = 'CALL'
+    ONDUTY = 'DUTY'
+    IT = 'ITSV'
+    FACILITIES = 'FASV'
+    NOSTATUS = 'NONE'
+
+    wf_item_proto_category_choices = (
+        (ONCALL, 'On-call'),
+        (ONDUTY, 'On-duty'),
+        (IT, 'IT Service'),
+        (FACILITIES, 'Facilities'),
+        (NOSTATUS, 'No status set'),
+    )
+
+    parent = TreeForeignKey('self', null=True, blank=True, related_name='children', db_index=True)
+    uuid_wf_item = models.UUIDField(default=uuid.uuid4, editable=False)
+    wf_item_owner = models.ManyToManyField(User, related_name='owned_by', blank=True)
+    wf_item_name = models.CharField(max_length=1028)
+    wf_item_text = models.CharField(max_length=256, blank=True)
+    wf_item_status = models.CharField(max_length=8, choices=user_instance_state_choices, default=NOSTATUS)
+    wf_item_is_default = models.BooleanField(default=False)
+    wf_item_is_active = models.BooleanField(default=False)
+    wf_item_is_proto = models.BooleanField(default=False)
+    wf_item_proto_category = models.CharField(max_length=8, choices=wf_item_proto_category_choices, default=NOSTATUS)
+    date_added = models.DateTimeField(auto_now_add=True)
+    date_edited = models.DateTimeField(auto_now=True)
+
+    class MPTTMeta:
+        order_insertion_by = ['date_added']
+
+    def __str__(self):
+        return str(self.wf_item_name)
+
+
+class WFMetaData (models.Model):
+    uuid_workflowtree_record = models.ForeignKey(WorkflowTree, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return str(self.uuid_meta_record)
+    #TODO: this is the hook for audit records on documents

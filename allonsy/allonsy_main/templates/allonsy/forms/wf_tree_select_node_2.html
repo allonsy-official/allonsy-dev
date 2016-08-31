@@ -1,0 +1,50 @@
+{% extends "allonsy/user_admin.html" %}
+
+{% block adminmain %}
+<div class="columns small-9">
+    <div class="row">
+        <div class="callout primary">Use this form to create a new workflow </div>
+    </div>
+
+    <div class="row">
+        <form id="DoGetWFTreeForAddItem" method="post">
+            <!--omitted action per HTML5 spec -->
+
+            {% csrf_token %}
+
+            <div class="row">
+                <div class="columns small-12">
+                    <label>Select the category for this workflow:
+                          <select name="get_this_node_docs">
+                              <option value="">----------</option>
+                              {% for item in wf_parent_list %}
+
+                              <option value="{{ item }}">{{ item }}</option>
+
+                              {% endfor %}
+                          </select>
+                    </label>
+                </div>
+            </div>
+
+            <div class="row">
+                    <div class="large-4 columns">
+                        <input type="submit" class="button" value="Submit" />
+                    </div>
+            </div>
+
+            {% if form.errors %}
+                <div id="form-error">
+                    <p>The operation could not be performed because one or more error(s) occurred.<br />Please resubmit the form after making the following changes:</p>
+                    <ul>
+                    {% for field in form %}
+                    <li>{{field.html_name}} {{ field.errors|striptags }}</li>
+                    {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
+        </form>
+    </div>
+</div>
+{% endblock adminmain %}

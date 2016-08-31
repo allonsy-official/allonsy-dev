@@ -106,8 +106,8 @@
                 <a href="#">Workflows</a>
                 <ul class="vertical menu">
                   {% if user_extension_object.user_type == 'X' or user_extension_object.user_type == 'A' or user_extension_object.user_type == 'D' %}
-                  <li><a href="{% url 'wf_set_add_or_edit' %}">Create new</a></li>
-                  <li><a href="#">Edit existing</a></li>
+                  <li><a href="{% url 'wf_tree_node_add_or_edit' %}">Create new</a></li>
+                  <li><a href="{% url 'get_tree_node_for_add_item_1' %}">Edit existing</a></li>
                   {% else %}
                   {% endif %}
                 </ul>

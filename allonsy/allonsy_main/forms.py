@@ -1,7 +1,7 @@
 from django import forms
 from django.core.exceptions import ValidationError
 from django.forms import ModelForm
-from allonsy_main.models import Organization, Location, User, UserExtension, RelationOrganizationUser, UserExtension, UserProfile, UserInteractionTree
+from allonsy_main.models import Organization, Location, User, UserExtension, RelationOrganizationUser, UserExtension, UserProfile, UserInteractionTree, WorkflowTree
 from allonsy_schemas.models import Account
 
 
@@ -250,3 +250,41 @@ class DoAddEditWFItem(forms.Form):
         return wf_item_is_active
 
 
+class DoAddEditWFTreeNode(forms.Form):
+    wf_item_name = forms.CharField(max_length=32)
+    wf_item_text = forms.CharField(max_length=256, required=False)
+    wf_item_is_default = forms.CharField(max_length=8, required=False)
+    wf_item_is_active = forms.CharField(max_length=8, required=False)
+    proto_wf_doc_type = forms.CharField(max_length=32)
+
+
+class DoAddEditWFTreeItem(forms.Form):
+    wf_item_name = forms.CharField(max_length=32)
+    wf_item_text = forms.CharField(max_length=256, required=False)
+    wf_item_is_default = forms.CharField(max_length=8, required=False)
+    wf_item_is_active = forms.CharField(max_length=8, required=False)
+    proto_wf_doc_type = forms.CharField(max_length=32)
+
+
+class DoGetWFTreeForAddItem(forms.Form):
+    get_this_node_docs = forms.CharField(max_length=32)
+
+
+class DoAddWFTreeItem(forms.Form):
+    wf_item_name = forms.CharField(max_length=32)
+    wf_item_text = forms.CharField(max_length=256, required=False)
+    wf_item_is_active = forms.CharField(max_length=8, required=False)
+
+
+class DoDeleteWFTreeItem(forms.Form):
+    wf_item_do_delete = forms.CharField(max_length=8, required=False)
+
+
+class DoGetWFInstance(forms.Form):
+
+    def __init__(self, *args, **kwargs):
+        dyn_items = kwargs.pop('dyn_items')
+        super(DoGetWFInstance, self).__init__(*args, **kwargs)
+
+        for i, question in enumerate(dyn_items):
+            self.fields['custom_%s' % i] = forms.CharField(max_length=16, label=question)

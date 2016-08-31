@@ -8,6 +8,7 @@
     {% load static %}
     <link rel="stylesheet" href="/static/css/foundation.css" />
     <link rel="stylesheet" href="/static/css/app.css" />
+    <link rel="stylesheet" href="/static/css/foundation-icons/foundation-icons/foundation-icons.css" />
   </head>
   <body>
 
@@ -56,7 +57,7 @@
               {% else %}
               {% endif %}
               <li><a href="{% url 'roles_dashboard' request.user %}">Roles Dashboard</a></li>
-              <li><a href="#">Nightly Rounds</a></li>
+              <li><a href="{% url 'do_create_wf_instance' request.user wf_oncall %}">Nightly Rounds</a></li>
               <li><a href="#">Incident Report</a></li>
               <li><a href="#">Damage Report</a></li>
               <li><a href="#">Ticketing System</a></li>

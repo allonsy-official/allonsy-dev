@@ -1,0 +1,14 @@
+{% extends "allonsy/roles_base.html" %}
+
+{% block rolesdash %}
+
+{% load mptt_tags %}
+
+
+<form method="POST" action=".">
+  {{ form }}
+  <input type=submit>
+</form>
+
+{% endblock rolesdash %}
+

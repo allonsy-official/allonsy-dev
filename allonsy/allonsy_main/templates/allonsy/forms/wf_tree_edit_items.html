@@ -1,0 +1,233 @@
+{% extends "allonsy/roles_base.html" %}
+
+{% block rolesdash %}
+
+{% load mptt_tags %}
+
+
+<div class="row expanded">
+    <div class="columns small-12">
+        <h3>My Duty Workflow</h3>
+    </div>
+</div>
+<div class="row expanded" data-equalizer>
+
+    <div class="columns small-4">
+        {% if not name_for_column_1 %}
+        <a href="{% url 'create_new_wf_item_as_child' wf_proto.uuid_wf_item %}" class="expanded button success">
+                    Create a new column
+        </a>
+        {% else %}
+        <div class="row" data-equalizer-watch>
+            <div class="columns small-12">
+                <div class="columns small-10">
+                    <h4 class="text-center">{{ name_for_column_1.wf_item_name }}
+                        {% if name_for_column_1.wf_item_is_active %}
+                        <span class="label success">Active</span>
+                        {% else %}
+                        <span class="label alert">Inactive</span>
+                        {% endif %}
+
+                    </h4>
+                </div>
+                <div class="columns small-1">
+                    <a href="{% url 'delete_wf_item_as_child' name_for_column_1.uuid_wf_item %}"><i class="fi-page-delete"></i></a>
+                </div>
+                <div class="columns small-1">
+                    <a href="{% url 'edit_wf_item_as_child' name_for_column_1.uuid_wf_item %}"><i class="fi-page-edit"></i></a>
+                </div>
+            </div>
+
+            <div class="columns small-12">
+
+                {% for item in items_for_column_1 %}
+
+                <div class="columns small-10">
+                    <span data-tooltip aria-haspopup="true" class="has-tip" data-disable-hover="false" tabindex="1" title="{{ item.wf_item_text }}">
+                    <h5>
+                        {{ item.wf_item_name }}
+                    </h5>
+                    </span>
+
+                </div>
+                <div class="columns small-1">
+                    <a href="{% url 'delete_wf_item_as_child' item.uuid_wf_item %}"><i class="fi-page-delete"></i></a>
+                    <!-- <div class="switch tiny">
+                      <input class="switch-input" id="Switch_{{ item.pk }}" type="checkbox" name="Switch_{{ item.pk }}">
+                      <label class="switch-paddle" for="Switch_{{ item.pk }}">
+                        <span class="show-for-sr">Complete?</span>
+                      </label>
+                    </div> -->
+                </div>
+                <div class="columns small-1">
+                    <a href="{% url 'edit_wf_item_as_child' item.uuid_wf_item %}"><i class="fi-page-edit"></i></a>
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+        <div class="row">
+            <div class="columns small-6">
+                <div class="expanded button">
+                    Change ordering
+                </div>
+            </div>
+            <div class="columns small-6">
+                <a href="{% url 'create_new_wf_item_as_child' uuid_str_for_column_1 %}" class="expanded button success">
+                    Create item
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="columns small-4 end">
+    {% if name_for_column_1 and not name_for_column_2 %}
+        <a href="{% url 'create_new_wf_item_as_child' wf_proto.uuid_wf_item %}" class="expanded button success">
+                    Create a new column
+        </a>
+    {% elif name_for_column_2 %}
+        <div class="row" data-equalizer-watch>
+            <div class="columns small-12">
+                <div class="columns small-10">
+                    <h4 class="text-center">{{ name_for_column_2.wf_item_name }}
+                        {% if name_for_column_2.wf_item_is_active %}
+                        <span class="label success">Active</span>
+                        {% else %}
+                        <span class="label alert">Inactive</span>
+                        {% endif %}
+
+                    </h4>
+                </div>
+                <div class="columns small-1">
+                    <a href="{% url 'delete_wf_item_as_child' name_for_column_2.uuid_wf_item %}"><i class="fi-page-delete"></i></a>
+                </div>
+                <div class="columns small-1">
+                    <a href="{% url 'edit_wf_item_as_child' name_for_column_2.uuid_wf_item %}"><i class="fi-page-edit"></i></a>
+                </div>
+            </div>
+
+            <div class="columns small-12">
+
+                {% for item in items_for_column_2 %}
+
+                <div class="columns small-10">
+                    <span data-tooltip aria-haspopup="true" class="has-tip" data-disable-hover="false" tabindex="1" title="{{ item.wf_item_text }}">
+                    <h5>
+                        {{ item.wf_item_name }}
+                    </h5>
+                    </span>
+
+                </div>
+                <div class="columns small-1">
+                    <a href="{% url 'delete_wf_item_as_child' item.uuid_wf_item %}"><i class="fi-page-delete"></i></a>
+                    <!-- <div class="switch tiny">
+                      <input class="switch-input" id="Switch_{{ item.pk }}" type="checkbox" name="Switch_{{ item.pk }}">
+                      <label class="switch-paddle" for="Switch_{{ item.pk }}">
+                        <span class="show-for-sr">Complete?</span>
+                      </label>
+                    </div> -->
+                </div>
+                <div class="columns small-1">
+                    <a href="{% url 'edit_wf_item_as_child' item.uuid_wf_item %}"><i class="fi-page-edit"></i></a>
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+        <div class="row">
+            <div class="columns small-6">
+                <div class="expanded button">
+                    Change ordering
+                </div>
+            </div>
+            <div class="columns small-6">
+                <a href="{% url 'create_new_wf_item_as_child' uuid_str_for_column_2 %}" class="expanded button success">
+                    Create item
+                </a>
+            </div>
+        </div>
+    {% else %}
+    {% endif %}
+    </div>
+
+    <div class="columns small-4 end">
+    {% if name_for_column_2 and not name_for_column_3 %}
+        <a href="{% url 'create_new_wf_item_as_child' wf_proto.uuid_wf_item %}" class="expanded button success">
+                    Create a new column
+        </a>
+    {% elif name_for_column_3 %}
+        <div class="row" data-equalizer-watch>
+            <div class="columns small-12">
+                <div class="columns small-10">
+                    <h4 class="text-center">{{ name_for_column_3.wf_item_name }}
+                        {% if name_for_column_3.wf_item_is_active %}
+                        <span class="label success">Active</span>
+                        {% else %}
+                        <span class="label alert">Inactive</span>
+                        {% endif %}
+
+                    </h4>
+                </div>
+                <div class="columns small-1">
+                    <a href="{% url 'delete_wf_item_as_child' name_for_column_3.uuid_wf_item %}"><i class="fi-page-delete"></i></a>
+                </div>
+                <div class="columns small-1">
+                    <a href="{% url 'edit_wf_item_as_child' name_for_column_3.uuid_wf_item %}"><i class="fi-page-edit"></i></a>
+                </div>
+            </div>
+
+            <div class="columns small-12">
+
+                {% for item in items_for_column_3 %}
+
+                <div class="columns small-10">
+                    <span data-tooltip aria-haspopup="true" class="has-tip" data-disable-hover="false" tabindex="1" title="{{ item.wf_item_text }}">
+                    <h5>
+                        {{ item.wf_item_name }}
+                    </h5>
+                    </span>
+
+                </div>
+                <div class="columns small-1">
+                    <a href="{% url 'delete_wf_item_as_child' item.uuid_wf_item %}"><i class="fi-page-delete"></i></a>
+                    <!-- <div class="switch tiny">
+                      <input class="switch-input" id="Switch_{{ item.pk }}" type="checkbox" name="Switch_{{ item.pk }}">
+                      <label class="switch-paddle" for="Switch_{{ item.pk }}">
+                        <span class="show-for-sr">Complete?</span>
+                      </label>
+                    </div> -->
+                </div>
+                <div class="columns small-1">
+                    <a href="{% url 'edit_wf_item_as_child' item.uuid_wf_item %}"><i class="fi-page-edit"></i></a>
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+        <div class="row">
+            <div class="columns small-6">
+                <div class="expanded button">
+                    Change ordering
+                </div>
+            </div>
+            <div class="columns small-6">
+                <a href="{% url 'create_new_wf_item_as_child' uuid_str_for_column_3 %}" class="expanded button success">
+                    Create item
+                </a>
+            </div>
+        </div>
+    {% else %}
+    {% endif %}
+    </div>
+
+</div>
+
+{% endblock rolesdash %}
+
