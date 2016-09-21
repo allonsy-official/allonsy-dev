@@ -23,6 +23,9 @@ urlpatterns = [
     url(r'^user/(?P<username>\w+)/roles/oncall/$', views.roles_oncall, name='roles_oncall'),
     url(r'^user/(?P<username>\w+)/roles/c/(?P<uuidparentnode>[^/]+)/$', views.do_create_wf_instance, name='do_create_wf_instance'),
     url(r'^user/(?P<username>\w+)/roles/i/(?P<uuidparentnode>[^/]+)/$', views.do_edit_wf_instance, name='do_edit_wf_instance'),
+    url(r'^user/(?P<username>\w+)/roles/m/(?P<uuidparentnode>[^/]+)/$', views.do_edit_wf_instance_meta, name='do_edit_wf_instance_meta'),
+    url(r'^user/(?P<username>\w+)/roles/z/(?P<uuidparentnode>[^/]+)/$', views.check_wf_before_complete, name='check_wf_before_complete'),
+    url(r'^user/(?P<username>\w+)/roles/u/(?P<statuscode>[^/]+)/(?P<uuidparentnode>[^/]+)/$', views.wf_status_update, name='wf_status_update'),
     url(r'^user/(?P<username>\w+)/roles/onduty$', views.roles_onduty, name='roles_onduty'),
     # TODO: Extend the below so one function handles all calls for new reports. Need to figure out regex for lookup
     url(r'^user/(?P<username>\w+)/roles/r/c/(?P<rpttype>\w+)/$', views.roles_rpt_create_new, name='roles_rpt_create_new'),
@@ -50,7 +53,6 @@ urlpatterns = [
     url(r'^create/location/$', views.create_account, name='create_location'),
     url(r'^create/epoch/$', views.create_account, name='create_epoch'),
     url(r'^create/epoch/do', views.do_add_account, name='do_add_epoch'),
-    url(r'^assoc/org/$', views.assoc_organization, name='assoc_organization'),
     url(r'^user/(?P<username>\w+)/user-admin/assoc/org/do/$', views.do_assoc_organization, name='do_assoc_organization'),
     url(r'^assoc/org/usr/$', views.assoc_organization_user, name='assoc_organization_user'),
     url(r'^assoc/org/usr/do', views.do_assoc_organization_user, name='do_assoc_organization_user'),

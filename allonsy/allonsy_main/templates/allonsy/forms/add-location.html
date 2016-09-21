@@ -28,11 +28,16 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div class="columns small-6">
-                        <label>Does this location have a parent?
-                            <input type="checkbox" value='True' name="location_HasParent">
+                    <div class="columns small-12">
+                        <label>Select the location's parent
+                              <select name="location_parent">
+                                {% for location in location_parent_list %}
+                                <option value="{{ location.uuid_location }}">{{ location.location_ShortName }}</option>
+                                {% endfor %}
+                              </select>
                         </label>
                     </div>
+                </div>
                     <div class="columns small-6">
                         <label>Inherit geodata from parent?
                             <input type="checkbox" value='True' name="location_InheritGeoFromParent">

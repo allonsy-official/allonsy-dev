@@ -10,8 +10,9 @@ from allonsy_schemas import models as allonsy_schema_models
 
 
 # Create your models here.
-class Organization (models.Model):
+class Organization (MPTTModel):
 
+    ACCOUNT = 'A'
     UNIVERSITY = 'U'
     SCHOOL = 'S'
     DEPARTMENT = 'D'
@@ -27,6 +28,7 @@ class Organization (models.Model):
     ORG_NOSPECIAL = 'X'
 
     org_type_choices = (
+        (ACCOUNT, 'Account'),
         (UNIVERSITY, 'University'),
         (SCHOOL, 'School or College'),
         (DEPARTMENT, 'Department'),
@@ -44,16 +46,18 @@ class Organization (models.Model):
         (ORG_NOSPECIAL, 'No special class'),
     )
 
-    uuid_account = models.ForeignKey(allonsy_schema_models.Account, on_delete=models.CASCADE)
+    parent = TreeForeignKey('self', null=True, blank=True, related_name='children', db_index=True)
     uuid_org = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    org_FullName = models.CharField(max_length=100, default='TESTING')
-    org_ShortName = models.CharField(max_length=32, default='TESTING')
-    org_abbreviation = models.CharField(max_length=8, default='TESTING')
+    org_FullName = models.CharField(max_length=100, unique=True)
+    org_ShortName = models.CharField(max_length=32, unique=True)
+    org_abbreviation = models.CharField(max_length=8)
     org_type = models.CharField(max_length=1, choices=org_type_choices, default=GROUP)
     org_type_special = models.CharField(max_length=1, choices=org_type_special_choices, default=ORG_NOSPECIAL)
-    org_HasParent = models.BooleanField(default=True)
     date_added = models.DateTimeField(auto_now_add=True)
     date_edited = models.DateTimeField(auto_now=True)
+
+    class MPTTMeta:
+        order_insertion_by = ['org_ShortName']
 
     def __str__(self):
         return self.org_FullName
@@ -184,9 +188,10 @@ class UserAlert (models.Model):
         return self.interaction_text
 
 
-class Location (models.Model):
+class Location (MPTTModel):
 
     # Villages are collections of Buildings, Suites are collections of rooms
+    ACCOUNT = 'A'
     CAMPUS = 'C'
     VILLAGE = 'V'
     BUILDING = 'B'
@@ -196,6 +201,7 @@ class Location (models.Model):
     LOCATION = 'L'
 
     location_type_choices = (
+        (ACCOUNT, 'Account'),
         (CAMPUS, 'Campus'),
         (VILLAGE, 'Village'),
         (BUILDING, 'Building'),
@@ -205,9 +211,8 @@ class Location (models.Model):
         (LOCATION, 'Location')
     )
 
+    parent = TreeForeignKey('self', null=True, blank=True, related_name='children', db_index=True)
     uuid_location = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    uuid_account = models.ForeignKey(allonsy_schema_models.Account, on_delete=models.CASCADE)
-    location_HasParent = models.BooleanField(default=True)
     # If below is selected, child will inherit address/contact data from parent
     location_InheritGeoFromParent = models.BooleanField(default=True)
     location_type = models.CharField(max_length=1, choices=location_type_choices)
@@ -229,18 +234,24 @@ class Location (models.Model):
     date_added = models.DateTimeField(auto_now_add=True)
     date_edited = models.DateTimeField(auto_now=True)
 
+    class MPTTMeta:
+        order_insertion_by = ['location_ShortName']
+
     def __str__(self):
         return self.location_FullName
 
 
-class Epoch (models.Model):
+class Epoch (MPTTModel):
+    parent = TreeForeignKey('self', null=True, blank=True, related_name='children', db_index=True)
     uuid_epoch = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    uuid_account = models.ForeignKey(allonsy_schema_models.Account, on_delete=models.CASCADE)
     epoch_Name = models.CharField(max_length=100)
     epoch_StartDate = models.DateField()
     epoch_EndDate = models.DateField()
     date_added = models.DateTimeField(auto_now_add=True)
     date_edited = models.DateTimeField(auto_now=True)
+
+    class MPTTMeta:
+        order_insertion_by = ['epoch_StartDate']
 
     def __str__(self):
         return self.epoch_Name
@@ -249,36 +260,6 @@ class Epoch (models.Model):
     # TODO: add PeriodDetail and LocationDetail tables
     # TODO: Form will have to control that id_period and id_residence are a set from relevant tables (distinct())
     # See http://stackoverflow.com/questions/6707991/django-modelchoicefield-using-distinct-values-from-one-model-attribute
-
-
-class TreeOrganization(MPTTModel):
-    relation_name = models.CharField(max_length=100, default='Test')
-    uuid_account = models.ForeignKey(allonsy_schema_models.Account, on_delete=models.CASCADE)
-    uuid_org = models.OneToOneField(Organization, on_delete=models.CASCADE)
-    parent = TreeForeignKey('self', null=True, blank=True, related_name='children', db_index=True)
-    date_added = models.DateTimeField(auto_now_add=True)
-    date_edited = models.DateTimeField(auto_now=True)
-
-    class MPTTMeta:
-        order_insertion_by = ['uuid_account']
-
-    def __str__(self):
-        return self.relation_name
-
-
-class TreeLocation(MPTTModel):
-    uuid_account = models.ForeignKey(allonsy_schema_models.Account, on_delete=models.CASCADE)
-    uuid_location = models.ForeignKey(Location, on_delete=models.CASCADE)
-    parent = TreeForeignKey('self', null=True, blank=True, related_name='children', db_index=True)
-    date_added = models.DateTimeField(auto_now_add=True)
-    date_edited = models.DateTimeField(auto_now=True)
-
-    class MPTTMeta:
-        order_insertion_by = ['uuid_account']
-
-    def __str__(self):
-        thisname = Location.objects.get(location_FullName=self.uuid_location)
-        return thisname.location_ShortName
 
 
 # TODO: Remove blank=True before production

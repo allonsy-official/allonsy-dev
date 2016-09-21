@@ -14,15 +14,17 @@ class DoAddAccount(ModelForm):
                   'account_billing_ApartmentNumber', 'account_billing_CountryCode', 'account_billing_phone_value']
 
 
-class DoAddOrganization(ModelForm):
-    class Meta:
-        model = Organization
-        exclude = ['uuid_account', ]
-        fields = ['org_FullName', 'org_ShortName', 'org_abbreviation', 'org_type', 'org_HasParent']
+class DoAddOrganization(forms.Form):
+    org_parent = forms.CharField(max_length=64)
+    org_FullName = forms.CharField(max_length=100)
+    org_ShortName = forms.CharField(max_length=32)
+    org_abbreviation = forms.CharField(max_length=8)
+    org_type = forms.CharField(max_length=1)
+    org_type_special = forms.CharField(max_length=8, required=False)
 
 
 class DoAddLocation(forms.Form):
-    location_HasParent = forms.CharField(max_length=8, required=False)
+    location_parent = forms.CharField(max_length=64)
     location_InheritGeoFromParent = forms.CharField(max_length=8, required=False)
     location_type = forms.CharField(max_length=1)
     location_SubLocIdent = forms.CharField(max_length=16)
@@ -39,16 +41,6 @@ class DoAddLocation(forms.Form):
     location_CountryCode = forms.CharField(max_length=3)
     location_phone_value = forms.CharField(max_length=10)
 
-    def clean_HasParent(self):
-        location_HasParent = self.cleaned_data['location_HasParent']
-        if location_HasParent == 'on':
-            location_HasParent = True
-        else:
-            location_HasParent = False
-        # Always return the cleaned data, whether you have changed it or
-        # not.
-        return location_HasParent
-
     def clean_InheritGeoFromParent(self):
         location_InheritGeoFromParent = self.cleaned_data['location_InheritGeoFromParent']
         if location_InheritGeoFromParent == 'on':
@@ -58,12 +50,6 @@ class DoAddLocation(forms.Form):
         # Always return the cleaned data, whether you have changed it or
         # not.
         return location_InheritGeoFromParent
-
-
-'''class DoAddUser(ModelForm):
-    class Meta:
-        model = User
-        fields = ['username', 'email', 'password']'''
 
 
 class DoUserConnect(forms.Form):
@@ -286,5 +272,15 @@ class DoGetWFInstance(forms.Form):
         dyn_items = kwargs.pop('dyn_items')
         super(DoGetWFInstance, self).__init__(*args, **kwargs)
 
-        for i, question in enumerate(dyn_items):
-            self.fields['custom_%s' % i] = forms.CharField(max_length=16, label=question)
+        # for i, question in enumerate(dyn_items):
+        for item in dyn_items:
+            # self.fields['custom_%s' % i] = forms.BooleanField(label=question, required=False)
+            self.fields[str(item.uuid_wf_item)] = forms.BooleanField(required=False)
+
+    def extra_states(self):
+        return self.cleaned_data.items()
+
+
+class DoEditWFInstanceMeta(forms.Form):
+    wf_item_name = forms.CharField(max_length=256)
+    wf_item_text = forms.CharField(max_length=1024, required=False)

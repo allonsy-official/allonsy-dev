@@ -16,7 +16,7 @@
                 <div class="columns small-6">
                     <label>Parent
                       <select name="parent">
-                          {% for org in orgs %}
+                          {% for org in orgs_parent %}
                                 <option value="{{ org.uuid_org }}">{{ org }}</option>
                           {% endfor %}
                       </select>
@@ -25,7 +25,7 @@
                 <div class="columns small-6">
                     <label>Child
                       <select name="child">
-                          {% for org in orgs %}
+                          {% for org in orgs_child %}
                                 <option value="{{ org.uuid_org }}">{{ org }}</option>
                           {% endfor %}
                       </select>

@@ -1,0 +1,26 @@
+{% extends "allonsy/roles_base.html" %}
+
+{% block rolesdash %}
+
+
+<div class="row expanded">
+    <div class="columns small-12">
+        <h3>{{ parent_node.wf_item_name }}</h3>
+    </div>
+</div>
+<div class="row expanded">
+    <div class="columns small-12">
+        <h5>
+            {{ message }}
+        </h5>
+    </div>
+</div>
+<div class="row expanded">
+    <div class="columns small-12">
+        <a class="secondary button" href="{% url 'roles_onduty' request.user %}">Return to dashboard</a>
+        <a class="default-accent button" href="{% url 'wf_status_update' request.user urlstatus parent_node.uuid_wf_item %}">Submit workflow</a>
+    </div>
+</div>
+
+{% endblock rolesdash %}
+

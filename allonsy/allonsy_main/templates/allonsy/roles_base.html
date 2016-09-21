@@ -18,8 +18,8 @@
               <li>
                 <a href="#Item-1">Residence Life</a>
                 <ul class="vertical menu">
-                  <li><a href="/user/{{ request.user }}/roles/oncall">On-call</a></li>
-                  <li><a href="/user/{{ request.user }}/roles/onduty">Rounds</a></li>
+                  <li><a href="{% url 'roles_oncall' request.user %}">On-call</a></li>
+                  <li><a href="{% url 'roles_onduty' request.user %}">Rounds</a></li>
                   <li><a href="#Item-1A">Check-in</a></li>
                   <li><a href="#Item-1A">Check-out</a></li>
                 </ul>
@@ -29,7 +29,7 @@
                   <a href="#Item-2">Create a new report</a>
                   <ul class="vertical menu">
                       <li><a href="#">Incident</a></li>
-                      <li><a href="{% url 'roles_rpt_create_new' user 'R' %}">Rounds</a></li>
+                      <li><a href="{% url 'do_create_wf_instance' request.user wf_oncall %}">Rounds</a></li>
                       <li><a href="#">Check-in</a></li>
                       <li><a href="#">Check-out</a></li>
                       <li><a href="#">On-call</a></li>

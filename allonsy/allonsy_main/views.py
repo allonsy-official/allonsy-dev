@@ -1,4 +1,5 @@
 import time, uuid, random, copy, collections
+from uuid import UUID
 from itertools import chain
 from datetime import date
 
@@ -9,10 +10,12 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.urlresolvers import reverse
 from django.db import IntegrityError
 from django.db.models import Q
+
+from mptt.exceptions import *
 from django_ajax.decorators import ajax
 
-from allonsy_main.forms import DoAddAccount, DoAddOrganization, DoAddLocation, DoAddUser, DoAssocOrganization, DoAssocOrganizationUser, DoEditUserProfile, DoEditUserInfoContact, DoEditUserEmergencyContact, DoUserConnect, DoSendReplyMessage, DoSendMessage, DoAddEditWFSet, DoAddEditWFChild, DoAddEditWFItem, DoAddEditWFTreeNode, DoGetWFTreeForAddItem, DoAddWFTreeItem, DoDeleteWFTreeItem, DoGetWFInstance
-from allonsy_main.models import UserExtension, User, UserProfile, Organization, TreeOrganization, RelationOrganizationUser, UserInteractionTree, UserAlert, Location, RelationUserConnection, WorkflowSet, RelationWorkflow, WorkflowItem, RelationWorkflow, WorkflowItem, WorkflowDocumentItem, WorkflowDocumentMaster, WorkflowTree
+from allonsy_main.forms import DoAddAccount, DoAddOrganization, DoAddLocation, DoAddUser, DoAssocOrganization, DoAssocOrganizationUser, DoEditUserProfile, DoEditUserInfoContact, DoEditUserEmergencyContact, DoUserConnect, DoSendReplyMessage, DoSendMessage, DoAddEditWFSet, DoAddEditWFChild, DoAddEditWFItem, DoAddEditWFTreeNode, DoGetWFTreeForAddItem, DoAddWFTreeItem, DoDeleteWFTreeItem, DoGetWFInstance, DoEditWFInstanceMeta
+from allonsy_main.models import UserExtension, User, UserProfile, Organization, RelationOrganizationUser, UserInteractionTree, UserAlert, Location, RelationUserConnection, WorkflowSet, RelationWorkflow, WorkflowItem, RelationWorkflow, WorkflowItem, WorkflowDocumentItem, WorkflowDocumentMaster, WorkflowTree
 from allonsy_schemas.models import Account
 
 
@@ -59,6 +62,8 @@ def get_user_data_objects(request, username):
 
     return current_user_obj, current_user, current_userextension, current_user_acct, req_user, req_userextension, req_user_acct, req_user_uuid
 
+
+# 1e406955-5f6a-4992-b44f-13a9b7d0d828
 def get_dyn_items(request, uuidparentnode):
     wf_parent = WorkflowTree.objects.get(uuid_wf_item=uuidparentnode)
     wf_columns = wf_parent.get_children()
@@ -66,9 +71,17 @@ def get_dyn_items(request, uuidparentnode):
 
     for column in wf_columns:
         dyn_items_list_loc = column.get_children()
-        dyn_items_list.append(dyn_items_list_loc)
+        dyn_items_list.extend(dyn_items_list_loc)
 
     return dyn_items_list
+
+
+def get_dyn_columns(request, uuidparentnode):
+    wf_parent = WorkflowTree.objects.get(uuid_wf_item=uuidparentnode)
+    wf_columns = wf_parent.get_children()
+    dyn_columns_list = wf_columns
+
+    return dyn_columns_list
 
 
 #create user_passes_check decorators here
@@ -190,12 +203,38 @@ def usr(request):
 @login_required
 def resolve_user_url(request, username):
     #TODO: Add check to see if user has already requested to connect. Filter for uuid2 on current user and uuid1 on requser
+    #TODO: Sort org objects so the highest level are on top. Opens opportunity to sort by user-defined options
     context_helper = get_user_data(request, username)
 
     current_user_obj, current_user, current_userextension, current_user_acct, req_user, req_userextension, req_user_acct, req_user_uuid = get_user_data_objects(request, username)
 
-    req_orgs_affil = Organization.objects.filter(org_type_special='X')
-    req_user_orgs_affil = RelationOrganizationUser.objects.values('relation_name', 'relation_url').all().filter(uuid_user=req_user_uuid, uuid_org__in=req_orgs_affil)
+    req_orgs_affil = Organization.objects.filter(org_type_special='A').order_by('level')
+    req_user_orgs_affil_list = RelationOrganizationUser.objects.values_list('uuid_org', flat=True).filter(uuid_user=req_user_uuid, uuid_org__in=req_orgs_affil)
+    org_affil_list = []
+
+    for affil in req_user_orgs_affil_list:
+        uuid_org = affil
+        get_org = Organization.objects.get(uuid_org=uuid_org)
+        org_affil_list.append(get_org)
+
+    req_orgs_interest = Organization.objects.filter(org_type_special='I')
+    req_user_orgs_interest_list = RelationOrganizationUser.objects.values_list('uuid_org', flat=True).filter(uuid_user=req_user_uuid, uuid_org__in=req_orgs_interest)
+    org_interest_list = []
+
+    for interest in req_user_orgs_interest_list:
+        uuid_org = interest
+        get_org = Organization.objects.get(uuid_org=uuid_org)
+        org_interest_list.append(get_org)
+
+    req_orgs_achieve = Organization.objects.filter(org_type_special='V')
+    req_user_orgs_achieve_list = RelationOrganizationUser.objects.values_list('uuid_org', flat=True).filter(uuid_user=req_user_uuid, uuid_org__in=req_orgs_achieve)
+    org_achieve_list = []
+
+    for achieve in req_user_orgs_achieve_list:
+        uuid_org = achieve
+        get_org = Organization.objects.get(uuid_org=uuid_org)
+        org_achieve_list.append(get_org)
+
     req_user_orgs_primary = RelationOrganizationUser.objects.values('relation_name').all().filter(uuid_user=req_user_uuid, uuid_org__in=req_orgs_affil, relation_is_primary=True)
     req_profile_aboutme = UserProfile.objects.get(uuid_user=req_user_uuid)
     req_user_connects_1 = RelationUserConnection.objects.filter(Q(uuid_user_1=req_user) & Q(relation_status='A')).values_list('uuid_user_2', flat=True)
@@ -251,7 +290,7 @@ def resolve_user_url(request, username):
         append_this_obj = User.objects.values('first_name', 'last_name').all().filter(id__in=str(connect))
         connect_users.append(append_this_obj)'''
 
-    context_dict_local = {'orgs_affil': req_user_orgs_affil, 'orgs_primary': req_user_orgs_primary, 'profile_aboutme': req_profile_aboutme, 'relation_status': relation_status, 'common_connects': connects_in_common}
+    context_dict_local = {'orgs_affil': org_affil_list, 'orgs_interest': org_interest_list, 'orgs_achieve': org_achieve_list, 'orgs_primary': req_user_orgs_primary, 'profile_aboutme': req_profile_aboutme, 'relation_status': relation_status, 'common_connects': connects_in_common}
 
     context_dict = context_helper.copy()
     context_dict.update(context_dict_local)
@@ -294,9 +333,19 @@ def resolve_org_url(request, orgname):
     current_user_uuid = current_user_userextension.uuid_user
     current_user_auth = 'True'
     #TODO: Add auth that user is allowed to see this group and/or interact
-    org_short_name = orgname.replace('-', ' ')
-    context_dict = {'current_user': current_user, 'current_user_auth': current_user_auth, 'org_short_name': org_short_name}
-    return render(request, 'allonsy/org.html', context_dict, context_instance=RequestContext(request))
+
+    try:
+        check_this = UUID(orgname, version=4)
+        get_short_name = Organization.objects.values_list('org_ShortName', flat=True).get(pk=check_this)
+        org_short_name = get_short_name.replace(' ', '-')
+
+        return redirect('resolve_org_url', org_short_name)
+
+    except ValueError:
+        org_short_name = orgname.replace('-', ' ')
+
+        context_dict = {'current_user': current_user, 'current_user_auth': current_user_auth, 'org_short_name': org_short_name}
+        return render(request, 'allonsy/org.html', context_dict, context_instance=RequestContext(request))
 
 @login_required
 def create(request):
@@ -363,32 +412,41 @@ def do_add_organization(request):
     current_user = request.user
     req_user = request.user
 
-    context_dict = {'form': do_add_organization_form, 'cur_user': current_user, 'req_user': req_user}
+    # Creates list of potential parent organizations and passes to view
+    org_parent_list = Organization.objects.all()
+
+    context_dict = {'form': do_add_organization_form, 'cur_user': current_user, 'req_user': req_user, 'org_parent_list': org_parent_list}
 
     if request.method == 'POST':
-        fk_val = request.user.userextension.uuid_account
+
         if do_add_organization_form.is_valid():
+            org_parent = do_add_organization_form.cleaned_data['org_parent']
             org_FullName = do_add_organization_form.cleaned_data['org_FullName']
             org_ShortName = do_add_organization_form.cleaned_data['org_ShortName']
             org_abbreviation = do_add_organization_form.cleaned_data['org_abbreviation']
             org_type = do_add_organization_form.cleaned_data['org_type']
-            org_HasParent = do_add_organization_form.cleaned_data['org_HasParent']
+            org_type_special = do_add_organization_form.cleaned_data['org_type_special']
 
-            proto_form = do_add_organization_form.save(commit=False)
+            get_org_parent = Organization.objects.get(uuid_org=org_parent)
 
-            proto_form.uuid_account = fk_val
+            proto_org = Organization.objects.create(parent=get_org_parent,
+                                                    org_FullName=org_FullName,
+                                                    org_ShortName=org_ShortName,
+                                                    org_abbreviation=org_abbreviation,
+                                                    org_type=org_type,
+                                                    org_type_special=org_type_special,
+                                                    )
 
-            proto_form.save()
+            proto_org.save()
 
-            return render(request, 'allonsy/user.html')
+            return redirect('user_admin')
+            # return render(request, 'allonsy/user.html')
 
         else:
                 # Return a 'disabled account' error message
                 return render_to_response('allonsy/forms/organization.html', {'form': do_add_organization_form})
 
     else:
-            # Return a 'disabled account' error message
-        #return render_to_response('allonsy/forms/organization.html', {'form': do_add_organization_form})
         return render(request, 'allonsy/forms/add-org.html', context_dict, context_instance=RequestContext(request))
 
 
@@ -463,14 +521,15 @@ def do_add_location(request):
     current_user = request.user
     req_user = request.user
 
-    context_dict = {'form': do_add_location_form, 'cur_user': current_user, 'req_user': req_user}
+    location_parent_list = Location.objects.all().order_by('level', 'location_ShortName')
+
+    context_dict = {'form': do_add_location_form, 'cur_user': current_user, 'req_user': req_user, 'location_parent_list': location_parent_list}
 
     if request.method == 'POST':
-        fk_val = request.user.userextension.uuid_account
 
         if do_add_location_form.is_valid():
             location_InheritGeoFromParent = do_add_location_form.cleaned_data['location_InheritGeoFromParent']
-            location_HasParent = do_add_location_form['location_HasParent']
+            location_parent = do_add_location_form.cleaned_data['location_parent']
             location_type = do_add_location_form.cleaned_data['location_type']
             location_SubLocIdent = do_add_location_form.cleaned_data['location_SubLocIdent']
             location_FullName = do_add_location_form.cleaned_data['location_FullName']
@@ -487,9 +546,7 @@ def do_add_location(request):
             location_phone_value = do_add_location_form.cleaned_data['location_phone_value']
 
             proto_form = Location.objects.create(
-                uuid_account=fk_val,
                 location_InheritGeoFromParent=location_InheritGeoFromParent,
-                location_HasParent=location_HasParent,
                 location_type=location_type,
                 location_SubLocIdent=location_SubLocIdent,
                 location_FullName=location_FullName,
@@ -508,6 +565,10 @@ def do_add_location(request):
 
             proto_form.save()
 
+            proto_form.parent = Location.objects.get(uuid_location=location_parent)
+
+            proto_form.save()
+
             return render(request, 'allonsy/user.html')
 
         else:
@@ -520,42 +581,38 @@ def do_add_location(request):
         return render(request, 'allonsy/forms/add-location.html', context_dict, context_instance=RequestContext(request))
 
 
-@user_passes_test(access_admin_check)
+'''@user_passes_test(access_admin_check)
 @login_required
 def assoc_organization(request):
     orglist = Organization.objects.all().filter(uuid_account=request.user.userextension.uuid_account)
-    return render(request, 'allonsy/forms/associate-org.html', {'orgs': orglist}, context_instance=RequestContext(request))
+    return render(request, 'allonsy/forms/associate-org.html', {'orgs': orglist}, context_instance=RequestContext(request))'''
 
 
 @user_passes_test(access_admin_check)
 @login_required
 def do_assoc_organization(request, username):
-    #TODO: Handle exception when user attempts to assign same org as child. Should pop error modal and ask if sure user wishes to move the node. Modify node.parent to complete.
+    # TODO: REWRITE now that the tree is located in the org table
+    # TODO: Handle exception when user attempts to assign same org as child. Should pop error modal and ask if sure user wishes to move the node. Modify node.parent to complete.
     do_assoc_organization_form = DoAssocOrganization(request.POST)
-    orglist = Organization.objects.all().filter(uuid_account=request.user.userextension.uuid_account)
+    orglist_parent = Organization.objects.all()
+    orglist_child = Organization.objects.exclude(org_type='A')
     if request.method == 'POST':
-        fk_val = request.user.userextension.uuid_account
         if do_assoc_organization_form.is_valid():
             parent = do_assoc_organization_form.cleaned_data['parent']
             child = do_assoc_organization_form.cleaned_data['child']
 
-            org_parent = Organization.objects.get(uuid_org=parent)
-            org_child = Organization.objects.get(uuid_org=child)
+            try:
+                org_parent = Organization.objects.get(uuid_org=parent)
+                org_child = Organization.objects.get(uuid_org=child)
 
-            if TreeOrganization.objects.filter(uuid_org=org_parent).exists():
+                org_child.parent = org_parent
 
-                tree_org_parent = TreeOrganization.objects.get(uuid_org=parent)
+                org_child.save()
 
-                TreeOrganization.objects.create(relation_name=org_child, uuid_account=fk_val, uuid_org=org_child, parent=tree_org_parent)
+                return redirect('user_admin')
 
-            else:
-                TreeOrganization.objects.create(uuid_account=fk_val, uuid_org=org_parent)
-
-                tree_org_parent = TreeOrganization.objects.get(uuid_org=parent)
-
-                TreeOrganization.objects.create(relation_name=org_child, uuid_account=fk_val, uuid_org=org_child, parent=tree_org_parent)
-
-            return render(request, 'allonsy/user.html')
+            except InvalidMove:
+                return HttpResponse("Error, cannot be same")
 
         else:
             # Return a 'disabled account' error message
@@ -564,7 +621,7 @@ def do_assoc_organization(request, username):
     else:
             # Return a 'disabled account' error message
         #return render_to_response('allonsy/organization.html', {'form': do_assoc_organization_form})
-        return render(request, 'allonsy/forms/associate-org.html', {'orgs': orglist}, context_instance=RequestContext(request))
+        return render(request, 'allonsy/forms/associate-org.html', {'orgs_parent': orglist_parent, 'orgs_child': orglist_child}, context_instance=RequestContext(request))
 
 
 @user_passes_test(access_admin_check)
@@ -580,6 +637,12 @@ def assoc_organization_user(request):
 def do_assoc_organization_user(request):
     #TODO: Handle exception when user attempts to assign same org as child. Should pop error modal and ask if sure user wishes to move the node. Modify node.parent to complete.
     do_assoc_organization_user_form = DoAssocOrganizationUser(request.POST)
+
+    orglist = Organization.objects.all().filter().all()
+    usrlist = UserExtension.objects.all().filter().all()
+
+    context_dict = {'orglist': orglist, 'usrlist': usrlist}
+
     if request.method == 'POST':
         fk_val = request.user.userextension.uuid_account
         if do_assoc_organization_user_form.is_valid():
@@ -605,7 +668,7 @@ def do_assoc_organization_user(request):
                 do_create_object.uuid_org.add(assoc_org)
                 do_create_object.uuid_user.add(usr)
 
-            return render('allonsy/user.html')
+                return redirect('resolve_user_url', assoc_usr_name)
 
         else:
             # Return a 'disabled account' error message
@@ -613,9 +676,8 @@ def do_assoc_organization_user(request):
             # return HttpResponse('Fail 1')
 
     else:
-            # Return a 'disabled account' error message
-       #return render_to_response('allonsy/associate-user.html', {'form': do_assoc_organization_user_form})
-        return HttpResponse('Fail 2')
+
+        return render(request, 'allonsy/associate-user.html', context_dict, context_instance=RequestContext(request))
 
 
 @login_required
@@ -1263,9 +1325,11 @@ def roles_onduty(request, username):
     req_user_orgs_affil = RelationOrganizationUser.objects.values('relation_name', 'relation_url').all().filter(uuid_user=req_user_uuid, uuid_org__in=req_orgs_affil)
     req_user_orgs_primary = RelationOrganizationUser.objects.values('relation_name').all().filter(uuid_user=req_user_uuid, uuid_org__in=req_orgs_affil, relation_is_primary=True)
 
-    wf_pending = WorkflowTree.objects.order_by('date_added').filter(Q(wf_item_status='C') | Q(wf_item_status='I'), wf_item_owner=current_user, wf_item_proto_category='DUTY', level=4)
+    wf_pending = WorkflowTree.objects.order_by('date_added').filter(Q(wf_item_status='C') | Q(wf_item_status='I') | Q(wf_item_status='R'), wf_item_owner=current_user, wf_item_proto_category='DUTY', level=4)
+    wf_submitted = WorkflowTree.objects.order_by('date_added').filter(Q(wf_item_status='S') | Q(wf_item_status='A'), wf_item_owner=current_user, wf_item_proto_category='DUTY', level=4)
+    wf_complete = WorkflowTree.objects.order_by('date_added').filter(Q(wf_item_status='O'), wf_item_owner=current_user, wf_item_proto_category='DUTY', level=4)
 
-    context_dict_local = {'orgs_primary': req_user_orgs_primary, 'wf_pending': wf_pending}
+    context_dict_local = {'orgs_primary': req_user_orgs_primary, 'wf_pending': wf_pending, 'wf_submitted': wf_submitted, 'wf_complete': wf_complete}
     context_dict = context_helper.copy()
     context_dict.update(context_dict_local)
 
@@ -1887,7 +1951,7 @@ def do_create_wf_instance(request, username, uuidparentnode):
 
                 #TODO:START HERE
         # return HttpResponseRedirect(reverse('get_edit_tree_workflow_items', kwargs={'uuidtreenode': wf_doc_uuid_str}))
-        return HttpResponse("OK!")
+        return HttpResponseRedirect(reverse('do_edit_wf_instance', kwargs={'username': username, 'uuidparentnode': wf_target_node.uuid_wf_item}))
 
     except BaseException as e:
         # TODO: narrow this clause
@@ -1896,30 +1960,140 @@ def do_create_wf_instance(request, username, uuidparentnode):
 
 def do_edit_wf_instance(request, username, uuidparentnode):
 
+    parent_node = WorkflowTree.objects.get(uuid_wf_item=uuidparentnode)
+
     dyn_items_list = get_dyn_items(request, uuidparentnode)
+    dyn_columns_list = get_dyn_columns(request, uuidparentnode)
     do_get_wf_instance_form = DoGetWFInstance(request.POST, dyn_items=dyn_items_list)
 
     context_helper = get_user_data(request, username)
     current_user_obj, current_user, current_userextension, current_user_acct, req_user, req_userextension, req_user_acct, req_user_uuid = get_user_data_objects(request, username)
-    context_dict_local = {}
+    context_dict_local = {'dyn_columns': dyn_columns_list, 'dyn_items': dyn_items_list}
     context_dict = context_helper.copy()
-
-    response_dict = {}
 
     if request.method == 'POST':
 
         if do_get_wf_instance_form.is_valid():
-            for (item, state) in do_get_wf_instance_form.extra_states:
-                response_dict[item] = state
-                return HttpResponse(response_dict)
+            for (name, value) in do_get_wf_instance_form.extra_states():
+                get_item = WorkflowTree.objects.get(uuid_wf_item=name)
+
+                if value is True:
+                    get_item.wf_item_status = 'ON'
+                    get_item.save()
+
+                elif value is False:
+                    get_item.wf_item_status = 'OFF'
+                    get_item.save()
+
+                else:
+                    return HttpResponse("Error")
+
+            parent_node.wf_item_status = "I"
+            parent_node.save()
+            return HttpResponseRedirect(reverse('do_edit_wf_instance', kwargs={'username': username, 'uuidparentnode': uuidparentnode}))
 
         else:
-            return HttpResponse("invalid")
+            context_dict_form_errors = {'form': do_get_wf_instance_form}
+            context_dict_local.update(context_dict_form_errors)
+            context_dict.update(context_dict_local)
+
+            return render(request, 'allonsy/forms/wf_instance_edit.html', context_dict, context_instance=RequestContext(request))
 
     else:
         context_dict_form_errors = {'form': do_get_wf_instance_form}
         context_dict_local.update(context_dict_form_errors)
         context_dict.update(context_dict_local)
 
-        return render(request, 'allonsy/forms/wf_test.html', context_dict, context_instance=RequestContext(request))
+        return render(request, 'allonsy/forms/wf_instance_edit.html', context_dict, context_instance=RequestContext(request))
 
+
+def do_edit_wf_instance_meta(request, username, uuidparentnode):
+
+    parent_node = WorkflowTree.objects.get(uuid_wf_item=uuidparentnode)
+    do_edit_wf_instance_meta_form = DoEditWFInstanceMeta(request.POST)
+
+    context_helper = get_user_data(request, username)
+    current_user_obj, current_user, current_userextension, current_user_acct, req_user, req_userextension, req_user_acct, req_user_uuid = get_user_data_objects(request, username)
+    context_dict_local = {'instance_data': parent_node}
+    context_dict = context_helper.copy()
+
+    if request.method == 'POST':
+        if do_edit_wf_instance_meta_form.is_valid():
+            wf_item_name = do_edit_wf_instance_meta_form.cleaned_data['wf_item_name']
+            wf_item_text = do_edit_wf_instance_meta_form.cleaned_data['wf_item_text']
+
+            parent_node.wf_item_name = wf_item_name
+            parent_node.wf_item_text = wf_item_text
+
+            parent_node.save()
+
+            return HttpResponseRedirect(reverse('roles_onduty', kwargs={'username': username}))
+
+        else:
+            return HttpResponse("Error")
+
+    else:
+        context_dict_form_errors = {'form': do_edit_wf_instance_meta_form}
+        context_dict_local.update(context_dict_form_errors)
+        context_dict.update(context_dict_local)
+
+        return render(request, 'allonsy/forms/wf_instance_meta_edit.html', context_dict, context_instance=RequestContext(request))
+
+
+def check_wf_before_complete(request, username, uuidparentnode):
+    parent_node = WorkflowTree.objects.get(uuid_wf_item=uuidparentnode)
+    parent_columns = WorkflowTree.objects.filter(parent=parent_node)
+    target_items_list = []
+
+    context_helper = get_user_data(request, username)
+    current_user_obj, current_user, current_userextension, current_user_acct, req_user, req_userextension, req_user_acct, req_user_uuid = get_user_data_objects(request, username)
+    context_dict_local = {'parent_node': parent_node}
+    context_dict = context_helper.copy()
+
+    urlstatus = 's'
+
+    for column in parent_columns:
+        target_items = column.get_children()
+        for item in target_items:
+            item_status = item.wf_item_status
+            if item_status == 'OFF':
+                target_items_list.append(item)
+            else:
+                pass
+
+    if target_items_list:
+        status = "incomplete"
+        message = "Some required items are incomplete! Are you sure you want to continue?"
+
+        context_dict_status = {'status': status, 'message': message, 'urlstatus': urlstatus}
+        context_dict_local.update(context_dict_status)
+        context_dict.update(context_dict_local)
+
+        return render(request, 'allonsy/roles_check_wf_complete.html', context_dict, context_instance=RequestContext(request))
+
+    else:
+        status = "complete"
+        message = "Are you sure you want to complete this form? You will not be able to edit after this screen."
+
+        context_dict_status = {'status': status, 'message': message, 'urlstatus': urlstatus}
+        context_dict_local.update(context_dict_status)
+        context_dict.update(context_dict_local)
+
+        return render(request, 'allonsy/roles_check_wf_complete.html', context_dict, context_instance=RequestContext(request))
+
+
+def wf_status_update(request, username, statuscode, uuidparentnode):
+
+    parent_node = WorkflowTree.objects.get(uuid_wf_item=uuidparentnode)
+    status = statuscode
+
+    if status == 's':
+
+        parent_node.wf_item_status = 'S'
+        parent_node.save()
+
+        return HttpResponseRedirect(reverse('roles_onduty', kwargs={'username': username}))
+
+    else:
+
+        return HttpResponse("Error")

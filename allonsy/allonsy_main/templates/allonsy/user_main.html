@@ -17,7 +17,7 @@
               <div class="row">
                 <div class="columns small-12">
                   {% for org in orgs_affil %}
-                    <a href="/organization/{{ org.relation_url }}"><span class="label default">{{ org.relation_name }}</span></a>
+                    <a href="{% url 'resolve_org_url' org.uuid_org %}"><span class="label default">{{ org.org_ShortName }}</span></a>
                   {% endfor %}
                 </div>
               </div>
@@ -32,8 +32,8 @@
               </div>
               <div class="row">
                 <div class="columns small-12">
-                  {% for org in orgs_affil %}
-                    <a href="/organization/{{ org.relation_url }}"><span class="label default">{{ org.relation_name }}</span></a>
+                  {% for org in orgs_interest %}
+                    <a href="{% url 'resolve_org_url' org.uuid_org %}"><span class="label default">{{ org.org_ShortName }}</span></a>
                   {% endfor %}
                 </div>
               </div>
@@ -48,8 +48,8 @@
               </div>
               <div class="row">
                 <div class="columns small-12">
-                  {% for org in orgs_affil %}
-                    <a href="/organization/{{ org.relation_url }}"><span class="label default">{{ org.relation_name }}</span></a>
+                  {% for org in orgs_achieve %}
+                    <a href="{% url 'resolve_org_url' org.uuid_org %}"><span class="label default">{{ org.org_ShortName }}</span></a>
                   {% endfor %}
                 </div>
               </div>

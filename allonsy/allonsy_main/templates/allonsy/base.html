@@ -50,14 +50,14 @@
             </ul>
           </li>
           <li>
-            <a href="#">My Role</a>
+            <a href="{% url 'roles_dashboard' request.user %}">My Role</a>
             <ul class="menu">
               {% if user_extension_object.user_type == 'X' or user_extension_object.user_type == 'A' or user_extension_object.user_type == 'D' %}
               <li><a href="{% url 'user_admin' %}">Admin</a></li>
               {% else %}
               {% endif %}
               <li><a href="{% url 'roles_dashboard' request.user %}">Roles Dashboard</a></li>
-              <li><a href="{% url 'do_create_wf_instance' request.user wf_oncall %}">Nightly Rounds</a></li>
+              <li><a href="{% url 'roles_onduty' request.user %}">Nightly Rounds</a></li>
               <li><a href="#">Incident Report</a></li>
               <li><a href="#">Damage Report</a></li>
               <li><a href="#">Ticketing System</a></li>

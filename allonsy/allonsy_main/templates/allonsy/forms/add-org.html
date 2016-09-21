@@ -7,11 +7,22 @@
     </div>
 
     <div class="row">
-        <form id="add_organization_form" method="post" action="/create/organization/do">
+        <form id="add_organization_form" method="post" action="#">
 
             {% csrf_token %}
 
-             <div class="row">
+            <div class="row">
+                <div class="columns small-12">
+                    <label>Select the parent organizations
+                              <select name="org_parent">
+                                  {% for parent in org_parent_list %}
+                                    <option value="{{ parent.uuid_org }}">{{ parent.org_ShortName }}
+                                  {% endfor %}
+                              </select>
+                    </label>
+                </div>
+            </div>
+            <div class="row">
                 <div class="columns small-12">
                     <label>Name for this organization
                         <input type="text" name="org_FullName" placeholder="Example" />
@@ -31,26 +42,18 @@
                 </div>
             </div>
             <div class="row">
-                <div class="row">
-                    <div class="columns small-12">
-                        <label>Select the organization level
-                              <select name="org_type">
-                                <option value="U">University</option>
-                                <option value="S">School or college</option>
-                                <option value="D">Department</option>
-                                <option value="O">Office</option>
-                                <option value="L">Class or lecture</option>
-                                <option value="E">Class or lecture section</option>
-                                <option value="G">Group</option>
-                              </select>
-                        </label>
-                    </div>
-                </div>
-                <div class="row">
-                    <fieldset class="columns small-12">
-                        <legend>Does this organization have a parent?</legend>
-                        <input type="radio" name="org_HasParent" value="True" id="DoesHaveParent" required><label for="DoesHaveParent">True</label>
-                    </fieldset>
+                <div class="columns small-12">
+                    <label>Select the organization level
+                          <select name="org_type">
+                            <option value="U">University</option>
+                            <option value="S">School or college</option>
+                            <option value="D">Department</option>
+                            <option value="O">Office</option>
+                            <option value="L">Class or lecture</option>
+                            <option value="E">Class or lecture section</option>
+                            <option value="G">Group</option>
+                          </select>
+                    </label>
                 </div>
             </div>
             <div class="row">

@@ -9,88 +9,282 @@
     </div>
 </div>
 <div class="row expanded">
-    <div class="columns small-12">
-        <h5>Active Reports</h5>
-    </div>
+    <ul class="tabs" data-tabs id="report-tabs">
+      <li class="tabs-title is-active"><a href="#active" aria-selected="true">Active</a></li>
+      <li class="tabs-title"><a href="#submitted">Submitted</a></li>
+      <li class="tabs-title"><a href="#complete">Complete</a></li>
+
+    </ul>
 </div>
-<div class="row expanded">
-    <div class="columns small-12">
-        <table class="hover">
-            <thead>
-                <tr>
-                  <th width="30%">Report name</th>
-                  <th width="20%">Report ID</th>
-                  <th width="7.5%">Created</th>
-                  <th width="7.5%">Last edited</th>
-                  <th width="15%">Status</th>
-                  <th width="20%">Modify</th>
-                </tr>
-            </thead>
-            <tbody>
-            {% for pending in wf_pending %}
-            <tr>
-                <td>
-                    {% if pending.wf_item_name and pending.uuid_wf_item %}
-                    <a href="{% url 'do_edit_wf_instance' request.user pending.uuid_wf_item %}">
-                        {{ pending.wf_item_name }}
-                    </a>
-                    {% else %}
-                        ---------------
-                    {% endif %}
-                </td>
-                <td>
-                    {% if pending.uuid_wf_item %}
-                    <a href="{% url 'do_edit_wf_instance' request.user pending.uuid_wf_item %}">
-                        {{ pending.uuid_wf_item|truncatechars:11 }}
-                    </a>
-                    {% else %}
-                        ---------------
-                    {% endif %}
-                </td>
-                <td>
-                    {% if pending.date_added %}
-                        {{ pending.date_added|date:"SHORT_DATE_FORMAT" }}
-                    {% else %}
-                        ---------------
-                    {% endif %}
-                </td>
-                <td>
-                    {% if pending.date_edited %}
-                        {{ pending.date_edited|date:"SHORT_DATE_FORMAT" }}
-                    {% else %}
-                        ---------------
-                    {% endif %}
-                </td>
-                <td>
-                    {% if pending.wf_item_status %}
-                        {% if pending.wf_item_status == 'C' %}
-                            Created
-                        {% elif pending.wf_item_status == 'I' %}
-                            In-progress
-                        {% else %}
-                            Unknown status
-                        {% endif %}
-                    {% else %}
-                        ---------------
-                    {% endif %}
-                </td>
-                <td>
-                    {% if pending.uuid_wf_item %}
-                        <i class="fi-play"></i>   |   <i class="fi-page-edit"></i>   |   <i class="fi-check"></i>
-                    {% else %}
-                        Error!
-                    {% endif %}
-                </td>
+<div class="tabs-content" data-tabs-content="report-tabs">
+    <div class="tabs-panel is-active" id="active">
+        <div class="row expanded">
+            <div class="columns small-12">
+                <h5>Active Reports</h5>
+            </div>
+        </div>
+        <div class="row expanded">
+            <div class="columns small-12">
+                <table class="hover">
+                    <thead>
+                        <tr>
+                          <th width="30%">Report name</th>
+                          <th width="20%">Report ID</th>
+                          <th width="7.5%">Created</th>
+                          <th width="7.5%">Last edited</th>
+                          <th width="15%">Status</th>
+                          <th width="20%">Modify</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for pending in wf_pending %}
+                    <tr>
+                        <td>
+                            {% if pending.wf_item_name and pending.uuid_wf_item %}
+                            <a href="{% url 'do_edit_wf_instance' request.user pending.uuid_wf_item %}">
+                                {{ pending.wf_item_name }}
+                            </a>
+                            {% else %}
+                                ---------------
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if pending.uuid_wf_item %}
+                            <a href="{% url 'do_edit_wf_instance' request.user pending.uuid_wf_item %}">
+                                {{ pending.uuid_wf_item|truncatechars:11 }}
+                            </a>
+                            {% else %}
+                                ---------------
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if pending.date_added %}
+                                {{ pending.date_added|date:"SHORT_DATE_FORMAT" }}
+                            {% else %}
+                                ---------------
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if pending.date_edited %}
+                                {{ pending.date_edited|date:"SHORT_DATE_FORMAT" }}
+                            {% else %}
+                                ---------------
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if pending.wf_item_status %}
+                                {% if pending.wf_item_status == 'C' %}
+                                    Created
+                                {% elif pending.wf_item_status == 'I' %}
+                                    In-progress
+                                {% elif pending.wf_item_status == 'R' %}
+                                    Reverted for edits
+                                {% else %}
+                                    Unknown status
+                                {% endif %}
+                            {% else %}
+                                ---------------
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if pending.uuid_wf_item %}
+                               <a href="{% url 'do_edit_wf_instance' request.user pending.uuid_wf_item %}">
+                                   <i class="fi-play"></i>
+                               </a>   |
+                               <a href="{% url 'do_edit_wf_instance_meta' request.user pending.uuid_wf_item %}">
+                                   <i class="fi-page-edit"></i>
+                               </a>   |
+                               <a href="{% url 'check_wf_before_complete' request.user pending.uuid_wf_item %}">
+                                   <i class="fi-check"></i>
+                               </a>
+                            {% else %}
+                                Error!
+                            {% endif %}
+                        </td>
 
-            </tr>
-            {% endfor %}
-            </tbody>
-        </table>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
 
-        <a href="{% url 'do_create_wf_instance' request.user wf_oncall %}">
-            <div class="button default-accent">Create new report</div>
-        </a>
+                <a href="{% url 'do_create_wf_instance' request.user wf_oncall %}">
+                    <div class="button default-accent">Create new report</div>
+                </a>
 
+            </div>
+        </div>
+    </div>
+
+
+    <div class="tabs-panel" id="submitted">
+        <div class="row expanded">
+            <div class="columns small-12">
+                <h5>Submitted Reports</h5>
+            </div>
+        </div>
+        <div class="row expanded">
+            <div class="columns small-12">
+                <table class="hover">
+                    <thead>
+                        <tr>
+                          <th width="30%">Report name</th>
+                          <th width="20%">Report ID</th>
+                          <th width="7.5%">Created</th>
+                          <th width="7.5%">Last edited</th>
+                          <th width="15%">Status</th>
+                          <th width="20%">Review</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for submitted in wf_submitted %}
+                    <tr>
+                        <td>
+                            {% if submitted.wf_item_name and submitted.uuid_wf_item %}
+
+                                {{ submitted.wf_item_name }}
+
+                            {% else %}
+                                ---------------
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if submitted.uuid_wf_item %}
+
+                                {{ submitted.uuid_wf_item|truncatechars:11 }}
+
+                            {% else %}
+                                ---------------
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if submitted.date_added %}
+                                {{ submitted.date_added|date:"SHORT_DATE_FORMAT" }}
+                            {% else %}
+                                ---------------
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if submitted.date_edited %}
+                                {{ submitted.date_edited|date:"SHORT_DATE_FORMAT" }}
+                            {% else %}
+                                ---------------
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if submitted.wf_item_status %}
+                                {% if submitted.wf_item_status == 'S' %}
+                                    Submitted
+                                {% elif submitted.wf_item_status == 'A' %}
+                                    Accepted
+                                {% else %}
+                                    Unknown status
+                                {% endif %}
+                            {% else %}
+                                ---------------
+                            {% endif %}
+                        </td>
+                        <td>
+                        </td>
+
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+    </div>
+
+
+    <div class="tabs-panel" id="complete">
+        <div class="row expanded">
+            <div class="columns small-12">
+                <h5>Active Reports</h5>
+            </div>
+        </div>
+        <div class="row expanded">
+            <div class="columns small-12">
+                <table class="hover">
+                    <thead>
+                        <tr>
+                          <th width="30%">Report name</th>
+                          <th width="20%">Report ID</th>
+                          <th width="7.5%">Created</th>
+                          <th width="7.5%">Last edited</th>
+                          <th width="15%">Status</th>
+                          <th width="20%">Modify</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for pending in wf_pending %}
+                    <tr>
+                        <td>
+                            {% if pending.wf_item_name and pending.uuid_wf_item %}
+                            <a href="{% url 'do_edit_wf_instance' request.user pending.uuid_wf_item %}">
+                                {{ pending.wf_item_name }}
+                            </a>
+                            {% else %}
+                                ---------------
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if pending.uuid_wf_item %}
+                            <a href="{% url 'do_edit_wf_instance' request.user pending.uuid_wf_item %}">
+                                {{ pending.uuid_wf_item|truncatechars:11 }}
+                            </a>
+                            {% else %}
+                                ---------------
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if pending.date_added %}
+                                {{ pending.date_added|date:"SHORT_DATE_FORMAT" }}
+                            {% else %}
+                                ---------------
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if pending.date_edited %}
+                                {{ pending.date_edited|date:"SHORT_DATE_FORMAT" }}
+                            {% else %}
+                                ---------------
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if pending.wf_item_status %}
+                                {% if pending.wf_item_status == 'C' %}
+                                    Created
+                                {% elif pending.wf_item_status == 'I' %}
+                                    In-progress
+                                {% else %}
+                                    Unknown status
+                                {% endif %}
+                            {% else %}
+                                ---------------
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if pending.uuid_wf_item %}
+                               <a href="{% url 'do_edit_wf_instance' request.user pending.uuid_wf_item %}">
+                                   <i class="fi-play"></i>
+                               </a>   |
+                                <i class="fi-page-edit"></i>   |   <i class="fi-check"></i>
+                            {% else %}
+                                Error!
+                            {% endif %}
+                        </td>
+
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+
+                <a href="{% url 'do_create_wf_instance' request.user wf_oncall %}">
+                    <div class="button default-accent">Create new report</div>
+                </a>
+
+            </div>
+        </div>
     </div>
 </div>
 

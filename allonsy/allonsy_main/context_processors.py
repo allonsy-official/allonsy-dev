@@ -1,4 +1,4 @@
-from allonsy_main.models import UserExtension, User, UserProfile, Organization, TreeOrganization, RelationOrganizationUser, UserAlert, UserInteractionTree
+from allonsy_main.models import UserExtension, User, UserProfile, Organization, RelationOrganizationUser, UserAlert, UserInteractionTree
 from allonsy_schemas.models import Account
 from django.db.models import Q
 
