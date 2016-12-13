@@ -99,6 +99,8 @@ class UserExtension (models.Model):
     user_phone_home_value = models.CharField(max_length=10, default='TESTING')
     user_personal_email_value = models.CharField(max_length=100, default='test@test.org')
     user_type = models.CharField(max_length=1, choices=user_type_choices, default='T')
+    user_checkin_onduty = models.BooleanField(default=False)
+    user_checkin_oncall = models.BooleanField(default=False)
     date_added = models.DateTimeField(auto_now_add=True)
     date_edited = models.DateTimeField(auto_now=True)
     # TODO: Add logic to format US phone numbers
@@ -191,6 +193,7 @@ class UserAlert (models.Model):
 class Location (MPTTModel):
 
     # Villages are collections of Buildings, Suites are collections of rooms
+    # Users are only considered residents if they are assigned to a Location
     ACCOUNT = 'A'
     CAMPUS = 'C'
     VILLAGE = 'V'
@@ -323,6 +326,7 @@ class RelationLocationUserTransact (models.Model):
 
 
 class RelationUserLocationStatic (models.Model):
+    # Used only for residences. Must assign to a location
     uuid_user_parent = models.CharField(max_length=100, blank=True)
     uuid_location_child = models.CharField(max_length=100, blank=True)
     uuid_epoch_child = models.CharField(max_length=100, blank=True)
@@ -370,6 +374,83 @@ class RelationUserConnection (models.Model):
 
     def __str__(self):
         return str(self.uuid_relation)
+
+
+#http://stackoverflow.com/questions/6541302/thread-messaging-system-database-schema-design
+class UserInteractionThread (models.Model):
+    #TODO: Rearchitect the messaging so that all M2Ms point to this table. Currently there is way too much crossover
+    CONNECT = 'C'
+    ROOMMATE = 'R'
+    MESSAGE = 'M'
+    ALERT = 'A'
+    NOTIFICATION = 'N'
+
+    interaction_type_choices = (
+        (CONNECT, 'Connection request'),
+        (ROOMMATE, 'Roommate request'),
+        (MESSAGE, 'Message'),
+        (ALERT, 'Alert'),
+        (NOTIFICATION, 'Notification')
+    )
+
+    uuid_thread = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    interaction_type = models.CharField(max_length=255, choices=interaction_type_choices)
+    interaction_name = models.CharField(max_length=255, blank=True)
+    date_added = models.DateTimeField(auto_now_add=True)
+    date_edited = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return str(self.uuid_thread)
+
+
+class UserInteractionRouting (models.Model):
+    uuid_routing = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    uuid_thread = models.ManyToManyField(UserInteractionThread, related_name='routing_thread')
+    uuid_participant = models.ManyToManyField(User, related_name='routing_participant')
+    date_added = models.DateTimeField(auto_now_add=True)
+    date_edited = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return str(self.uuid_routing)
+
+
+class UserInteractionPayload (models.Model):
+    uuid_payload = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    uuid_thread = models.ManyToManyField(UserInteractionThread, related_name='payload_thread')
+    uuid_sender = models.ManyToManyField(User, related_name='sender')
+    payload_subject = models.TextField(max_length=140, blank=True)
+    payload_text = models.TextField(max_length=1000, blank=True)
+    date_added = models.DateTimeField(auto_now_add=True)
+    date_edited = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return str(self.uuid_payload)
+
+
+class UserInteractionReadState (models.Model):
+    NEW = 'O'
+    READ = 'I'
+    DELETED = 'X'
+    BLOCKED = 'B'
+    FLAGGED = 'F'
+
+    readstate_choices = (
+        (NEW, 'New interaction'),
+        (READ, 'Reviewed interaction'),
+        (DELETED, 'Deleted interaction'),
+        (BLOCKED, 'Blocked interaction'),
+        (FLAGGED, 'Flagged as inappropriate')
+    )
+
+    uuid_readstate = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    uuid_payload = models.ManyToManyField(UserInteractionPayload, related_name='payload')
+    uuid_participant = models.ManyToManyField(User, related_name='readstate_participant')
+    read_state = models.CharField(max_length=255, choices=readstate_choices)
+    date_added = models.DateTimeField(auto_now_add=True)
+    date_edited = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return str(self.uuid_readstate)
 
 
 class UserInteractionTree (MPTTModel):

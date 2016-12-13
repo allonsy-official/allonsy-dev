@@ -27,7 +27,7 @@
                   <li>
                     <a href="#">Epochs</a>
                     <ul class="vertical menu">
-                      <li><a href="#">Add new</a></li>
+                      <li><a href="{% url 'do_add_epoch' %}">Add new</a></li>
                       <li><a href="#">Edit existing</a></li>
                     </ul>
                   </li>
@@ -94,7 +94,7 @@
                   <li>
                     <a href="#">Users</a>
                     <ul class="vertical menu">
-                      <li><a href="#">Connect User to Location</a></li>
+                      <li><a href="{% url 'assoc_user_loc_res_init' %}">Connect User to Location</a></li>
                       <li><a href="{% url 'do_assoc_organization_user' %}">Connect User to Organization</a></li>
                     </ul>
                   </li>

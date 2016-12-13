@@ -1,0 +1,72 @@
+{% extends "allonsy/user_admin.html" %}
+
+{% block adminmain %}
+<div class="columns small-9">
+    <div class="row">
+        <div class="callout primary">Use this form to create a new time period (We call them Epochs)</div>
+    </div>
+
+    <div class="row">
+        <form id="add_epoch_form" method="post" action="#">
+
+            {% csrf_token %}
+
+            <div class="row">
+                <div class="columns small-12">
+                    <label>Name for this epoch
+                        <input type="text" name="epoch_Name" placeholder="2017/18 Fall Semester" />
+                    </label>
+                </div>
+                <div class="row">
+                    <div class="columns small-12">
+                        <label>Select the epoch's parent
+                              <select name="epoch_parent">
+                                {% for epoch in epoch_parent_list %}
+                                <option value="{{ epoch.uuid_epoch }}">{{ epoch.epoch_Name }}</option>
+                                {% endfor %}
+                              </select>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="columns small-6">
+                    <label>Starting date
+                        <input type="date" name="epoch_StartDate">
+                    </label>
+                </div>
+                <div class="columns small-6">
+                    <label>Ending date (inclusive)
+                        <input type="date" name="epoch_EndDate">
+                    </label>
+                </div>
+            </div>
+
+            <!--end future second page -->
+
+            <div class="row">
+                    <div class="large-4 columns">
+                        <input type="submit" class="button" value="Submit" />
+                    </div>
+                    <p>{{ request.user.userextension.uuid_account_id }}</p>
+            </div>
+
+            {{form.errors}}
+
+            {{form.non_field_errors}}
+
+            <!--{% if form.errors %}
+                <div id="form-error">
+                    <p>The operation could not be performed because one or more error(s) occurred.<br />Please resubmit the form after making the following changes:</p>
+                    <ul>
+                    {% for field in form %}
+                    <li>{{field.html_name}} {{ field.errors|striptags }}</li>
+                    {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}-->
+
+        </form>
+    </div>
+</div>
+{% endblock adminmain %}

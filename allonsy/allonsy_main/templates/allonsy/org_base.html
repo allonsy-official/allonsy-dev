@@ -1,0 +1,59 @@
+{% extends "allonsy/allonsy_base.html" %}
+
+{% block content %}
+   <div class="row expanded">
+
+   <!--Start left nav -->
+      <div class="columns small-2">
+         <div class="row">
+            <div class="columns small-12">
+                <center><img class="img-circle-sm" src="https://media.licdn.com/mpr/mpr/shrinknp_400_400/p/1/005/073/1b3/0e6455d.jpg" /></center>
+            </div>
+            <div class="columns small-12">
+               <h5><center>{{req_user.first_name}} {{req_user.last_name}}</center></h5>
+            </div>
+         </div>
+         <div class="row">
+            <ul class="vertical menu" data-drilldown>
+              <li>
+                <a href="#Item-3">Live</a>
+              </li>
+              <li>
+                <a href="#Item-1">Academics</a>
+                <ul class="vertical menu">
+                  <li><a href="{% url 'roles_oncall' request.user %}">Accolades</a></li>
+                  <li><a href="{% url 'roles_onduty' request.user %}">Classes</a></li>
+                </ul>
+              </li>
+              <li>
+                <a href="#Item-2">Clubs</a>
+              </li>
+              <li>
+                <a href="#Item-3">Community</a>
+                <ul class="vertical menu">
+                  <li><a href="{% url 'roles_oncall' request.user %}">My Residence</a></li>
+                  <li><a href="{% url 'roles_onduty' request.user %}">Community Groups</a></li>
+                </ul>
+              </li>
+              <li>
+                <a href="#Item-3">Work</a>
+              </li>
+              <li>
+                <a href="#Item-3">Settings</a>
+                <ul class="vertical menu">
+                  <li><a href="{% url 'roles_oncall' request.user %}">On-call</a></li>
+                  <li><a href="{% url 'roles_onduty' request.user %}">Rounds</a></li>
+                </ul>
+              </li>
+            </ul>
+         </div>
+      </div>
+
+   <!--Start content space-->
+      <div class="columns small-10">
+   {% block orgcontent %}{% endblock orgcontent %}
+      </div>
+
+   </div>
+
+{% endblock content %}

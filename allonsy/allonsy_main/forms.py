@@ -284,3 +284,23 @@ class DoGetWFInstance(forms.Form):
 class DoEditWFInstanceMeta(forms.Form):
     wf_item_name = forms.CharField(max_length=256)
     wf_item_text = forms.CharField(max_length=1024, required=False)
+
+
+class DoAddEpoch(forms.Form):
+    epoch_parent = forms.CharField(max_length=64)
+    epoch_Name = forms.CharField(max_length=100)
+    epoch_StartDate = forms.DateField()
+    epoch_EndDate = forms.DateField()
+
+
+class DoGetUserSelectForm(forms.Form):
+    user_pk = forms.CharField(max_length=100)
+    campus_uuid = forms.CharField(max_length=100)
+
+
+class DoGetLocForm(forms.Form):
+    uuid_location = forms.CharField(max_length=64)
+
+
+
+

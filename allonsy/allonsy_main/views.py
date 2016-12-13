@@ -14,8 +14,8 @@ from django.db.models import Q
 from mptt.exceptions import *
 from django_ajax.decorators import ajax
 
-from allonsy_main.forms import DoAddAccount, DoAddOrganization, DoAddLocation, DoAddUser, DoAssocOrganization, DoAssocOrganizationUser, DoEditUserProfile, DoEditUserInfoContact, DoEditUserEmergencyContact, DoUserConnect, DoSendReplyMessage, DoSendMessage, DoAddEditWFSet, DoAddEditWFChild, DoAddEditWFItem, DoAddEditWFTreeNode, DoGetWFTreeForAddItem, DoAddWFTreeItem, DoDeleteWFTreeItem, DoGetWFInstance, DoEditWFInstanceMeta
-from allonsy_main.models import UserExtension, User, UserProfile, Organization, RelationOrganizationUser, UserInteractionTree, UserAlert, Location, RelationUserConnection, WorkflowSet, RelationWorkflow, WorkflowItem, RelationWorkflow, WorkflowItem, WorkflowDocumentItem, WorkflowDocumentMaster, WorkflowTree
+from allonsy_main.forms import DoAddAccount, DoAddOrganization, DoAddLocation, DoAddUser, DoAssocOrganization, DoAssocOrganizationUser, DoEditUserProfile, DoEditUserInfoContact, DoEditUserEmergencyContact, DoUserConnect, DoSendReplyMessage, DoSendMessage, DoAddEditWFSet, DoAddEditWFChild, DoAddEditWFItem, DoAddEditWFTreeNode, DoGetWFTreeForAddItem, DoAddWFTreeItem, DoDeleteWFTreeItem, DoGetWFInstance, DoEditWFInstanceMeta, DoAddEpoch, DoGetLocForm, DoGetUserSelectForm
+from allonsy_main.models import UserInteractionThread, UserInteractionPayload, UserInteractionRouting, UserInteractionReadState, UserExtension, User, UserProfile, Organization, RelationOrganizationUser, UserInteractionTree, UserAlert, Location, RelationUserConnection, WorkflowSet, RelationWorkflow, WorkflowItem, RelationWorkflow, WorkflowItem, WorkflowDocumentItem, WorkflowDocumentMaster, WorkflowTree, Epoch
 from allonsy_schemas.models import Account
 
 
@@ -82,6 +82,12 @@ def get_dyn_columns(request, uuidparentnode):
     dyn_columns_list = wf_columns
 
     return dyn_columns_list
+
+
+def get_user_orgs(req_user, req_user_uuid):
+    user_orgs_list = RelationOrganizationUser.objects.filter(Q(uuid_user=req_user_uuid) & Q(date_expires__gt=date.today()))
+
+    return user_orgs_list
 
 
 #create user_passes_check decorators here
@@ -325,13 +331,26 @@ def edit_user_url(request, username):
 
 
 @login_required
+def org_live(request):
+    username = request.user
+    context_helper = get_user_data(request, username)
+    current_user_obj, current_user, current_userextension, current_user_acct, req_user, req_userextension, req_user_acct, req_user_uuid = get_user_data_objects(request, username)
+    context_dict = context_helper.copy()
+
+    user_orgs_list = get_user_orgs(req_user, req_user_uuid)
+
+    return ()
+
+
+@login_required
 def resolve_org_url(request, orgname):
-    #TODO: UPDATE WITH HELPER FUNCTIONS
-    current_user = request.user
-    current_user_id = current_user.id
-    current_user_userextension = UserExtension.objects.get(user=current_user_id)
-    current_user_uuid = current_user_userextension.uuid_user
+    username = request.user
+    context_helper = get_user_data(request, username)
+    current_user_obj, current_user, current_userextension, current_user_acct, req_user, req_userextension, req_user_acct, req_user_uuid = get_user_data_objects(request, username)
+    context_dict = context_helper.copy()
+    user_orgs_list = get_user_orgs(req_user, req_user_uuid)
     current_user_auth = 'True'
+
     #TODO: Add auth that user is allowed to see this group and/or interact
 
     try:
@@ -344,8 +363,12 @@ def resolve_org_url(request, orgname):
     except ValueError:
         org_short_name = orgname.replace('-', ' ')
 
-        context_dict = {'current_user': current_user, 'current_user_auth': current_user_auth, 'org_short_name': org_short_name}
+        get_org_obj = Organization.objects.get(org_ShortName=org_short_name)
+        context_dict_local = {'current_user': current_user, 'current_user_auth': current_user_auth, 'org_obj': get_org_obj, 'org_short_name': org_short_name, 'orgs_list':user_orgs_list}
+        context_dict.update(context_dict_local)
+
         return render(request, 'allonsy/org.html', context_dict, context_instance=RequestContext(request))
+
 
 @login_required
 def create(request):
@@ -702,6 +725,41 @@ def do_get_user_alerts(request, username):
 
 
 @login_required
+def get_user_interactions(request, username):
+
+    context_helper = get_user_data(request, username)
+    current_user_obj, current_user, current_userextension, current_user_acct, req_user, req_userextension, req_user_acct, req_user_uuid = get_user_data_objects(request, username)
+
+    new_user_interactions_lookup = UserInteractionReadState.objects.all().filter(uuid_participant=current_user, read_state='O')
+    count_new_user_interactions = new_user_interactions_lookup.count
+
+    #TODO: Add a "new" interactions item for first-time views and an "unread" for interactions that have no yet been clicked
+    #TODO: New and unread interactions should both appear bold
+    req_orgs_affil = Organization.objects.filter(org_type_special='X')
+    req_user_orgs_primary = RelationOrganizationUser.objects.values('relation_name').all().filter(uuid_user=req_user_uuid, uuid_org__in=req_orgs_affil, relation_is_primary=True)
+    current_user_interaction_states = UserInteractionReadState.objects.all().filter(Q(uuid_participant=current_user), Q(read_state='O') | Q(read_state='I')).order_by('date_added')
+    current_state_dict = {}
+
+    for state in current_user_interaction_states:
+        uuid_payload = state.uuid_payload.values('uuid_payload')
+        get_payload = UserInteractionPayload.objects.filter(uuid_payload=uuid_payload)
+        subject = get_payload.values_list('payload_subject', flat=True)
+        text = get_payload.values_list('payload_text', flat=True)
+        uuid_thread = get_payload.uuid_thread
+        get_thread_value = UserInteractionThread.objects.filter(uuid_thread=uuid_thread).values_list('uuid_thread', flat=True)
+        thread_dict = {}
+        thread_dict[get_thread_value] = {'subject': subject, 'text': text}
+        current_state_dict.update(thread_dict)
+
+    context_dict_local = {'orgs_primary': req_user_orgs_primary, 'count_new_user_interactions': count_new_user_interactions}
+
+    context_dict = context_helper.copy()
+    context_dict.update(context_dict_local)
+    context_dict['cur_user_interactions'] = current_state_dict
+
+    return render(request, 'allonsy/user_interactions.html', context_dict, context_instance=RequestContext(request))
+
+@login_required
 def do_get_user_interactions(request, username):
 
     context_helper = get_user_data(request, username)
@@ -746,6 +804,116 @@ def do_get_user_sent(request, username):
 
 
 @login_required
+def user_connect(request, username):
+    do_user_connect_form = DoUserConnect(request.POST)
+
+    #Request context_helper for user object toolkit
+    context_helper = get_user_data(request, username)
+    current_user_obj, current_user, current_userextension, current_user_acct, req_user, req_userextension, req_user_acct, req_user_uuid = get_user_data_objects(request, username)
+
+    #Local context space. Don't forget to add to local context!
+
+    #Add local context
+    #TODO: Check if the line below is necessary
+    context_dict_local = {'orgs_primary': ''}
+    context_dict = context_helper.copy()
+    context_dict.update(context_dict_local)
+    interaction_type = 'C'
+    interaction_name = 'New connection request from ' + current_user.first_name + ' ' + current_user.last_name
+    payload_subject_text = interaction_name
+    readstate = 'O'
+    relation_status = 'P'
+    interaction_sender = current_user
+    target_participant = req_user
+
+    if request.method == 'POST':
+        if do_user_connect_form.is_valid():
+            if RelationUserConnection.objects.filter(uuid_user_1=current_user, uuid_user_2=req_user).exists():
+                return HttpResponse("Exists")
+
+            elif RelationUserConnection.objects.filter(uuid_user_2=current_user, uuid_user_1=req_user).exists():
+                return HttpResponse("Exists")
+
+            else:
+
+                payload_text = do_user_connect_form.cleaned_data['interaction_text']
+
+                interaction_uuid = uuid.uuid4()
+                payload_uuid = uuid.uuid4()
+                routing_uuid = uuid.uuid4()
+                readstate_uuid = uuid.uuid4()
+                readstate_uuid = uuid.uuid4()
+                relation_uuid = uuid.uuid4()
+
+                interaction_thread = UserInteractionThread.objects.create(
+                    uuid_thread=interaction_uuid,
+                    interaction_type=interaction_type,
+                    interaction_name=interaction_name
+                )
+
+                interaction_thread.save()
+
+                new_thread = UserInteractionThread.objects.get(uuid_thread=interaction_uuid)
+
+                interaction_payload = UserInteractionPayload.objects.create(
+                    uuid_payload=payload_uuid,
+                    payload_subject=payload_subject_text,
+                    payload_text=payload_text
+                )
+
+                interaction_thread.save()
+                # many to many only after create
+                interaction_payload.uuid_thread.add(new_thread)
+                interaction_payload.uuid_sender.add(interaction_sender)
+
+                new_payload = UserInteractionPayload.objects.get(uuid_payload=payload_uuid)
+
+                interaction_routing = UserInteractionRouting.objects.create(
+                    uuid_routing=routing_uuid,
+                )
+
+                interaction_routing.save()
+                # many to many only after create
+                interaction_routing.uuid_thread.add(new_thread)
+                interaction_routing.uuid_participant.add(target_participant)
+
+                interaction_readstate = UserInteractionReadState.objects.create(
+                    uuid_readstate=readstate_uuid,
+                    read_state=readstate
+                )
+
+                interaction_readstate.save()
+                # many to many only after create
+                interaction_readstate.uuid_payload.add(new_payload)
+                interaction_readstate.uuid_participant.add(target_participant)
+
+                relation_status = RelationUserConnection.objects.create(
+                    uuid_relation=relation_uuid,
+                    relation_type=do_user_connect_form.cleaned_data['relation_type'],
+                    relation_status=relation_status
+                )
+
+                relation_status.save()
+                relation_status.uuid_user_1.add(current_user)
+                relation_status.uuid_user_2.add(req_user)
+
+                # proto_relation = RelationUserConnection.objects.get(uuid_relation=proto_relation_uuid)
+                # proto_interaction_sender.uuid_request.add(proto_relation)
+                # proto_interaction_receiver.uuid_request.add(proto_relation)
+
+                return redirect('resolve_user_url', req_user.username)
+
+        else:
+                # TODO: CHANGE
+            return render(request, 'allonsy/user_main.html', context_dict, context_instance=RequestContext(request))
+            #return HttpResponseRedirect("Failed validation")
+
+    else:
+            # TODO: CHANGE
+        return render(request, 'allonsy/user.html', context_dict, context_instance=RequestContext(request))
+
+
+'''@login_required
 def do_user_connect(request, username):
     do_user_connect_form = DoUserConnect(request.POST)
 
@@ -829,7 +997,7 @@ def do_user_connect(request, username):
 
     else:
             # TODO: CHANGE
-        return render(request, 'allonsy/user.html', context_dict, context_instance=RequestContext(request))
+        return render(request, 'allonsy/user.html', context_dict, context_instance=RequestContext(request))'''
 
 
 @login_required
@@ -1282,6 +1450,8 @@ def do_edit_user_emergency_contact(request, username):
 
 
 def roles_dashboard(request, username):
+    # TODO: Approvals should be selected by individual. So my RAs should send reports to me directly.
+    # TODO: As a workaround for the above, send only reports without an "approval by" in the meta. Need to add this field to wf_meta
 
     context_helper = get_user_data(request, username)
 
@@ -1290,7 +1460,19 @@ def roles_dashboard(request, username):
     req_orgs_affil = Organization.objects.filter(org_type_special='X')
     req_user_orgs_affil = RelationOrganizationUser.objects.values('relation_name', 'relation_url').all().filter(uuid_user=req_user_uuid, uuid_org__in=req_orgs_affil)
     req_user_orgs_primary = RelationOrganizationUser.objects.values('relation_name').all().filter(uuid_user=req_user_uuid, uuid_org__in=req_orgs_affil, relation_is_primary=True)
-    context_dict_local = {'orgs_primary': req_user_orgs_primary}
+
+    wf_review = WorkflowTree.objects.order_by('date_added').filter(Q(wf_item_status='R'), wf_item_owner=current_user, wf_item_proto_category='DUTY', level=4)
+    wf_pending = WorkflowTree.objects.order_by('date_added').filter(Q(wf_item_status='C') | Q(wf_item_status='I') | Q(wf_item_status='R'), wf_item_owner=current_user, wf_item_proto_category='DUTY', level=4)
+    wf_submitted = WorkflowTree.objects.order_by('date_added').filter(Q(wf_item_status='S') | Q(wf_item_status='A'), wf_item_owner=current_user, wf_item_proto_category='DUTY', level=4)
+    wf_complete = WorkflowTree.objects.order_by('date_added').filter(Q(wf_item_status='O'), wf_item_owner=current_user, wf_item_proto_category='DUTY', level=4)
+
+    if current_userextension.user_checkin_oncall is True:
+        wf_approve = WorkflowTree.objects.order_by('date_added').filter(Q(wf_item_status='S'), wf_item_proto_category='DUTY', level=4)
+
+    else:
+        wf_approve = ''
+
+    context_dict_local = {'orgs_primary': req_user_orgs_primary, 'current_userextension': current_userextension, 'wf_approve': wf_approve, 'wf_pending': wf_pending, 'wf_submitted': wf_submitted, 'wf_complete': wf_complete, 'wf_review': wf_review}
 
     context_dict = context_helper.copy()
     context_dict.update(context_dict_local)
@@ -1974,6 +2156,10 @@ def do_edit_wf_instance(request, username, uuidparentnode):
     if request.method == 'POST':
 
         if do_get_wf_instance_form.is_valid():
+
+            # Checks if any items are to be completed. If 0, ask whether user wants to submit form
+            wf_tbc = 0
+
             for (name, value) in do_get_wf_instance_form.extra_states():
                 get_item = WorkflowTree.objects.get(uuid_wf_item=name)
 
@@ -1984,13 +2170,20 @@ def do_edit_wf_instance(request, username, uuidparentnode):
                 elif value is False:
                     get_item.wf_item_status = 'OFF'
                     get_item.save()
+                    wf_tbc = wf_tbc + 1
 
                 else:
                     return HttpResponse("Error")
 
             parent_node.wf_item_status = "I"
             parent_node.save()
-            return HttpResponseRedirect(reverse('do_edit_wf_instance', kwargs={'username': username, 'uuidparentnode': uuidparentnode}))
+
+            if wf_tbc >= 1:
+
+                return HttpResponseRedirect(reverse('do_edit_wf_instance', kwargs={'username': username, 'uuidparentnode': uuidparentnode}))
+
+            else:
+                return HttpResponseRedirect(reverse('check_wf_before_complete', kwargs={'username': username, 'uuidparentnode': uuidparentnode}))
 
         else:
             context_dict_form_errors = {'form': do_get_wf_instance_form}
@@ -2038,6 +2231,112 @@ def do_edit_wf_instance_meta(request, username, uuidparentnode):
         context_dict.update(context_dict_local)
 
         return render(request, 'allonsy/forms/wf_instance_meta_edit.html', context_dict, context_instance=RequestContext(request))
+
+
+def do_approve_wf_instance(request, username, uuidparentnode):
+
+    parent_node = WorkflowTree.objects.get(uuid_wf_item=uuidparentnode)
+
+    dyn_items_list = get_dyn_items(request, uuidparentnode)
+    dyn_columns_list = get_dyn_columns(request, uuidparentnode)
+    # do_get_wf_instance_form = DoGetWFInstance(request.POST, dyn_items=dyn_items_list)
+
+    context_helper = get_user_data(request, username)
+    current_user_obj, current_user, current_userextension, current_user_acct, req_user, req_userextension, req_user_acct, req_user_uuid = get_user_data_objects(request, username)
+    context_dict_local = {'dyn_columns': dyn_columns_list, 'dyn_items': dyn_items_list, 'parent_node': parent_node}
+    context_dict = context_helper.copy()
+
+    '''if request.method == 'POST':
+
+        if do_get_wf_instance_form.is_valid():
+
+            # Checks if any items are to be completed. If 0, ask whether user wants to submit form
+            wf_tbc = 0
+
+            for (name, value) in do_get_wf_instance_form.extra_states():
+                get_item = WorkflowTree.objects.get(uuid_wf_item=name)
+
+                if value is True:
+                    get_item.wf_item_status = 'ON'
+                    get_item.save()
+
+                elif value is False:
+                    get_item.wf_item_status = 'OFF'
+                    get_item.save()
+                    wf_tbc = wf_tbc + 1
+
+                else:
+                    return HttpResponse("Error")
+
+            parent_node.wf_item_status = "I"
+            parent_node.save()
+
+            if wf_tbc >= 1:
+
+                return HttpResponseRedirect(reverse('do_edit_wf_instance', kwargs={'username': username, 'uuidparentnode': uuidparentnode}))
+
+            else:
+                return HttpResponseRedirect(reverse('check_wf_before_complete', kwargs={'username': username, 'uuidparentnode': uuidparentnode}))
+
+        else:
+            context_dict_form_errors = {'form': do_get_wf_instance_form}
+            context_dict_local.update(context_dict_form_errors)
+            context_dict.update(context_dict_local)
+
+            return render(request, 'allonsy/forms/wf_instance_edit.html', context_dict, context_instance=RequestContext(request))
+
+    else:
+        context_dict_form_errors = {'form': do_get_wf_instance_form}
+        context_dict_local.update(context_dict_form_errors)
+        context_dict.update(context_dict_local)
+
+        return render(request, 'allonsy/forms/wf_instance_edit.html', context_dict, context_instance=RequestContext(request))'''
+
+    context_dict.update(context_dict_local)
+
+    return render(request, 'allonsy/wf_instance_approve.html', context_dict, context_instance=RequestContext(request))
+
+
+def check_wf_before_approve(request, username, uuidparentnode):
+    parent_node = WorkflowTree.objects.get(uuid_wf_item=uuidparentnode)
+    parent_columns = WorkflowTree.objects.filter(parent=parent_node)
+    target_items_list = []
+
+    context_helper = get_user_data(request, username)
+    current_user_obj, current_user, current_userextension, current_user_acct, req_user, req_userextension, req_user_acct, req_user_uuid = get_user_data_objects(request, username)
+    context_dict_local = {'parent_node': parent_node}
+    context_dict = context_helper.copy()
+
+    urlstatus = 'a'
+
+    for column in parent_columns:
+        target_items = column.get_children()
+        for item in target_items:
+            item_status = item.wf_item_status
+            if item_status == 'OFF':
+                target_items_list.append(item)
+            else:
+                pass
+
+    if target_items_list:
+        status = "incomplete"
+        message = "Some required items are incomplete! Are you sure you want to continue?"
+
+        context_dict_status = {'status': status, 'message': message, 'urlstatus': urlstatus}
+        context_dict_local.update(context_dict_status)
+        context_dict.update(context_dict_local)
+
+        return render(request, 'allonsy/roles_check_wf_approve.html', context_dict, context_instance=RequestContext(request))
+
+    else:
+        status = "complete"
+        message = "Are you sure you want to complete this form? You will not be able to edit after this screen."
+
+        context_dict_status = {'status': status, 'message': message, 'urlstatus': urlstatus}
+        context_dict_local.update(context_dict_status)
+        context_dict.update(context_dict_local)
+
+        return render(request, 'allonsy/roles_check_wf_approve.html', context_dict, context_instance=RequestContext(request))
 
 
 def check_wf_before_complete(request, username, uuidparentnode):
@@ -2094,6 +2393,189 @@ def wf_status_update(request, username, statuscode, uuidparentnode):
 
         return HttpResponseRedirect(reverse('roles_onduty', kwargs={'username': username}))
 
+    if status == 'a':
+
+        parent_node.wf_item_status = 'A'
+        parent_node.save()
+
+        return HttpResponseRedirect(reverse('roles_dashboard', kwargs={'username': username}))
+
+    if status == 'r':
+
+        parent_node.wf_item_status = 'R'
+        parent_node.save()
+
+        return HttpResponseRedirect(reverse('roles_dashboard', kwargs={'username': username}))
+
     else:
 
         return HttpResponse("Error")
+
+
+def do_add_epoch(request):
+    do_add_epoch_form = DoAddEpoch(request.POST)
+
+    username = request.user
+    epoch_parent_list = Epoch.objects.all().order_by('level', 'epoch_StartDate', 'epoch_Name')
+    current_user_obj, current_user, current_userextension, current_user_acct, req_user, req_userextension, req_user_acct, req_user_uuid = get_user_data_objects(request, username)
+
+    context_dict = {'form': do_add_epoch_form, 'cur_user': current_user, 'req_user': req_user, 'epoch_parent_list': epoch_parent_list}
+
+    if request.method == 'POST':
+
+        if do_add_epoch_form.is_valid():
+            epoch_parent = do_add_epoch_form.cleaned_data['epoch_parent']
+            epoch_Name = do_add_epoch_form.cleaned_data['epoch_Name']
+            epoch_StartDate = do_add_epoch_form.cleaned_data['epoch_StartDate']
+            epoch_EndDate = do_add_epoch_form.cleaned_data['epoch_EndDate']
+
+            proto_form = Epoch.objects.create(
+                epoch_Name=epoch_Name,
+                epoch_StartDate=epoch_StartDate,
+                epoch_EndDate=epoch_EndDate,
+            )
+
+            proto_form.save()
+
+            proto_form.parent = Epoch.objects.get(uuid_epoch=epoch_parent)
+
+            proto_form.save()
+
+            return render(request, 'allonsy/user.html')
+
+        else:
+                # Return a 'disabled account' error message
+            return render(request, 'allonsy/forms/add-epoch.html', context_dict, context_instance=RequestContext(request))
+            #return HttpResponseRedirect("Failed validation")
+
+    else:
+            # Return a 'disabled account' error message
+        return render(request, 'allonsy/forms/add-epoch.html', context_dict, context_instance=RequestContext(request))
+
+
+def assoc_user_loc_res_init(request):
+    do_get_user_select_form = DoGetUserSelectForm(request.Post)
+
+    campus_objects = Location.objects.filter(location_type='C')
+    student_userext_list = UserExtension.objects.filter(user_type='T')
+    student_list = []
+
+    for student in student_userext_list:
+        student_username = student.user.username
+        student_user_pk = User.objects.filter(username=student_username).values_list('pk', flat=True)
+        student_list.extend(student_user_pk)
+
+    student_user_objects = User.objects.filter(pk__in=student_list)
+
+    context_dict = {'form': do_get_user_select_form, 'campus_objects': campus_objects, 'student_user_objects': student_user_objects}
+
+    if request.method == 'POST':
+        if do_get_user_select_form.is_valid():
+            student_pk = do_get_user_select_form.cleaned_data['user_pk']
+            uuid_student_campus = do_get_user_select_form.cleaned_data['campus_uuid']
+
+            userpk = User.objects.get(pk=student_pk)
+            uuidlocnode = uuid_student_campus
+
+            return HttpResponseRedirect(reverse('do_assoc_loc_residence', kwargs={'userpk': userpk, 'uuidlocnode': uuidlocnode}))
+
+        else:
+            HttpResponse("Error - invalid")
+
+    else:
+        return render(request, 'allonsy/forms/add-epoch.html', context_dict, context_instance=RequestContext(request))
+
+
+def check_if_loc_residence(request, userpk, uuidlocnode):
+    do_get_loc_form = DoGetLocForm(request.POST)
+
+    current_location = Location.objects.get(uuid_location=uuidlocnode)
+
+    context_dict = {'form': do_get_loc_form, 'curr_location': current_location}
+
+    if request.method == 'POST':
+        if do_get_loc_form.is_valid():
+            uuid_location = do_get_loc_form.cleaned_data['uuid_location']
+
+            new_location = Location.objects.filter(uuid_location=uuid_location).values_list('uuid_location', flat=True)
+
+            if uuid_location.location_type is not 'L':
+                return HttpResponseRedirect(reverse('check_if_loc_residence', kwargs={'userpk': userpk, 'uuidlocnode': new_location}))
+
+            elif uuid_location.location_type is 'L':
+                return HttpResponseRedirect(reverse('do_assoc_loc_residence', kwargs={'userpk': userpk, 'uuidlocnode': new_location}))
+
+            else:
+                HttpResponse("Unexpected error")
+
+    else:
+
+        if current_location.location_type is not 'L':
+            # TODO: Add a check if descendant count > 0. If it is not, ak user to create a descendant
+
+            current_location_children = current_location.get_children()
+            filter_possible_desc = current_location.get_descendants().filter(location_type='L')
+
+            context_dict_local = {'curr_loc_children': current_location_children, 'filter': filter_possible_desc}
+            context_dict.update(context_dict_local)
+
+            return render(request, 'allonsy/forms/add-epoch.html', context_dict, context_instance=RequestContext(request))
+
+        elif current_location.location_type is 'L':
+
+            return HttpResponseRedirect(reverse('do_assoc_loc_residence', kwargs={'userpk': userpk, 'uuidlocnode': uuidlocnode}))
+
+        else:
+            return HttpResponse("Unexpected error")
+
+
+def do_assoc_loc_residence(request, userpk, uuidlocnode):
+
+    return HttpResponse("OK!")
+
+
+def roles_do_update_duty_status(request, username, status, role):
+    #TODO: Make this a form. Until then, always ensure that the view accepts /only/ the expected parameters
+    #TODO: RAs should not be able to check in as on duty. Add a check to the group defined as residence life for is_staff permissions
+
+    current_user_obj, current_user, current_userextension, current_user_acct, req_user, req_userextension, req_user_acct, req_user_uuid = get_user_data_objects(request, username)
+
+    context_dict = {'cur_user': current_user, 'req_user': req_user}
+
+    if status == 'in':
+        if role == 'duty':
+            usrext = UserExtension.objects.get(user=request.user)
+            usrext.user_checkin_onduty = True
+
+            usrext.save()
+
+        elif role == 'call':
+            usrext = UserExtension.objects.get(user=request.user)
+            usrext.user_checkin_oncall = True
+
+            usrext.save()
+
+        else:
+            return HttpResponseRedirect(reverse('roles_dashboard', kwargs={'username': request.user}))
+
+    elif status == 'out':
+        if role == 'duty':
+            usrext = UserExtension.objects.get(user=request.user)
+            usrext.user_checkin_onduty = False
+
+            usrext.save()
+
+        elif role == 'call':
+            usrext = UserExtension.objects.get(user=request.user)
+            usrext.user_checkin_oncall = False
+
+            usrext.save()
+
+        else:
+            return HttpResponseRedirect(reverse('roles_dashboard', kwargs={'username': request.user}))
+
+    else:
+        # return HttpResponseRedirect(reverse('roles_dashboard', kwargs={'username': request.user}))
+        return HttpResponse("ta-da")
+
+    return HttpResponseRedirect(reverse('roles_dashboard', kwargs={'username': request.user}))

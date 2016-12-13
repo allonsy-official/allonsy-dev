@@ -25,6 +25,10 @@ a {
   border-radius: 50%;
 }
 
+.bkg-ph-sm {
+  max-height: 100px;
+}
+
 .img-circle-lg {
   width: auto;
   max-width: 175px;

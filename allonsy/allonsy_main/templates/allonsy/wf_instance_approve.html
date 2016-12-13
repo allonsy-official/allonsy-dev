@@ -1,3 +1,5 @@
+<!--Non-form version of wf_instance_edit, used to approve forms-->
+
 {% extends "allonsy/roles_base.html" %}
 
 {% block rolesdash %}
@@ -23,12 +25,7 @@
                   {{ item.wf_item_name }}
                 </div>
                 <div class="columns small-2">
-                  <div class="switch">
-                    <input class="switch-input" id="{{ item.uuid_wf_item }}" type="checkbox" name="{{ item.uuid_wf_item }}" checked>
-                    <label class="switch-paddle" for="{{ item.uuid_wf_item }}">
-                      <span class="show-for-sr"></span>
-                    </label>
-                  </div>
+                  <i class="fi-check"></i>
                 </div>
               </div>
             {% elif item.wf_item_status == 'OFF' %}
@@ -37,12 +34,7 @@
                   {{ item.wf_item_name }}
                 </div>
                 <div class="columns small-2">
-                  <div class="switch">
-                    <input class="switch-input" id="{{ item.uuid_wf_item }}" type="checkbox" name="{{ item.uuid_wf_item }}">
-                    <label class="switch-paddle" for="{{ item.uuid_wf_item }}">
-                      <span class="show-for-sr"></span>
-                    </label>
-                  </div>
+                  <i class="fi-x"></i>
                 </div>
               </div>
             {% else %}
@@ -66,8 +58,10 @@
   </div>
   <div class="row">
     <div class="large-4 columns">
-        <input type="submit" class="button default-accent" value="Save your progress!"/>
-    </div>
+      <div class="button-group expanded">
+        <a class="button success" href="{% url 'check_wf_before_approve' request.user parent_node.uuid_wf_item %}">Approve</a>
+        <a class="button alert" href="{% url 'wf_status_update' request.user 'r' parent_node.uuid_wf_item %}">Revert</a>
+        <a class="button secondary">Add notes</a>
   </div>
 </form>
 
