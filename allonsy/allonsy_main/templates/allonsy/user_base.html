@@ -98,7 +98,7 @@
                     <a href="" class="button success">You're connected!</a>
 
                     <div class="reveal" id="messagemodal" data-reveal>
-                      <form id="do_send_message_form" method="post" action=interactions/send/">
+                      <form id="do_send_message_form" method="post" action="{% url 'do_send_message' req_user %}">
                           {% csrf_token %}
                           <h5>Message to: {{ req_user.first_name }} {{ req_user.last_name }}</h5>
                           <p>

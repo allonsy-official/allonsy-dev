@@ -345,12 +345,14 @@ class RelationUserConnection (models.Model):
     PENDING = 'P'
     REJECTED = 'R'
     DROPPED = 'D'
+    NOSTATUS = 'Z'
 
     relation_status_choices = (
         (ACTIVE, 'Active connection'),
         (PENDING, 'Pending connection'),
         (REJECTED, 'Rejected connection'),
         (DROPPED, 'Dropped connection'),
+        (NOSTATUS, 'No status required')
     )
 
     PERSONAL = 'L'
@@ -379,22 +381,8 @@ class RelationUserConnection (models.Model):
 #http://stackoverflow.com/questions/6541302/thread-messaging-system-database-schema-design
 class UserInteractionThread (models.Model):
     #TODO: Rearchitect the messaging so that all M2Ms point to this table. Currently there is way too much crossover
-    CONNECT = 'C'
-    ROOMMATE = 'R'
-    MESSAGE = 'M'
-    ALERT = 'A'
-    NOTIFICATION = 'N'
-
-    interaction_type_choices = (
-        (CONNECT, 'Connection request'),
-        (ROOMMATE, 'Roommate request'),
-        (MESSAGE, 'Message'),
-        (ALERT, 'Alert'),
-        (NOTIFICATION, 'Notification')
-    )
 
     uuid_thread = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    interaction_type = models.CharField(max_length=255, choices=interaction_type_choices)
     interaction_name = models.CharField(max_length=255, blank=True)
     date_added = models.DateTimeField(auto_now_add=True)
     date_edited = models.DateTimeField(auto_now=True)
@@ -415,9 +403,26 @@ class UserInteractionRouting (models.Model):
 
 
 class UserInteractionPayload (models.Model):
+
+    CONNECT = 'C'
+    ROOMMATE = 'R'
+    MESSAGE = 'M'
+    ALERT = 'A'
+    NOTIFICATION = 'N'
+
+    interaction_type_choices = (
+        (CONNECT, 'Connection request'),
+        (ROOMMATE, 'Roommate request'),
+        (MESSAGE, 'Message'),
+        (ALERT, 'Alert'),
+        (NOTIFICATION, 'Notification')
+    )
+
     uuid_payload = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     uuid_thread = models.ManyToManyField(UserInteractionThread, related_name='payload_thread')
     uuid_sender = models.ManyToManyField(User, related_name='sender')
+    uuid_relation = models.ManyToManyField(RelationUserConnection, related_name='relation', blank=True)
+    interaction_type = models.CharField(max_length=255, choices=interaction_type_choices)
     payload_subject = models.TextField(max_length=140, blank=True)
     payload_text = models.TextField(max_length=1000, blank=True)
     date_added = models.DateTimeField(auto_now_add=True)
@@ -507,51 +512,6 @@ class UserInteractionTree (MPTTModel):
 
     def __str__(self):
         return str(self.uuid_interaction)
-
-
-'''class WorkflowItemTree (MPTTModel):
-
-    WFSET = 'S'
-    WFITEM = 'I'
-    WFITEMTEXT = 'T'
-
-    wf_item_is_type_choices = (
-        (WFSET, 'Workflow Set'),
-        (WFITEM, 'Workflow Item'),
-        (WFITEMTEXT, 'Item body text'),
-    )
-
-    NOSET = 'X'
-    ROUNDS = 'N'
-    DUTY = 'D'
-    CHECKIN = 'I'
-    CHECKOUT = 'O'
-
-    wf_set_is_type_choices = (
-        (NOSET, 'No group set'),
-        (ROUNDS, 'Nightly rounds'),
-        (DUTY, 'On-call duty'),
-        (CHECKIN, 'Room check-in'),
-        (CHECKOUT, 'Room check-out')
-    )
-
-    uuid_wf_item = models.UUIDField(primary_key=True, editable=False)
-    parent = TreeForeignKey('self', null=True, blank=True, related_name='children', db_index=True)
-    wf_item_name = models.CharField(max_length=64, default=uuid_wf_item)
-    wf_item_type = models.CharField(max_length=1, choices=wf_item_is_type_choices, default=WFSET)
-    wf_item_is_active = models.BooleanField(default=True)
-    wf_item_text = models.CharField(max_length=256, blank=True)
-    wf_set_is_type = models.CharField(max_length=1, choices=wf_set_is_type_choices, default=NOSET)
-    wf_set_is_default_parent_for_type = models.BooleanField(default=False)
-    date_added = models.DateTimeField(auto_now_add=True)
-    date_edited = models.DateTimeField(auto_now=True)
-
-    class MPTTMeta:
-        order_insertion_by = ['date_added']
-
-    def __str__(self):
-        return str(self.uuid_wf_item)'''
-
 
 class WorkflowSet (models.Model):
 

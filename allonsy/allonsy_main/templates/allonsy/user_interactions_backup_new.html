@@ -1,0 +1,100 @@
+{% extends "allonsy/user_base.html" %}
+
+{% block usermain %}
+
+ <!--Instantiate column structure -->
+        <!--TODO: Add 20px margin-bottom to section above-->
+    <div class="row">
+      {% for connect in connects %}
+      {% for u in connect.uuid_thread.all %}
+        {{u.uuid_thread}}
+      {% endfor %}
+      {% endfor %}
+
+    <!--Left column-->
+        <div class="columns small-3">
+          <div class="row">
+            <ul class="menu vertical">
+              <!--TODO: Add .active class to css -->
+              <li class="active"><a href="{% url 'get_user_connection_invites' request.user %}">Connections {% if count_current_user_interactions > 0 %} <span class="badge default-accent-badge">{{ count_current_user_interactions }}</span> {% else %}{% endif %}</a></li>
+              <li class="active"><a href="{% url 'get_user_roommate_invites' request.user %}">Roommate Requests {% if count_current_user_interactions > 0 %} <span class="badge default-accent-badge">{{ count_current_user_interactions }}</span> {% else %}{% endif %}</a></li>
+              <li class="active"><a href="{% url 'do_get_user_interactions' request.user %}">Inbox {% if count_current_user_interactions > 0 %} <span class="badge default-accent-badge">{{ count_current_user_interactions }}</span> {% else %}{% endif %}</a></li>
+              <li><a href="/user/{{ request.user }}/alerts">Alerts {% if count_current_user_alerts > 0 %} <span class="badge default-accent-badge">{{ count_current_user_alerts }}</span> {% else %}{% endif %}</a></li>
+              <!-- <li><a href="/user/{{ request.user }}/interactions/sent">Sent</a></li> -->
+            </ul>
+          </div>
+        </div>
+
+    <!--Right column-->
+        <div class="columns small-9">
+
+          <ul class="accordion" data-accordion>
+            {% for connect in connects %}
+            <li class="accordion-item" data-accordion-item>
+              <a href="#" class="accordion-title">
+                  {% if connect.read_state == 'O' %}
+                  <b>[NEW]</b>
+                  {% else %}
+                  {% endif %}
+                  {{ connect.payload_subject }}
+              </a>
+              <div class="accordion-content" data-tab-content>
+                {% for sender in connect.uuid_sender.all %}
+                <div class="row">
+                  <div class="columns small-8">
+                        <b>{{ sender.first_name }} {{ sender.last_name }}:</b>
+                      {{ connect.payload_text }}
+                  </div>
+                  <div class="columns small-4">
+                      {% if connect.interaction_type == 'M' and connect.read_state == 'O' %}
+                      <button data-open="{{connect.uuid_readstate}}" class="small button" href="#">Reply</button>
+                      <a href="{% url 'do_update_msg_status' request.user 'I' connect.uuid_readstate %}" class="small hollow button">Mark as read</a>
+                      <a href="{% url 'do_update_msg_status' request.user 'X' connect.uuid_readstate %}" class="small alert hollow button">Delete</a>
+                      {% endif %}
+                      {% if connect.interaction_type == 'M' and connect.read_state == 'I' %}
+                      <button data-open="{{connect.uuid_readstate}}" class="small button" href="#">Reply</button>
+                      <a href="{% url 'do_update_msg_status' request.user 'O' connect.uuid_readstate %}" class="small hollow button">Mark as unread</a>
+                      <a href="{% url 'do_update_msg_status' request.user 'X' connect.uuid_readstate %}" class="small alert hollow button">Delete</a>
+                      {% endif %}
+                      {% if connect.interaction_type == 'C' and connect.read_state == 'O' %}
+                          <a href="{% url 'do_update_connect_status' request.user 'X' 'A' connect.uuid_readstate %}" class="small success button">Accept connection</a>
+                          <a href="{% url 'do_update_connect_status' request.user 'R' 'A' connect.uuid_readstate %}" class="small alert hollow button">Decline connection</a>
+                      {% endif %}
+                  </div>
+                  <div class="reveal" id="{{connect.uuid_readstate}}" data-reveal>
+                    {% for u in connect.uuid_thread.all %}
+                    <form id="reply_message_form" method="post" action="reply/{{u.uuid_thread}}/">
+                    {% endfor %}
+                    {% csrf_token %}
+                    <h5>Reply to: {{connect.payload_subject}} </h5>
+                    <p>
+                      <label>
+                      Conversation Name:
+                        <input name="interaction_subject" type="text" value="{{connect.payload_subject}}">
+                      </label>
+                    </p>
+                    <p>
+                      <textarea name="interaction_text"></textarea>
+                    </p>
+                      <div class="columns small-6">
+                      <input type="submit" class="button" value="Send" />
+                    </div>
+                    <button class="close-button" data-close aria-label="Close modal" type="button">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                    </form>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+            </li>
+            {% endfor %}
+            <!-- ... -->
+          </ul>
+
+        </div>
+
+   <!--end columns-->
+    </div>
+
+{% endblock usermain %}

@@ -1,19 +1,29 @@
 {% extends "allonsy/user_base.html" %}
 
 {% block usermain %}
-  {{ cur_user_interacts }}
+
  <!--Instantiate column structure -->
         <!--TODO: Add 20px margin-bottom to section above-->
     <div class="row">
+        {% for interaction in thread0 %}
+        {% if forloop.first %}
+        {% if interaction.read_state == 'X' %}
+        Not X!
+        {% endif %}
+                {% endif %}
+
+        {% endfor %}
+
+      <br><br>- - - - - - - - - -<br><br>
 
     <!--Left column-->
         <div class="columns small-3">
           <div class="row">
             <ul class="menu vertical">
               <!--TODO: Add .active class to css -->
-              <li class="active"><a href="/user/{{ request.user }}/interactions">Connections {% if count_current_user_interactions > 0 %} <span class="badge default-accent-badge">{{ count_current_user_interactions }}</span> {% else %}{% endif %}</a></li>
-              <li class="active"><a href="/user/{{ request.user }}/interactions">Roommate Requests {% if count_current_user_interactions > 0 %} <span class="badge default-accent-badge">{{ count_current_user_interactions }}</span> {% else %}{% endif %}</a></li>
-              <li class="active"><a href="/user/{{ request.user }}/interactions">Inbox {% if count_current_user_interactions > 0 %} <span class="badge default-accent-badge">{{ count_current_user_interactions }}</span> {% else %}{% endif %}</a></li>
+              <li class="active"><a href="{% url 'get_user_connection_invites' request.user %}">Connections {% if count_current_user_interactions > 0 %} <span class="badge default-accent-badge">{{ count_current_user_interactions }}</span> {% else %}{% endif %}</a></li>
+              <li class="active"><a href="{% url 'get_user_roommate_invites' request.user %}">Roommate Requests {% if count_current_user_interactions > 0 %} <span class="badge default-accent-badge">{{ count_current_user_interactions }}</span> {% else %}{% endif %}</a></li>
+              <li class="active"><a href="{% url 'do_get_user_interactions' request.user %}">Inbox {% if count_current_user_interactions > 0 %} <span class="badge default-accent-badge">{{ count_current_user_interactions }}</span> {% else %}{% endif %}</a></li>
               <li><a href="/user/{{ request.user }}/alerts">Alerts {% if count_current_user_alerts > 0 %} <span class="badge default-accent-badge">{{ count_current_user_alerts }}</span> {% else %}{% endif %}</a></li>
               <!-- <li><a href="/user/{{ request.user }}/interactions/sent">Sent</a></li> -->
             </ul>
@@ -22,82 +32,247 @@
 
     <!--Right column-->
         <div class="columns small-9">
-          <ul class="vertical menu" data-accordion-menu>
-            {% for interact in cur_user_interacts %}
-            {% for sender in interact.interaction_sender.all %}
-            {% for target in interact.interaction_target.all %}
-            <li>
-              <a href="#">
-                {% if interact.interaction_status == 'O' and target == cur_user %}
-                <b>[NEW] {{ sender.first_name }} {{ sender.last_name }}:</b> {{interact.interaction_subject}}
-                {% elif interact.interaction_status == 'I' %}
-                {{ sender.first_name }} {{ sender.last_name }}: {{interact.interaction_subject}}
-                 {% elif sender == cur_user %}
-                {{ target.first_name }} {{ target.last_name }}: {{interact.interaction_subject}}
-                {% endif %}
-              </a>
-              <ul class="menu vertical nested">
-                <li>{{interact.interaction_text}}</li>
-                <li>
-                  <div class="row">
-                    {% if interact.interaction_type == 'M' %}
-                      <button data-open="{{interact.uuid_interaction}}" class="small button" href="#">Reply</button>
-                        <div class="reveal" id="{{interact.uuid_interaction}}" data-reveal>
-                          <form id="do_edit_user_profile_form" method="post" action="reply/{{interact.uuid_interaction}}/">
-                          {% csrf_token %}
-                          <h5>Reply to: {{ sender.first_name }} {{ sender.last_name }}</h5>
-                          <p>
-                            <label>
-                            Subject:
-                              <input name="interaction_subject" type="text" value="{{interact.interaction_subject}}">
-                            </label>
-                          </p>
-                          <p>
-                            <textarea name="interaction_text"></textarea>
-                          </p>
-                            <div class="columns small-6">
-                            <input type="submit" class="button" value="Send" />
-                          </div>
-                          <button class="close-button" data-close aria-label="Close modal" type="button">
-                            <span aria-hidden="true">&times;</span>
-                          </button>
-                          </form>
-                        </div>
-                    {% if interact.interaction_status == 'O' %}
-                    <a href="status/I/{{interact.uuid_interaction}}/" class="small hollow button">Mark as read</a>
-                    {% else %}
-                    <a href="status/O/{{interact.uuid_interaction}}/" class="small hollow button">Mark as unread</a>
-                    {% endif %}
-                    <a href="status/X/{{interact.uuid_interaction}}/" class="small alert hollow button">Delete</a>
-                    <!--TODO: Reporting/blocking functionality-->
-                    <a href="status/F/{{interact.uuid_interaction}}/" class="small secondary hollow button">Report</a>
-                    {% elif interact.interaction_type == 'C' %}
-                    <a href="status/I/A/{{interact.uuid_interaction}}/" class="small success button">Accept connection</a>
-                    <button class="small alert hollow button" href="status/C/{{interact.uuid_interaction}}/">Decline connection</button>
-                    <button class="small secondary hollow button" href="">Report</button>
-                    {% elif interact.interaction_type == 'R' %}
-                    <button class="small button" href="#">Send message</button>
-                    <button class="small success button" href="#">Accept roommate</button>
-                    <button class="small warning hollow button" href="#">Add to potentials</button>
-                    <button class="small alert hollow button" href="#">Decline roommate</button>
-                    <button class="small secondary hollow button" href="#">Report</button>
-                    {% elif interact.interaction_type == 'A' %}
-                    {% if interact.interaction_status == 'O' %}
-                    <a href="status/I/{{interact.uuid_alert}}/" class="small hollow button">Mark as read</a>
-                    {% else %}
-                    <a href="status/O/{{interact.uuid_alert}}/" class="small hollow button">Mark as unread</a>
-                    {% endif %}
-                    <a href="status/X/{{interact.uuid_alert}}/" class="small alert hollow button">Delete</a>
-                    {% else %}
-                    <a href="status/X/{{interact.uuid_alert}}/" class="small alert hollow button">Delete</a>
-                    {% endif %}
+
+
+            <ul class="accordion" data-accordion>
+            {% if thread0 %}
+            {% if forloop.first %}
+            {% if interaction.read_state != 'X' %}
+          <li class="accordion-item is-active" data-accordion-item>
+            {% for interaction in thread0 %}
+            {% if forloop.first %}
+            <a href="#" class="accordion-title">{{ interaction.payload_subject }}</a>
+            {% endif %}
+            <div class="accordion-content" data-tab-content>
+              <div class="row">
+              <div class="columns small-2"><span style="font-size: 6pt" class="label">{{interaction.date_added|date:"M d Y P"}}</span></div>
+              <div class="columns small-8">{% for sender in interaction.uuid_sender.all %}
+                  <a href="{% url 'resolve_user_url' sender.username %}">
+                  <b>{{sender.first_name}} {{sender.last_name}}</b></a>{% endfor %}: {{interaction.payload_text}}</div>
+                  <div class="columns small-2">
+                     {% if forloop.last %}
+                     {% if interaction.interaction_type == 'M' %}
+                      <button data-open="{{interaction.uuid_thread}}" class="small button" href="#">Reply</button>
+                      {% endif %}
+                     {% if interaction.interaction_type == 'C' %}
+                      {% for p in interaction.uuid_participant.all %}
+                      {% if p == user %}
+                      {% for thread in interaction.uuid_thread.all %}
+                     <a href="{% url 'do_update_connect_status' request.user 'X' 'A' thread.uuid_thread %}" class="small success button">Accept</a>
+                     <a href="{% url 'do_update_connect_status' request.user 'R' 'A' thread.uuid_thread %}" class="small alert hollow button">Decline</a>
+                        {% endfor %}
+                      {% elif p != user %}
+                      <a href="" class="small button warning">Pending</a>
+                      {% endif %}
+                      {% endfor %}
+                      {% endif %}
+                     {% endif %}
                   </div>
-                </li>
-              </ul>
+              </div>
+            </div>
+            {% endfor %}
+          </li>
+            {% endif %}
+            {% endif %}
+            {% else %}
+            {% endif %}
+          {% if thread1 %}
+            {% if forloop.first %}
+            {% if interaction.read_state != 'X' %}
+          <li class="accordion-item is-active" data-accordion-item>
+            {% for interaction in thread1 %}
+            {% if forloop.first %}
+            <a href="#" class="accordion-title">{{ interaction.payload_subject }}</a>
+            {% endif %}
+            <div class="accordion-content" data-tab-content>
+              <div class="row">
+              <div class="columns small-2"><span style="font-size: 6pt" class="label">{{interaction.date_added|date:"M d Y P"}}</span></div>
+              <div class="columns small-8">{% for sender in interaction.uuid_sender.all %}
+                  <a href="{% url 'resolve_user_url' sender.username %}">
+                  <b>{{sender.first_name}} {{sender.last_name}}</b></a>{% endfor %}: {{interaction.payload_text}}</div>
+                  <div class="columns small-2">
+                     {% if forloop.last %}
+                     {% if interaction.interaction_type == 'M' %}
+                      <button data-open="{{interaction.uuid_thread}}" class="small button" href="#">Reply</button>
+                      {% endif %}
+                     {% if interaction.interaction_type == 'C' %}
+                      {% for p in interaction.uuid_participant.all %}
+                      {% if p == user %}
+                      {% for thread in interaction.uuid_thread.all %}
+                     <a href="{% url 'do_update_connect_status' request.user 'X' 'A' thread.uuid_thread %}" class="small success button">Accept</a>
+                     <a href="{% url 'do_update_connect_status' request.user 'R' 'A' thread.uuid_thread %}" class="small alert hollow button">Decline</a>
+                        {% endfor %}
+                      {% elif p != user %}
+                      <a href="" class="small button warning">Pending</a>
+                      {% endif %}
+                      {% endfor %}
+                      {% endif %}
+                     {% endif %}
+                  </div>
+              </div>
+            </div>
+            {% endfor %}
+          </li>
+            {% endif %}
+            {% endif %}
+            {% else %}
+            {% endif %}
+          {% if thread2 %}
+            {% if forloop.first %}
+            {% if interaction.read_state != 'X' %}
+          <li class="accordion-item is-active" data-accordion-item>
+            {% for interaction in thread2 %}
+            {% if forloop.first %}
+            <a href="#" class="accordion-title">{{ interaction.payload_subject }}</a>
+            {% endif %}
+            <div class="accordion-content" data-tab-content>
+              <div class="row">
+              <div class="columns small-2"><span style="font-size: 6pt" class="label">{{interaction.date_added|date:"M d Y P"}}</span></div>
+              <div class="columns small-8">{% for sender in interaction.uuid_sender.all %}
+                  <a href="{% url 'resolve_user_url' sender.username %}">
+                  <b>{{sender.first_name}} {{sender.last_name}}</b></a>{% endfor %}: {{interaction.payload_text}}</div>
+                  <div class="columns small-2">
+                     {% if forloop.last %}
+                     {% if interaction.interaction_type == 'M' %}
+                      <button data-open="{{interaction.uuid_thread}}" class="small button" href="#">Reply</button>
+                      {% endif %}
+                     {% if interaction.interaction_type == 'C' %}
+                      {% for p in interaction.uuid_participant.all %}
+                      {% if p == user %}
+                      {% for thread in interaction.uuid_thread.all %}
+                     <a href="{% url 'do_update_connect_status' request.user 'X' 'A' thread.uuid_thread %}" class="small success button">Accept</a>
+                     <a href="{% url 'do_update_connect_status' request.user 'R' 'A' thread.uuid_thread %}" class="small alert hollow button">Decline</a>
+                        {% endfor %}
+                      {% elif p != user %}
+                      <a href="" class="small button warning">Pending</a>
+                      {% endif %}
+                      {% endfor %}
+                      {% endif %}
+                     {% endif %}
+                  </div>
+              </div>
+            </div>
+            {% endfor %}
+          </li>
+            {% endif %}
+            {% endif %}
+            {% else %}
+            {% endif %}
+          {% if thread3 %}
+            {% if forloop.first %}
+            {% if interaction.read_state != 'X' %}
+          <li class="accordion-item is-active" data-accordion-item>
+            {% for interaction in thread3 %}
+            {% if forloop.first %}
+            <a href="#" class="accordion-title">{{ interaction.payload_subject }}</a>
+            {% endif %}
+            <div class="accordion-content" data-tab-content>
+              <div class="row">
+              <div class="columns small-2"><span style="font-size: 6pt" class="label">{{interaction.date_added|date:"M d Y P"}}</span></div>
+              <div class="columns small-8">{% for sender in interaction.uuid_sender.all %}
+                  <a href="{% url 'resolve_user_url' sender.username %}">
+                  <b>{{sender.first_name}} {{sender.last_name}}</b></a>{% endfor %}: {{interaction.payload_text}}</div>
+                  <div class="columns small-2">
+                     {% if forloop.last %}
+                     {% if interaction.interaction_type == 'M' %}
+                      <button data-open="{{interaction.uuid_thread}}" class="small button" href="#">Reply</button>
+                      {% endif %}
+                     {% if interaction.interaction_type == 'C' %}
+                      {% for p in interaction.uuid_participant.all %}
+                      {% if p == user %}
+                      {% for thread in interaction.uuid_thread.all %}
+                     <a href="{% url 'do_update_connect_status' request.user 'X' 'A' thread.uuid_thread %}" class="small success button">Accept</a>
+                     <a href="{% url 'do_update_connect_status' request.user 'R' 'A' thread.uuid_thread %}" class="small alert hollow button">Decline</a>
+                        {% endfor %}
+                      {% elif p != user %}
+                      <a href="" class="small button warning">Pending</a>
+                      {% endif %}
+                      {% endfor %}
+                      {% endif %}
+                     {% endif %}
+                  </div>
+              </div>
+            </div>
+            {% endfor %}
+          </li>
+            {% endif %}
+            {% endif %}
+            {% else %}
+            {% endif %}
+
+          <!-- ... -->
+        </ul>
+
+
+
+
+
+            <ul class="accordion" data-accordion>
+            {% for key, value in payloads.items %}
+            {% for v in value %}
+            {% if v.read_state == 'O' %}
+            <li class="accordion-item" data-accordion-item>
+              <a href="#" class="accordion-title">
+                  {% if connect.read_state == 'O' %}
+                  <b>[NEW]</b>
+                  {% else %}
+                  {% endif %}
+                  {{ connect.payload_subject }}
+              </a>
+              <div class="accordion-content" data-tab-content>
+                {% for sender in connect.uuid_sender.all %}
+                <div class="row">
+                  <div class="columns small-8">
+                        <b>{{ sender.first_name }} {{ sender.last_name }}:</b>
+                      {{ connect.payload_text }}
+                  </div>
+                  <div class="columns small-4">
+                      {% if connect.interaction_type == 'M' and connect.read_state == 'O' %}
+                      <button data-open="{{connect.uuid_readstate}}" class="small button" href="#">Reply</button>
+                      <a href="{% url 'do_update_msg_status' request.user 'I' connect.uuid_readstate %}" class="small hollow button">Mark as read</a>
+                      <a href="{% url 'do_update_msg_status' request.user 'X' connect.uuid_readstate %}" class="small alert hollow button">Delete</a>
+                      {% endif %}
+                      {% if connect.interaction_type == 'M' and connect.read_state == 'I' %}
+                      <button data-open="{{connect.uuid_readstate}}" class="small button" href="#">Reply</button>
+                      <a href="{% url 'do_update_msg_status' request.user 'O' connect.uuid_readstate %}" class="small hollow button">Mark as unread</a>
+                      <a href="{% url 'do_update_msg_status' request.user 'X' connect.uuid_readstate %}" class="small alert hollow button">Delete</a>
+                      {% endif %}
+                      {% if connect.interaction_type == 'C' and connect.read_state == 'O' %}
+                          <a href="{% url 'do_update_connect_status' request.user 'X' 'A' connect.uuid_readstate %}" class="small success button">Accept connection</a>
+                          <a href="{% url 'do_update_connect_status' request.user 'R' 'A' connect.uuid_readstate %}" class="small alert hollow button">Decline connection</a>
+                      {% endif %}
+                  </div>
+                  <div class="reveal" id="{{interaction.uuid_thread}}" data-reveal>
+                    {% for u in connect.uuid_thread.all %}
+                    <form id="reply_message_form" method="post" action="reply/{{u.uuid_thread}}/">
+                    {% endfor %}
+                    {% csrf_token %}
+                    <h5>Reply to: {{connect.payload_subject}} </h5>
+                    <p>
+                      <label>
+                      Conversation Name:
+                        <input name="interaction_subject" type="text" value="{{connect.payload_subject}}">
+                      </label>
+                    </p>
+                    <p>
+                      <textarea name="interaction_text"></textarea>
+                    </p>
+                      <div class="columns small-6">
+                      <input type="submit" class="button" value="Send" />
+                    </div>
+                    <button class="close-button" data-close aria-label="Close modal" type="button">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                    </form>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
             </li>
+            {% endif %}
             {% endfor %}
             {% endfor %}
-            {% endfor %}
+            <!-- ... -->
           </ul>
 
         </div>

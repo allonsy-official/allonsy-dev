@@ -8,6 +8,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.urlresolvers import reverse
+from django.core.exceptions import *
 from django.db import IntegrityError
 from django.db.models import Q
 
@@ -737,27 +738,155 @@ def get_user_interactions(request, username):
     #TODO: New and unread interactions should both appear bold
     req_orgs_affil = Organization.objects.filter(org_type_special='X')
     req_user_orgs_primary = RelationOrganizationUser.objects.values('relation_name').all().filter(uuid_user=req_user_uuid, uuid_org__in=req_orgs_affil, relation_is_primary=True)
-    current_user_interaction_states = UserInteractionReadState.objects.all().filter(Q(uuid_participant=current_user), Q(read_state='O') | Q(read_state='I')).order_by('date_added')
-    current_state_dict = {}
-
-    for state in current_user_interaction_states:
-        uuid_payload = state.uuid_payload.values('uuid_payload')
-        get_payload = UserInteractionPayload.objects.filter(uuid_payload=uuid_payload)
-        subject = get_payload.values_list('payload_subject', flat=True)
-        text = get_payload.values_list('payload_text', flat=True)
-        uuid_thread = get_payload.uuid_thread
-        get_thread_value = UserInteractionThread.objects.filter(uuid_thread=uuid_thread).values_list('uuid_thread', flat=True)
-        thread_dict = {}
-        thread_dict[get_thread_value] = {'subject': subject, 'text': text}
-        current_state_dict.update(thread_dict)
+    current_user_routings_list = UserInteractionRouting.objects.values_list('uuid_thread', flat=True).filter(uuid_participant=current_user)
+    current_user_threads = UserInteractionThread.objects.all().filter(uuid_thread__in=current_user_routings_list)
+    current_user_threads_list = current_user_threads.values_list('uuid_thread', flat=True).filter(uuid_thread__in=current_user_routings_list)
+    current_user_interaction_states = UserInteractionReadState.objects.filter(Q(uuid_participant=current_user), Q(read_state='O') | Q(read_state='I')).order_by('date_added')
+    current_user_interaction_states_values = UserInteractionReadState.objects.values_list('uuid_payload', flat=True).filter(Q(uuid_participant=current_user), Q(read_state='O') | Q(read_state='I')).order_by('date_added')
+    current_user_interaction_states_list = UserInteractionReadState.objects.filter(Q(uuid_participant=current_user), Q(read_state='O') | Q(read_state='I')).order_by('date_added')
+    current_user_interactions = UserInteractionPayload.objects.all().filter(uuid_payload__in=current_user_interaction_states_values).order_by('date_added')
+    current_user_interactions_list = current_user_interactions.values_list('uuid_payload', flat=True).order_by('date_added')
+    current_user_interactions_threads = current_user_interactions.values_list('uuid_thread', flat=True).order_by('date_added')
+    threads = UserInteractionThread.objects.filter(uuid_thread__in=current_user_interactions_threads)
+    n = 0
 
     context_dict_local = {'orgs_primary': req_user_orgs_primary, 'count_new_user_interactions': count_new_user_interactions}
 
+    for thread in current_user_threads_list:
+        key = 'thread' + str(n)
+        thread_objects = {}
+        interaction_objects = []
+
+        current_thread_payloads = UserInteractionPayload.objects.filter(uuid_thread=thread)
+        current_thread_payloads_list = current_thread_payloads.values_list('uuid_payload', flat=True).order_by('date_added')
+
+        n += 1
+
+        for interaction in current_thread_payloads_list:
+
+            try:
+                state = UserInteractionReadState.objects.get(uuid_payload=interaction)
+                payload = UserInteractionPayload.objects.get(uuid_payload=interaction)
+
+                this_interaction_object = {'uuid_payload': payload.uuid_payload,
+                                           'uuid_thread': payload.uuid_thread,
+                                           'uuid_sender': payload.uuid_sender,
+                                           'uuid_participant': state.uuid_participant,
+                                           'uuid_relation': payload.uuid_relation,
+                                           'uuid_readstate': state.uuid_readstate,
+                                           'interaction_type': payload.interaction_type,
+                                           'read_state': state.read_state,
+                                           'payload_subject': payload.payload_subject,
+                                           'payload_text': payload.payload_text,
+                                           'date_added': payload.date_added,
+                                           }
+
+                interaction_objects.append(this_interaction_object)
+                thread_objects[key] = interaction_objects
+
+            except ObjectDoesNotExist:
+                thread_objects[key] = {}
+                pass
+
+            context_dict_local.update(thread_objects)
+
     context_dict = context_helper.copy()
     context_dict.update(context_dict_local)
-    context_dict['cur_user_interactions'] = current_state_dict
-
+    # return render(request, 'allonsy/user_interactions.html', context_dict, context_instance=RequestContext(request))
     return render(request, 'allonsy/user_interactions.html', context_dict, context_instance=RequestContext(request))
+
+
+@login_required
+def get_user_connection_invites(request, username):
+
+    context_helper = get_user_data(request, username)
+    current_user_obj, current_user, current_userextension, current_user_acct, req_user, req_userextension, req_user_acct, req_user_uuid = get_user_data_objects(request, username)
+
+    new_user_interactions_lookup = UserInteractionReadState.objects.all().filter(uuid_participant=current_user, read_state='O')
+    count_new_user_interactions = new_user_interactions_lookup.count
+
+    #TODO: Add a "new" interactions item for first-time views and an "unread" for interactions that have no yet been clicked
+    #TODO: New and unread interactions should both appear bold
+    req_orgs_affil = Organization.objects.filter(org_type_special='X')
+    req_user_orgs_primary = RelationOrganizationUser.objects.values('relation_name').all().filter(uuid_user=req_user_uuid, uuid_org__in=req_orgs_affil, relation_is_primary=True)
+    current_user_interaction_states = UserInteractionReadState.objects.filter(Q(uuid_participant=current_user), Q(read_state='O') | Q(read_state='I')).order_by('date_added')
+    current_user_interaction_states_values = UserInteractionReadState.objects.values_list('uuid_payload', flat=True).filter(Q(uuid_participant=current_user), Q(read_state='O') | Q(read_state='I')).order_by('date_added')
+    current_user_interaction_states_list = UserInteractionReadState.objects.filter(Q(uuid_participant=current_user), Q(read_state='O') | Q(read_state='I')).order_by('date_added')
+    current_user_interactions = UserInteractionPayload.objects.all().filter(uuid_payload__in=current_user_interaction_states_values).order_by('date_added')
+    current_user_interactions_list = UserInteractionPayload.objects.values_list('uuid_payload', flat=True).filter(Q(uuid_payload__in=current_user_interaction_states_values), Q(interaction_type='C')).order_by('date_added')
+    interaction_dict = []
+    interaction_objects = []
+
+    for interaction in current_user_interactions_list:
+
+        try:
+            state = UserInteractionReadState.objects.get(uuid_payload=interaction)
+            payload = UserInteractionPayload.objects.get(uuid_payload=interaction)
+
+            this_interaction_object = {'uuid_payload': payload.uuid_payload,
+                                       'uuid_thread': payload.uuid_thread,
+                                       'uuid_sender': payload.uuid_sender,
+                                       'uuid_participant': state.uuid_participant,
+                                       'uuid_relation': payload.uuid_relation,
+                                       'uuid_readstate': state.uuid_readstate,
+                                       'interaction_type': payload.interaction_type,
+                                       'read_state': state.read_state,
+                                       'payload_subject': payload.payload_subject,
+                                       'payload_text': payload.payload_text,
+                                       'date_added': payload.date_added
+                                       }
+
+            interaction_objects.append(this_interaction_object)
+
+        except ObjectDoesNotExist:
+            this_interaction_object = {}
+
+    context_dict_local = {'orgs_primary': req_user_orgs_primary, 'count_new_user_interactions': count_new_user_interactions, 'current_user_interactions': current_user_interactions, 'current_user_interaction_states': current_user_interaction_states, 'current_user_interaction_pairs': interaction_dict, 'connects': interaction_objects}
+
+    context_dict = context_helper.copy()
+    context_dict.update(context_dict_local)
+    # return render(request, 'allonsy/user_interactions.html', context_dict, context_instance=RequestContext(request))
+    return render(request, 'allonsy/user_interactions.html', context_dict, context_instance=RequestContext(request))
+
+
+@login_required
+def get_user_roommate_invites(request, username):
+
+    context_helper = get_user_data(request, username)
+    current_user_obj, current_user, current_userextension, current_user_acct, req_user, req_userextension, req_user_acct, req_user_uuid = get_user_data_objects(request, username)
+
+    new_user_interactions_lookup = UserInteractionReadState.objects.all().filter(uuid_participant=current_user, read_state='O')
+    count_new_user_interactions = new_user_interactions_lookup.count
+
+    #TODO: Add a "new" interactions item for first-time views and an "unread" for interactions that have no yet been clicked
+    #TODO: New and unread interactions should both appear bold
+    req_orgs_affil = Organization.objects.filter(org_type_special='X')
+    req_user_orgs_primary = RelationOrganizationUser.objects.values('relation_name').all().filter(uuid_user=req_user_uuid, uuid_org__in=req_orgs_affil, relation_is_primary=True)
+    current_user_interaction_states = UserInteractionReadState.objects.filter(Q(uuid_participant=current_user), Q(read_state='O') | Q(read_state='I')).order_by('date_added')
+    current_user_interaction_states_values = UserInteractionReadState.objects.values_list('uuid_payload', flat=True).filter(Q(uuid_participant=current_user), Q(read_state='O') | Q(read_state='I')).order_by('date_added')
+    current_user_interactions = UserInteractionPayload.objects.all().filter(uuid_payload__in=current_user_interaction_states_values)
+    interaction_dict = []
+
+    for interaction in current_user_interaction_states_values:
+        current_user_interaction_pairs = []
+
+        try:
+            state = UserInteractionReadState.objects.get(uuid_payload=interaction)
+            payload = UserInteractionPayload.objects.get(uuid_payload=interaction, interaction_type='R')
+
+            current_user_interaction_pairs.append(state)
+            current_user_interaction_pairs.append(payload)
+            interaction_dict.append(current_user_interaction_pairs)
+
+        except ObjectDoesNotExist:
+            interaction_dict = []
+
+    context_dict_local = {'orgs_primary': req_user_orgs_primary, 'count_new_user_interactions': count_new_user_interactions, 'current_user_interactions': current_user_interactions, 'current_user_interaction_states': current_user_interaction_states, 'current_user_interaction_pairs': interaction_dict}
+
+    context_dict = context_helper.copy()
+    context_dict.update(context_dict_local)
+    return render(request, 'allonsy/user_interactions.html', context_dict, context_instance=RequestContext(request))
+
 
 @login_required
 def do_get_user_interactions(request, username):
@@ -847,7 +976,6 @@ def user_connect(request, username):
 
                 interaction_thread = UserInteractionThread.objects.create(
                     uuid_thread=interaction_uuid,
-                    interaction_type=interaction_type,
                     interaction_name=interaction_name
                 )
 
@@ -857,6 +985,7 @@ def user_connect(request, username):
 
                 interaction_payload = UserInteractionPayload.objects.create(
                     uuid_payload=payload_uuid,
+                    interaction_type=interaction_type,
                     payload_subject=payload_subject_text,
                     payload_text=payload_text
                 )
@@ -887,15 +1016,17 @@ def user_connect(request, username):
                 interaction_readstate.uuid_payload.add(new_payload)
                 interaction_readstate.uuid_participant.add(target_participant)
 
-                relation_status = RelationUserConnection.objects.create(
+                relation_status_obj = RelationUserConnection.objects.create(
                     uuid_relation=relation_uuid,
                     relation_type=do_user_connect_form.cleaned_data['relation_type'],
                     relation_status=relation_status
                 )
 
-                relation_status.save()
-                relation_status.uuid_user_1.add(current_user)
-                relation_status.uuid_user_2.add(req_user)
+                relation_status_obj.save()
+                relation_status_obj.uuid_user_1.add(current_user)
+                relation_status_obj.uuid_user_2.add(req_user)
+
+                interaction_payload.uuid_relation.add(relation_status_obj)
 
                 # proto_relation = RelationUserConnection.objects.get(uuid_relation=proto_relation_uuid)
                 # proto_interaction_sender.uuid_request.add(proto_relation)
@@ -1011,16 +1142,23 @@ def do_update_connect_status(request, username, status, cstatus, uuidmsg):
 
 
     #Add local context
-    this_user_interaction = UserInteractionTree.objects.get(uuid_interaction=uuidmsg)
-    this_user_crequest_list = UserInteractionTree.objects.filter(uuid_interaction=uuidmsg).values_list('uuid_request', flat=True)
-    this_user_crequest = this_user_crequest_list[0]
+    #New with messaging update. Can be refactored at a later date
+    new_payload_get = UserInteractionPayload.objects.filter(uuid_thread=uuidmsg)
+    this_user_interaction = UserInteractionReadState.objects.get(uuid_payload__in=new_payload_get)
+    # this_user_interaction = UserInteractionReadState.objects.get(uuid_readstate=uuidmsg)
+    this_payload_list = UserInteractionReadState.objects.filter(uuid_payload__in=new_payload_get).values_list('uuid_payload', flat=True)
+    # this_payload_list = UserInteractionReadState.objects.filter(uuid_readstate=uuidmsg).values_list('uuid_payload', flat=True)
+    this_payload_uuid = this_payload_list[0]
+    this_payload = UserInteractionPayload.objects.get(uuid_payload=this_payload_uuid)
+    this_relation_list = UserInteractionPayload.objects.filter(uuid_payload=this_payload_uuid).values_list('uuid_relation', flat=True)
+    this_relation_uuid = this_relation_list[0]
 
     # May cause problems and need to be converted to UUID see here:
     # http://stackoverflow.com/questions/15859156/python-how-to-convert-a-valid-uuid-from-string-to-uuid
     # this_connection_request = this_user_interaction.uuid_request.values('id').all()
     # this_connection = RelationUserConnection.objects.get(id=this_connection_request)
 
-    this_connection_update = RelationUserConnection.objects.get(id=this_user_crequest)
+    this_connection_update = RelationUserConnection.objects.get(id=this_relation_uuid)
 
     this_interaction_status_raw = str(status)
     this_crequest_cstatus_raw = str(cstatus)
@@ -1028,16 +1166,16 @@ def do_update_connect_status(request, username, status, cstatus, uuidmsg):
     this_interaction_status_new = this_interaction_status_raw[0]
     this_crequest_cstatus_new = this_crequest_cstatus_raw[0]
 
-    context_dict_local = {'orgs_primary': ''}
+    context_dict_local = {}
     context_dict = context_helper.copy()
     context_dict.update(context_dict_local)
 
+    #TODO: Currently template only allows status R on rejection. Should create an option to reject + report if needed
+
     if this_crequest_cstatus_new == 'A':
-        this_user_interaction.interaction_status = this_interaction_status_new
+        this_user_interaction.read_state = this_interaction_status_new
         this_user_interaction.save()
         this_connection_update.relation_status = this_crequest_cstatus_new
-
-        this_user_interaction.save()
         this_connection_update.save()
 
         return HttpResponseRedirect(reverse('do_get_user_interactions', kwargs={'username': username}))
@@ -1144,10 +1282,186 @@ def do_send_reply_message(request, username, uuidmsg):
 
 
 @login_required
-def do_send_message(request, username):
+def send_reply_message(request, username, uuidmsg):
+    do_send_reply_message_form = DoSendReplyMessage(request.POST)
+
+    #Request context_helper for user object toolkit
+    context_helper = get_user_data(request, username)
+    current_user_obj, current_user, current_userextension, current_user_acct, req_user, req_userextension, req_user_acct, req_user_uuid = get_user_data_objects(request, username)
+
+    #Local context space. Don't forget to add to local context!
+
+
+    #Add local context
+
+    context_dict_local = {}
+    context_dict = context_helper.copy()
+    context_dict.update(context_dict_local)
+
+    if request.method == 'POST':
+        if do_send_reply_message_form.is_valid():
+
+            #set new uuids
+            payload_uuid = uuid.uuid4()
+
+            interaction_type = 'M'
+
+            # Content of response
+            interaction_subject = do_send_reply_message_form.cleaned_data['interaction_subject']
+            interaction_text = do_send_reply_message_form.cleaned_data['interaction_text']
+
+            # Access the thread for this message
+            this_user_interaction_thread = UserInteractionThread.objects.get(uuid_thread=uuidmsg)
+
+            # Create a new payload
+            payload = UserInteractionPayload.objects.create(uuid_payload=payload_uuid,
+                                                            interaction_type=interaction_type,
+                                                            payload_subject=interaction_subject,
+                                                            payload_text=interaction_text
+                                                            )
+
+            payload.save()
+            payload.uuid_thread.add(this_user_interaction_thread)
+            payload.uuid_sender.add(current_user)
+
+            # Get recipients
+
+            routing_set = UserInteractionRouting.objects.values_list('uuid_routing', flat=True).filter(uuid_thread=this_user_interaction_thread)
+
+            # add to participants
+
+            for r in routing_set:
+
+                readstate_uuid = uuid.uuid4()
+                routing_obj = UserInteractionRouting.objects.values_list('uuid_participant', flat=True).filter(uuid_routing=r)
+                participant = User.objects.get(pk=routing_obj)
+
+                new_readstate = UserInteractionReadState.objects.create(uuid_readstate=readstate_uuid,
+                                                                        read_state='O'
+                                                                        )
+
+                new_readstate.save()
+                new_readstate.uuid_payload.add(payload)
+                new_readstate.uuid_participant.add(participant)
+
+            return HttpResponseRedirect(reverse('do_get_user_interactions', kwargs={'username': username}))
+
+        else:
+            return HttpResponse('Fail 2')
+
+    else:
+        return HttpResponse('Fail 3')
+
+
+
+@login_required
+def send_message(request, username):
+
     do_send_message_form = DoSendMessage(request.POST)
-    current_user = User.objects.get(username=request.user)
-    req_user = User.objects.get(username=username)
+
+    #Request context_helper for user object toolkit
+    context_helper = get_user_data(request, username)
+    current_user_obj, current_user, current_userextension, current_user_acct, req_user, req_userextension, req_user_acct, req_user_uuid = get_user_data_objects(request, username)
+
+    #Local context space. Don't forget to add to local context!
+
+
+    #Add local context
+
+    context_dict_local = {}
+    context_dict = context_helper.copy()
+    context_dict.update(context_dict_local)
+
+    interaction_sender = current_user
+    interaction_target = req_user
+    interaction_type = 'M'
+    readstate = 'O'
+    relation_status = 'Z'
+
+    if request.method == 'POST':
+        if do_send_message_form.is_valid():
+
+            interaction_subject = do_send_message_form.cleaned_data['interaction_subject']
+            interaction_text = do_send_message_form.cleaned_data['interaction_text']
+
+            interaction_uuid = uuid.uuid4()
+            payload_uuid = uuid.uuid4()
+            routing_uuid = uuid.uuid4()
+            readstate_uuid = uuid.uuid4()
+            relation_uuid = uuid.uuid4()
+
+            interaction_thread = UserInteractionThread.objects.create(
+                uuid_thread=interaction_uuid,
+                interaction_name=interaction_subject
+            )
+
+            interaction_thread.save()
+
+            new_thread = UserInteractionThread.objects.get(uuid_thread=interaction_uuid)
+
+            interaction_payload = UserInteractionPayload.objects.create(
+                uuid_payload=payload_uuid,
+                interaction_type=interaction_type,
+                payload_subject=interaction_subject,
+                payload_text=interaction_text
+            )
+
+            interaction_thread.save()
+            # many to many only after create
+            interaction_payload.uuid_thread.add(new_thread)
+            interaction_payload.uuid_sender.add(interaction_sender)
+
+            new_payload = UserInteractionPayload.objects.get(uuid_payload=payload_uuid)
+
+            interaction_routing = UserInteractionRouting.objects.create(
+                uuid_routing=routing_uuid,
+            )
+
+            interaction_routing.save()
+            # many to many only after create
+            interaction_routing.uuid_thread.add(new_thread)
+            interaction_routing.uuid_participant.add(interaction_target)
+
+            interaction_readstate = UserInteractionReadState.objects.create(
+                uuid_readstate=readstate_uuid,
+                read_state=readstate
+            )
+
+            interaction_readstate.save()
+            # many to many only after create
+            interaction_readstate.uuid_payload.add(new_payload)
+            interaction_readstate.uuid_participant.add(interaction_target)
+
+            # proto_relation = RelationUserConnection.objects.get(uuid_relation=proto_relation_uuid)
+            # proto_interaction_sender.uuid_request.add(proto_relation)
+            # proto_interaction_receiver.uuid_request.add(proto_relation)
+
+            return HttpResponseRedirect(reverse('resolve_user_url', kwargs={'username': req_user}))
+
+        else:
+            return HttpResponse('Fail 2')
+
+    else:
+        return HttpResponse('Fail 3')
+
+
+''' def do_send_message(request, username):
+
+    do_send_message_form = DoSendMessage(request.POST)
+
+    #Request context_helper for user object toolkit
+    context_helper = get_user_data(request, username)
+    current_user_obj, current_user, current_userextension, current_user_acct, req_user, req_userextension, req_user_acct, req_user_uuid = get_user_data_objects(request, username)
+
+    #Local context space. Don't forget to add to local context!
+
+
+    #Add local context
+
+    context_dict_local = {'orgs_primary': ''}
+    context_dict = context_helper.copy()
+    context_dict.update(context_dict_local)
+
     interaction_sender = current_user
     interaction_target = req_user
     interaction_type = 'M'
@@ -1176,20 +1490,74 @@ def do_send_message(request, username):
             return HttpResponseRedirect(reverse('resolve_user_url', kwargs={'username': username}))
 
     else:
-        return HttpResponse('Fail 3')
+        return HttpResponse('Fail 3')'''
+
+@login_required
+def update_msg_status(request, username, status, uuidmsg):
+
+    #Request context_helper for user object toolkit
+    context_helper = get_user_data(request, username)
+    current_user_obj, current_user, current_userextension, current_user_acct, req_user, req_userextension, req_user_acct, req_user_uuid = get_user_data_objects(request, username)
+
+    this_readstate = UserInteractionReadState.objects.get(uuid_readstate=uuidmsg)
+    this_interaction_status_raw = str(status)
+    # Get only the first character to avoid bad inputs
+    this_interaction_status_new = this_interaction_status_raw[0]
+
+    #Local context space. Don't forget to add to local context!
+    #Add local context
+    #TODO: Check if the line below is necessary
+    context_dict_local = {}
+    context_dict = context_helper.copy()
+    context_dict.update(context_dict_local)
+
+    if this_interaction_status_new == 'I':
+        this_readstate.read_state = this_interaction_status_new
+        this_readstate.save()
+
+        return HttpResponseRedirect(reverse('do_get_user_interactions', kwargs={'username': username}))
+
+    elif this_interaction_status_new == 'O':
+        this_readstate.read_state = this_interaction_status_new
+        this_readstate.save()
+
+        return HttpResponseRedirect(reverse('do_get_user_interactions', kwargs={'username': username}))
+
+    elif this_interaction_status_new == 'X':
+        this_readstate.read_state = this_interaction_status_new
+        this_readstate.save()
+
+        return HttpResponseRedirect(reverse('do_get_user_interactions', kwargs={'username': username}))
+
+    elif this_interaction_status_new == 'F':
+        this_readstate.read_state = this_interaction_status_new
+        this_readstate.save()
+
+        return HttpResponseRedirect(reverse('do_get_user_interactions', kwargs={'username': username}))
+
+    else:
+        return HttpResponse('Fail 2')
+        #return HttpResponseRedirect(reverse('do_get_user_interactions', kwargs={'username': username}))
 
 
 @login_required
 def do_update_msg_status(request, username, status, uuidmsg):
 
-    current_user_obj = request.user
-    current_user = User.objects.get(username=request.user)
-    current_userextension = UserExtension.objects.get(user=current_user_obj)
-    current_user_acct = current_userextension.uuid_account
+    #Request context_helper for user object toolkit
+    context_helper = get_user_data(request, username)
+    current_user_obj, current_user, current_userextension, current_user_acct, req_user, req_userextension, req_user_acct, req_user_uuid = get_user_data_objects(request, username)
+
     this_user_interaction = UserInteractionTree.objects.get(uuid_interaction=uuidmsg)
     this_interaction_status_raw = str(status)
     # Get only the first character to avoid bad inputs
     this_interaction_status_new = this_interaction_status_raw[0]
+
+    #Local context space. Don't forget to add to local context!
+    #Add local context
+    #TODO: Check if the line below is necessary
+    context_dict_local = {'orgs_primary': ''}
+    context_dict = context_helper.copy()
+    context_dict.update(context_dict_local)
 
     if this_interaction_status_new == 'I':
         this_user_interaction.interaction_status = this_interaction_status_new
